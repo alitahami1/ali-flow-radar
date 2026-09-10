@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -7,921 +6,512 @@
 <meta charset="utf-8">
 
 <meta
-
   name="viewport"
-
   content="width=device-width,initial-scale=1"
-
 >
 
 <meta
-
   name="theme-color"
-
   content="#f4f6f8"
-
 >
 
 <title>
-
-ALI Flow Radar Terminal v4.5.1
-
+ALI Flow Radar Terminal v4.6
 </title>
 
 <script
-
   src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js">
-
 </script>
 
 <style>
 
 :root{
-
   --bg:#f4f6f8;
-
   --panel:#fff;
-
   --panel2:#fafbfd;
-
   --line:#dfe5eb;
-
   --text:#17212b;
-
   --muted:#7b8794;
-
   --good:#169b62;
-
   --bad:#d84b4b;
-
   --warn:#d99a24;
-
   --accent:#2779bd;
-
   --blue-soft:#eaf4fb;
-
   --red-soft:#fff0ef;
-
   --green-soft:#ebf8f1;
-
-  --shadow:
-
-    0 2px 9px
-
-    rgba(30,50,70,.05)
-
+  --shadow:0 2px 9px rgba(30,50,70,.05)
 }
 
 *{
-
   box-sizing:border-box
-
 }
 
 html,
-
 body{
-
   margin:0;
-
   min-height:100%;
-
   background:var(--bg);
-
   color:var(--text);
-
   font-family:
-
     Tahoma,
-
     "Segoe UI",
-
     sans-serif
-
 }
 
 header{
-
   position:sticky;
-
   top:0;
-
   z-index:50;
-
-  background:
-
-    rgba(255,255,255,.95);
-
-  border-bottom:
-
-    1px solid
-
-    var(--line);
-
-  backdrop-filter:
-
-    blur(14px)
-
+  background:rgba(255,255,255,.95);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(14px)
 }
 
 .header-inner{
-
   max-width:1600px;
-
   margin:auto;
-
   padding:11px 18px
-
 }
 
 .topline{
-
   display:flex;
-
   align-items:center;
-
-  justify-content:
-
-    space-between;
-
+  justify-content:space-between;
   gap:15px
-
 }
 
 .brandline{
-
   display:flex;
-
   align-items:center;
-
   gap:12px
-
 }
 
 .logo{
-
   width:34px;
-
   height:34px;
-
   border-radius:50%;
-
-  border:
-
-    2px solid
-
-    var(--line);
-
+  border:2px solid var(--line);
   display:flex;
-
   align-items:center;
-
   justify-content:center;
-
   font-weight:800;
-
   background:#fff
-
 }
 
 h1{
-
   margin:0;
-
   font-size:18px
-
 }
 
 .small{
-
   font-size:11px;
-
   color:var(--muted)
-
 }
 
 .tiny{
-
   font-size:9px;
-
   color:var(--muted)
-
 }
 
 .livebox{
-
   display:flex;
-
   align-items:center;
-
   gap:6px;
-
   font-size:11px;
-
   color:var(--muted)
-
 }
 
 .dot{
-
   width:8px;
-
   height:8px;
-
   border-radius:50%;
-
   background:var(--warn)
-
 }
 
 .dot.live{
-
   background:var(--good);
-
-  box-shadow:
-
-    0 0 8px
-
-    rgba(22,155,98,.6)
-
+  box-shadow:0 0 8px rgba(22,155,98,.6)
 }
 
 nav{
-
   display:flex;
-
   gap:7px;
-
   margin-top:10px;
-
   overflow:auto;
-
   padding-bottom:2px
-
 }
 
 button,
-
 input,
-
 select{
-
   font:inherit
-
 }
 
 button{
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   color:var(--text);
-
   background:#fff;
-
   border-radius:8px;
-
   padding:8px 11px;
-
   cursor:pointer
-
 }
 
 button.active{
-
-  background:
-
-    var(--blue-soft);
-
+  background:var(--blue-soft);
   border-color:#a8cce3;
-
   color:#126092;
-
   font-weight:700
-
 }
 
 button.primary{
-
   background:#1e72a8;
-
   color:#fff;
-
   border-color:#1e72a8
-
 }
 
 button.danger{
-
   color:var(--bad);
-
   border-color:#efcccc
-
 }
 
 button:disabled{
-
   opacity:.5;
-
   cursor:not-allowed
-
 }
 
 main{
-
   max-width:1600px;
-
   margin:auto;
-
   padding:16px
-
 }
 
 .tab{
-
   display:none
-
 }
 
 .tab.active{
-
   display:block
-
 }
 
 .grid{
-
   display:grid;
-
-  grid-template-columns:
-
-    repeat(12,1fr);
-
+  grid-template-columns:repeat(12,1fr);
   gap:12px
-
 }
 
 .s3{grid-column:span 3}
-
 .s4{grid-column:span 4}
-
 .s5{grid-column:span 5}
-
 .s6{grid-column:span 6}
-
 .s7{grid-column:span 7}
-
 .s8{grid-column:span 8}
-
 .s12{grid-column:span 12}
 
 .card{
-
   background:var(--panel);
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   border-radius:15px;
-
-  box-shadow:
-
-    var(--shadow);
-
+  box-shadow:var(--shadow);
   padding:14px
-
 }
 
 .card-title{
-
   display:flex;
-
-  justify-content:
-
-    space-between;
-
+  justify-content:space-between;
   align-items:center;
-
   gap:10px;
-
   margin-bottom:9px
-
 }
 
 .card-title h2{
-
   margin:0;
-
   font-size:14px
-
 }
 
 .card-title small{
-
   color:var(--muted);
-
   font-size:10px
-
 }
 
 .metric{
-
   font-size:29px;
-
   font-weight:800;
-
   letter-spacing:-1px
-
 }
 
 .metric.medium{
-
   font-size:22px
-
 }
 
 .label{
-
   color:var(--muted);
-
   font-size:10px;
-
   letter-spacing:.3px;
-
   text-transform:uppercase
-
 }
 
 .good{
-
   color:var(--good)
-
 }
 
 .bad{
-
   color:var(--bad)
-
 }
 
 .warn{
-
   color:var(--warn)
-
 }
 
 .accent{
-
   color:var(--accent)
-
 }
 
 .pill{
-
   display:inline-block;
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   border-radius:999px;
-
   padding:2px 7px;
-
   font-size:9px;
-
   background:#fff
-
 }
 
 .pill.good{
-
   color:var(--good);
-
-  background:
-
-    var(--green-soft);
-
+  background:var(--green-soft);
   border-color:#bce7d3
-
 }
 
 .pill.bad{
-
   color:var(--bad);
-
-  background:
-
-    var(--red-soft);
-
+  background:var(--red-soft);
   border-color:#f0c5c5
-
 }
 
 .pill.blue{
-
   color:#176b9d;
-
-  background:
-
-    var(--blue-soft);
-
+  background:var(--blue-soft);
   border-color:#bcd9e9
-
 }
 
 .sep{
-
   height:1px;
-
   background:var(--line);
-
   margin:10px 0
-
 }
 
 table{
-
   width:100%;
-
   border-collapse:collapse;
-
   font-size:11px
-
 }
 
 th,
-
 td{
-
   padding:8px 9px;
-
-  border-bottom:
-
-    1px solid
-
-    var(--line);
-
+  border-bottom:1px solid var(--line);
   text-align:right;
-
   white-space:nowrap
-
 }
 
 th{
-
   color:var(--muted);
-
   font-size:10px;
-
   font-weight:600
-
 }
 
 .scroll{
-
   overflow:auto
-
 }
 
 .signal{
-
   padding:9px 10px;
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   border-radius:10px;
-
   margin-top:7px;
-
-  background:
-
-    var(--panel2)
-
-}
-
-.alert-item{
-
-  padding:9px 10px;
-
-  border-right:
-
-    3px solid
-
-    var(--accent);
-
-  border-radius:8px;
-
-  background:#fbfcfd;
-
-  margin-top:7px
-
+  background:var(--panel2)
 }
 
 .chart{
-
   width:100%;
-
   height:300px
-
 }
 
 .chart.large{
-
   height:430px
-
 }
 
 .chart.xlarge{
-
   height:520px
-
 }
 
 .prob-grid{
-
   display:grid;
-
-  grid-template-columns:
-
-    1fr 1fr;
-
+  grid-template-columns:1fr 1fr;
   gap:8px
-
 }
 
 .prob-box{
-
   padding:9px;
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   border-radius:9px;
-
   text-align:center
-
 }
 
 .prob-box.up{
-
-  background:
-
-    var(--green-soft);
-
+  background:var(--green-soft);
   color:var(--good)
-
 }
 
 .prob-box.down{
-
-  background:
-
-    var(--red-soft);
-
+  background:var(--red-soft);
   color:var(--bad)
-
 }
 
 .prob-num{
-
   font-size:24px;
-
   font-weight:800
-
 }
 
 .form4{
-
   display:grid;
-
-  grid-template-columns:
-
-    1fr 2fr 1fr auto;
-
+  grid-template-columns:1fr 2fr 1fr auto;
   gap:8px
-
 }
 
 .filters{
-
   display:grid;
-
-  grid-template-columns:
-
-    repeat(4,1fr)
-
-    auto;
-
+  grid-template-columns:repeat(4,1fr) auto;
   gap:8px
-
 }
 
 input,
-
 select{
-
   width:100%;
-
   background:#fff;
-
   color:var(--text);
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   border-radius:8px;
-
   padding:9px
-
 }
 
 .flow-row{
-
   display:grid;
-
-  grid-template-columns:
-
-    70px 1fr 110px;
-
+  grid-template-columns:70px 1fr 110px;
   align-items:center;
-
   gap:10px;
-
   padding:8px 0;
-
-  border-bottom:
-
-    1px solid
-
-    var(--line)
-
+  border-bottom:1px solid var(--line)
 }
 
 .track{
-
   height:7px;
-
   background:#eef1f4;
-
   border-radius:50px;
-
   overflow:hidden
-
 }
 
 .track i{
-
   display:block;
-
   height:100%
-
 }
 
 .track .in{
-
   background:var(--good)
-
 }
 
 .track .out{
-
   background:var(--bad)
-
 }
 
 .iran-grid{
-
   display:grid;
-
-  grid-template-columns:
-
-    repeat(4,1fr);
-
+  grid-template-columns:repeat(4,1fr);
   gap:9px
-
 }
 
 .iran-price{
-
-  border:
-
-    1px solid
-
-    var(--line);
-
+  border:1px solid var(--line);
   border-radius:10px;
-
   padding:11px;
-
   background:#fbfcfd
+}
 
+.profile-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px
+}
+
+.profile-card{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  background:#fbfcfd
+}
+
+.profile-card h3{
+  margin:0 0 5px;
+  font-size:13px
+}
+
+.tagrow{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:8px
 }
 
 .footer{
-
   text-align:center;
-
   color:var(--muted);
-
   font-size:9px;
-
   padding:25px
-
 }
 
 @media(max-width:1000px){
 
   .s3,
-
   .s4,
-
   .s5,
-
   .s6,
-
   .s7,
-
   .s8{
-
-    grid-column:
-
-      span 12
-
+    grid-column:span 12
   }
 
   .filters,
-
   .form4,
-
-  .iran-grid{
-
-    grid-template-columns:
-
-      1fr 1fr
-
+  .iran-grid,
+  .profile-grid{
+    grid-template-columns:1fr 1fr
   }
-
 }
 
 @media(max-width:600px){
 
   main{
-
     padding:8px
-
   }
 
   .grid{
-
     gap:8px
-
   }
 
   .card{
-
     padding:10px
-
   }
 
   .metric{
-
     font-size:24px
-
   }
 
   .filters,
-
   .form4,
-
   .prob-grid,
-
-  .iran-grid{
-
-    grid-template-columns:
-
-      1fr
-
+  .iran-grid,
+  .profile-grid{
+    grid-template-columns:1fr
   }
-
 }
 
 </style>
@@ -939,29 +529,20 @@ select{
 <div class="brandline">
 
 <div class="logo">
-
 A
-
 </div>
 
 <div>
 
 <h1>
-
 ALI FLOW RADAR
-
 <span class="pill blue">
-
-v4.5.1 TERMINAL
-
+v4.6 TERMINAL
 </span>
-
 </h1>
 
 <div class="small">
-
-AI-assisted Market Intelligence Terminal
-
+Persistent Watchlist • Smart Money • Money Flow • Iran / Global
 </div>
 
 </div>
@@ -971,103 +552,67 @@ AI-assisted Market Intelligence Terminal
 <div class="livebox">
 
 <span
-
   id="dot"
-
   class="dot">
-
 </span>
 
 <span id="status">
-
 CONNECTING
-
 </span>
 
 </div>
 
 </div>
+
 
 <nav>
 
 <button
-
   class="tabbtn active"
-
   data-tab="terminal">
-
 Terminal
-
 </button>
 
 <button
-
   class="tabbtn"
-
   data-tab="discover">
-
 Trader Discovery
-
 </button>
 
 <button
-
   class="tabbtn"
-
   data-tab="wallets">
-
 Smart Wallets
-
 </button>
 
 <button
-
   class="tabbtn"
+  data-tab="famous">
+Famous Traders
+</button>
 
+<button
+  class="tabbtn"
   data-tab="moneyflow">
-
 Money Flow
-
 </button>
 
 <button
-
   class="tabbtn"
-
   data-tab="iranGlobal">
-
 Iran / Global
-
 </button>
 
 <button
-
   class="tabbtn"
-
   data-tab="macro">
-
 Macro
-
 </button>
 
 <button
-
   class="tabbtn"
-
-  data-tab="alerts">
-
-Alerts
-
-</button>
-
-<button
-
-  class="tabbtn"
-
   data-tab="system">
-
 System
-
 </button>
 
 </nav>
@@ -1076,124 +621,98 @@ System
 
 </header>
 
+
 <main>
 
+
+<!-- TERMINAL -->
+
 <section
-
-id="terminal"
-
-class="tab active">
+  id="terminal"
+  class="tab active">
 
 <div class="grid">
+
 
 <div class="card s4">
 
 <div class="card-title">
 
 <h2>
-
 Market Intelligence
-
 </h2>
 
 <small>
-
 LIVE ENGINE
-
 </small>
 
 </div>
 
 <div class="label">
-
 Composite BTC Confidence
-
 </div>
 
 <div
-
-id="globalConfidence"
-
-class="metric">
-
+  id="globalConfidence"
+  class="metric">
 --
-
 </div>
 
 <div class="sep">
-
 </div>
 
 <div class="signal">
 
 BTC:
-
 <b id="btcPrice">
-
 --
-
 </b>
 
 &nbsp;
 
 ETH:
-
 <b id="ethPrice">
-
 --
-
 </b>
 
 </div>
 
 <div class="signal">
 
-Wallets:
-
+Saved Wallets:
 <b id="walletCount">
-
 0
-
 </b>
 
 &nbsp;
 
 Rotation:
-
 <b id="rotationMini">
-
 WARMUP
-
 </b>
 
 &nbsp;
 
 Iran:
-
 <b id="iranMini">
-
 --
-
 </b>
 
 </div>
 
 </div>
+
 
 <div class="card s4">
 
 <div class="card-title">
 
 <h2>
-
 BTC Probability Engine
-
 </h2>
 
 <small>
-
 HEURISTIC
-
 </small>
 
 </div>
@@ -1203,39 +722,28 @@ HEURISTIC
 <div class="prob-box up">
 
 <div class="label">
-
 P(UP)
-
 </div>
 
 <div
-
-id="probUp"
-
-class="prob-num">
-
+  id="probUp"
+  class="prob-num">
 --
-
 </div>
 
 </div>
+
 
 <div class="prob-box down">
 
 <div class="label">
-
 P(DOWN)
-
 </div>
 
 <div
-
-id="probDown"
-
-class="prob-num">
-
+  id="probDown"
+  class="prob-num">
 --
-
 </div>
 
 </div>
@@ -1243,319 +751,170 @@ class="prob-num">
 </div>
 
 <div class="sep">
-
 </div>
 
 <div class="small">
 
 Flow:
-
 <b id="probFlow">
-
 --
-
 </b>
 
 •
 
 Momentum:
-
 <b id="probMomentum">
-
 --
-
 </b>
 
 •
 
 Wallet:
-
 <b id="probWallet">
-
 --
-
 </b>
 
 </div>
 
 </div>
+
 
 <div class="card s4">
 
 <div class="card-title">
 
 <h2>
-
 Top Smart Money Signal
-
 </h2>
 
 <small>
-
 CONSENSUS
-
 </small>
 
 </div>
 
 <div
-
-id="topConsensus"
-
-class="metric medium">
-
+  id="topConsensus"
+  class="metric medium">
 NO SIGNAL
-
 </div>
 
 <div id="consensusList">
-
 </div>
 
 </div>
+
 
 <div class="card s5">
 
 <div class="card-title">
 
 <h2>
-
 Probability Lattice
-
 </h2>
 
 <small>
-
 MULTI-ASSET
-
 </small>
 
 </div>
 
 <div
-
-id="probChart"
-
-class="chart large">
-
+  id="probChart"
+  class="chart large">
 </div>
 
 </div>
+
 
 <div class="card s7">
 
 <div class="card-title">
 
 <h2>
-
 Smart Wallet Relationship Graph
-
 </h2>
 
 <small>
-
 POSITION NETWORK
-
 </small>
 
 </div>
 
 <div
-
-id="walletGraph"
-
-class="chart large">
-
+  id="walletGraph"
+  class="chart large">
 </div>
 
 </div>
+
 
 <div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 BTC Live Pulse
-
 </h2>
 
 <small>
-
 LIVE
-
 </small>
 
 </div>
 
 <div
-
-id="btcPulseChart"
-
-class="chart">
-
+  id="btcPulseChart"
+  class="chart">
 </div>
 
 </div>
 
-<div class="card s8">
+
+<div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 Early Money Radar
-
 </h2>
 
 <small>
-
 FLOW SIGNAL
-
 </small>
 
 </div>
 
 <div id="earlyMoney">
-
 </div>
 
 </div>
 
-<div class="card s4">
-
-<div class="card-title">
-
-<h2>
-
-Latest Alerts
-
-</h2>
-
-<small>
-
-LIVE
-
-</small>
-
-</div>
-
-<div id="terminalAlerts">
-
-</div>
-
-</div>
-
-<div class="card s12 scroll">
-
-<div class="card-title">
-
-<h2>
-
-Live Market Board
-
-</h2>
-
-<small>
-
-CRYPTO
-
-</small>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>
-
-Asset
-
-</th>
-
-<th>
-
-Price
-
-</th>
-
-<th>
-
-24H
-
-</th>
-
-<th>
-
-Volume
-
-</th>
-
-<th>
-
-Buy Ratio
-
-</th>
-
-<th>
-
-Net Flow
-
-</th>
-
-<th>
-
-Flow Score
-
-</th>
-
-<th>
-
-Probability
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody id="marketRows">
-
-</tbody>
-
-</table>
-
-</div>
 
 </div>
 
 </section>
 
+
+<!-- TRADER DISCOVERY -->
+
 <section
-
-id="discover"
-
-class="tab">
+  id="discover"
+  class="tab">
 
 <div class="grid">
+
 
 <div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 Trader Discovery
-
 </h2>
 
 <small>
-
 HYPERLIQUID
-
 </small>
 
 </div>
@@ -1563,58 +922,39 @@ HYPERLIQUID
 <div class="filters">
 
 <input
-
-id="minEquity"
-
-type="number"
-
-value="50000"
-
-placeholder="Min Equity">
+  id="minEquity"
+  type="number"
+  value="50000"
+  placeholder="Min Equity">
 
 <input
-
-id="minMonthPnl"
-
-type="number"
-
-value="0"
-
-placeholder="Min Month PnL">
+  id="minMonthPnl"
+  type="number"
+  value="0"
+  placeholder="Month PnL">
 
 <input
-
-id="maxTurnover"
-
-type="number"
-
-value="5000"
-
-placeholder="Max Turnover">
+  id="maxTurnover"
+  type="number"
+  value="5000"
+  placeholder="Max Turnover">
 
 <input
-
-id="discoverLimit"
-
-type="number"
-
-value="50"
-
-placeholder="Limit">
+  id="discoverLimit"
+  type="number"
+  value="50"
+  placeholder="Limit">
 
 <button
-
-id="discoverBtn"
-
-class="primary">
-
+  id="discoverBtn"
+  class="primary">
 Scan Traders
-
 </button>
 
 </div>
 
 </div>
+
 
 <div class="card s12 scroll">
 
@@ -1625,21 +965,13 @@ Scan Traders
 <tr>
 
 <th>Rank</th>
-
 <th>Trader</th>
-
 <th>Score</th>
-
 <th>Equity</th>
-
 <th>Week PnL</th>
-
 <th>Month PnL</th>
-
 <th>Month ROI</th>
-
 <th>Style</th>
-
 <th>Action</th>
 
 </tr>
@@ -1647,92 +979,87 @@ Scan Traders
 </thead>
 
 <tbody id="discoverRows">
-
 </tbody>
 
 </table>
 
 </div>
 
+
 </div>
 
 </section>
 
+
+<!-- SMART WALLETS -->
+
 <section
-
-id="wallets"
-
-class="tab">
+  id="wallets"
+  class="tab">
 
 <div class="grid">
+
 
 <div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 Smart Wallet Watchlist
-
 </h2>
 
 <small>
-
-HYPERLIQUID
-
+PERMANENT IN THIS BROWSER
 </small>
 
 </div>
 
-<div class="form4">
+<div class="small">
+از این نسخه نام کلید ذخیره‌سازی ثابت است؛ Walletهایی که Follow می‌کنی بعد از بستن و باز کردن سایت باقی می‌مانند.
+</div>
+
+<div
+  class="form4"
+  style="margin-top:10px">
 
 <input
-
-id="walletName"
-
-placeholder="Trader name">
+  id="walletName"
+  placeholder="Trader name">
 
 <input
-
-id="walletAddress"
-
-placeholder="0x...">
+  id="walletAddress"
+  placeholder="0x...">
 
 <select id="walletTag">
 
 <option>
-
 Manual
-
 </option>
 
 <option>
-
 Discovery
-
 </option>
 
 <option>
+Verified
+</option>
 
+<option>
 Review
-
 </option>
 
 </select>
 
 <button
-
-id="addWallet"
-
-class="primary">
-
+  id="addWallet"
+  class="primary">
 Add Wallet
-
 </button>
 
 </div>
 
 </div>
+
 
 <div class="card s12 scroll">
 
@@ -1743,23 +1070,14 @@ Add Wallet
 <tr>
 
 <th>Trader</th>
-
 <th>Tier</th>
-
 <th>Score</th>
-
 <th>Equity</th>
-
 <th>Week PnL</th>
-
 <th>Month PnL</th>
-
 <th>Win Rate</th>
-
 <th>Positions</th>
-
 <th>Status</th>
-
 <th>Action</th>
 
 </tr>
@@ -1767,441 +1085,430 @@ Add Wallet
 </thead>
 
 <tbody id="walletRows">
-
 </tbody>
 
 </table>
 
 </div>
 
+
 </div>
 
 </section>
 
+
+<!-- FAMOUS -->
+
 <section
-
-id="moneyflow"
-
-class="tab">
+  id="famous"
+  class="tab">
 
 <div class="grid">
 
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Famous Crypto / Forex / Macro Traders
+</h2>
+
+<small>
+CURATED DIRECTORY
+</small>
+
+</div>
+
+<div class="small">
+این بخش همیشه داخل برنامه است. نام مشهور بودن به معنی سودآوری یا توصیه سرمایه‌گذاری نیست. تا وقتی آدرس عمومی تأییدشده نداشته باشیم، برای یک فرد پوزیشن زنده نمایش نمی‌دهیم.
+</div>
+
+</div>
+
+
+<div class="card s6">
+
+<div class="card-title">
+
+<h2>
+Crypto
+</h2>
+
+<small>
+PROFILES
+</small>
+
+</div>
+
+<div
+  id="famousCrypto"
+  class="profile-grid">
+</div>
+
+</div>
+
+
+<div class="card s6">
+
+<div class="card-title">
+
+<h2>
+Forex / Macro
+</h2>
+
+<small>
+PROFILES
+</small>
+
+</div>
+
+<div
+  id="famousMacro"
+  class="profile-grid">
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- MONEY FLOW -->
+
+<section
+  id="moneyflow"
+  class="tab">
+
+<div class="grid">
+
+
 <div class="card s3">
 
 <div class="label">
-
 Rotation Status
-
 </div>
 
 <div
-
-id="mfStatus"
-
-class="metric medium">
-
+  id="mfStatus"
+  class="metric medium">
 WARMUP
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
-Smart Wallets
-
+Saved Wallets
 </div>
 
 <div
-
-id="mfWalletCount"
-
-class="metric medium">
-
+  id="mfWalletCount"
+  class="metric medium">
 0
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Total Inflow
-
 </div>
 
 <div
-
-id="mfTotalIn"
-
-class="metric medium good">
-
+  id="mfTotalIn"
+  class="metric medium good">
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Total Outflow
-
 </div>
 
 <div
-
-id="mfTotalOut"
-
-class="metric medium bad">
-
+  id="mfTotalOut"
+  class="metric medium bad">
 --
-
 </div>
 
 </div>
+
 
 <div class="card s8">
 
 <div class="card-title">
 
 <h2>
-
 Smart Money Path
-
 </h2>
 
 <small>
-
 CAPITAL ROTATION
-
 </small>
 
 </div>
 
 <div class="small">
-
-مسیر استنباطی تغییر اکسپوژر Smart Walletها؛ انتقال مستقیم بلاک‌چینی نیست.
-
+مسیر استنباطی تغییر اکسپوژر Walletهای Follow شده؛ انتقال مستقیم بلاک‌چینی نیست.
 </div>
 
 <div
-
-id="moneyFlowSankey"
-
-class="chart xlarge">
-
+  id="moneyFlowSankey"
+  class="chart xlarge">
 </div>
 
 </div>
+
 
 <div class="card s4">
 
 <div class="card-title">
 
 <h2>
-
 Top Money Paths
-
 </h2>
 
 <small>
-
 LIVE
-
 </small>
 
 </div>
 
 <div id="moneyPathList">
-
 Waiting...
-
 </div>
 
 </div>
+
 
 <div class="card s6">
 
 <div class="card-title">
 
 <h2>
-
 Capital Inflow
-
 </h2>
 
 <small>
-
 DESTINATIONS
-
 </small>
 
 </div>
 
 <div id="moneyInflows">
-
 --
-
 </div>
 
 </div>
+
 
 <div class="card s6">
 
 <div class="card-title">
 
 <h2>
-
 Capital Outflow
-
 </h2>
 
 <small>
-
 SOURCES
-
 </small>
 
 </div>
 
 <div id="moneyOutflows">
-
 --
-
 </div>
 
 </div>
+
 
 <div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 Net Capital Rotation
-
 </h2>
 
 <small>
-
 POSITIVE = INFLOW
-
 </small>
 
 </div>
 
 <div
-
-id="moneyRotationBar"
-
-class="chart">
-
+  id="moneyRotationBar"
+  class="chart">
 </div>
 
 </div>
+
 
 </div>
 
 </section>
 
+
+<!-- IRAN GLOBAL -->
+
 <section
-
-id="iranGlobal"
-
-class="tab">
+  id="iranGlobal"
+  class="tab">
 
 <div class="grid">
+
 
 <div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 Iran / Global Market Intelligence
-
 </h2>
 
 <small>
-
 CROSS-MARKET
-
 </small>
 
 </div>
 
 <div class="small">
-
-قیمت‌های داخلی کنار طلا، نفت و شاخص دلار جهانی. نمودار پایین مدل اثر است، نه اثبات انتقال مستقیم سرمایه.
-
+قیمت‌های داخلی کنار طلا، نفت و شاخص دلار جهانی. نمودار رابطه پایین مدل اثر است، نه اثبات انتقال مستقیم پول.
 </div>
 
 </div>
+
 
 <div class="card s12">
 
 <div
-
-id="iranPrices"
-
-class="iran-grid">
-
+  id="iranPrices"
+  class="iran-grid">
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Global Gold
-
 </div>
 
 <div
-
-id="igGold"
-
-class="metric medium">
-
+  id="igGold"
+  class="metric medium">
 --
-
 </div>
 
 <div id="igGoldMove">
-
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Brent
-
 </div>
 
 <div
-
-id="igBrent"
-
-class="metric medium">
-
+  id="igBrent"
+  class="metric medium">
 --
-
 </div>
 
 <div id="igBrentMove">
-
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 WTI
-
 </div>
 
 <div
-
-id="igWti"
-
-class="metric medium">
-
+  id="igWti"
+  class="metric medium">
 --
-
 </div>
 
 <div id="igWtiMove">
-
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 DXY
-
 </div>
 
 <div
-
-id="igDxy"
-
-class="metric medium">
-
+  id="igDxy"
+  class="metric medium">
 --
-
 </div>
 
 <div id="igDxyMove">
-
 --
-
 </div>
 
 </div>
+
 
 <div class="card s8">
 
 <div class="card-title">
 
 <h2>
-
 Global → Iran Influence Map
-
 </h2>
 
 <small>
-
 RELATIONSHIP MODEL
-
 </small>
 
 </div>
 
 <div
-
-id="iranGlobalChart"
-
-class="chart xlarge">
-
+  id="iranGlobalChart"
+  class="chart xlarge">
 </div>
 
 </div>
+
 
 <div class="card s4">
 
 <div class="card-title">
 
 <h2>
-
 Iran Gold Driver
-
 </h2>
 
 <small>
-
 MODEL
-
 </small>
 
 </div>
@@ -2209,11 +1516,8 @@ MODEL
 <div class="signal">
 
 USD/IRR:
-
 <b id="iranUsdText">
-
 --
-
 </b>
 
 </div>
@@ -2221,11 +1525,8 @@ USD/IRR:
 <div class="signal">
 
 Gold 18K:
-
 <b id="iranGold18Text">
-
 --
-
 </b>
 
 </div>
@@ -2233,11 +1534,8 @@ Gold 18K:
 <div class="signal">
 
 Global Gold:
-
 <b id="globalGoldText">
-
 --
-
 </b>
 
 </div>
@@ -2245,102 +1543,74 @@ Global Gold:
 <div class="signal">
 
 Dominant driver:
-
 <b id="goldDriver">
-
 --
-
 </b>
 
 </div>
 
 </div>
 
+
 </div>
 
 </section>
 
+
+<!-- MACRO -->
+
 <section
-
-id="macro"
-
-class="tab">
+  id="macro"
+  class="tab">
 
 <div class="grid">
+
 
 <div class="card s12">
 
 <div class="card-title">
 
 <h2>
-
 Global Macro Radar
-
 </h2>
 
 <small>
-
 GOLD • OIL • FX
-
 </small>
 
 </div>
 
 <div
-
-id="macroCards"
-
-class="grid">
-
+  id="macroCards"
+  class="grid">
 </div>
 
 </div>
+
 
 <div class="card s7">
 
 <div class="card-title">
 
 <h2>
-
 Macro Cross-Asset Map
-
 </h2>
 
 <small>
-
 DAILY MOVE
-
 </small>
 
 </div>
 
 <div
-
-id="macroChart"
-
-class="chart large">
-
+  id="macroChart"
+  class="chart large">
 </div>
 
 </div>
+
 
 <div class="card s5 scroll">
-
-<div class="card-title">
-
-<h2>
-
-Macro Board
-
-</h2>
-
-<small>
-
-LIVE/CACHED
-
-</small>
-
-</div>
 
 <table>
 
@@ -2348,371 +1618,536 @@ LIVE/CACHED
 
 <tr>
 
-<th>
-
-Market
-
-</th>
-
-<th>
-
-Price
-
-</th>
-
-<th>
-
-Move
-
-</th>
-
-<th>
-
-Status
-
-</th>
+<th>Market</th>
+<th>Price</th>
+<th>Move</th>
+<th>Status</th>
 
 </tr>
 
 </thead>
 
 <tbody id="macroRows">
-
 </tbody>
 
 </table>
 
 </div>
 
-</div>
-
-</section>
-
-<section
-
-id="alerts"
-
-class="tab">
-
-<div class="grid">
-
-<div class="card s4">
-
-<div class="card-title">
-
-<h2>
-
-Alert Engine
-
-</h2>
-
-<small>
-
-SETTINGS
-
-</small>
-
-</div>
-
-<div class="label">
-
-Minimum Flow Score
-
-</div>
-
-<input
-
-id="flowThreshold"
-
-type="number"
-
-value="67">
-
-<br><br>
-
-<div class="label">
-
-Maximum 24H move for Early Signal
-
-</div>
-
-<input
-
-id="moveThreshold"
-
-type="number"
-
-value="3"
-
-step="0.1">
-
-<br><br>
-
-<button
-
-id="saveSettings"
-
-class="primary">
-
-Save Settings
-
-</button>
-
-<button id="notify">
-
-Enable Notifications
-
-</button>
-
-</div>
-
-<div class="card s8">
-
-<div class="card-title">
-
-<h2>
-
-Alert Log
-
-</h2>
-
-<small>
-
-LAST 50
-
-</small>
-
-</div>
-
-<div id="alertLog">
-
-</div>
-
-</div>
 
 </div>
 
 </section>
 
+
+<!-- SYSTEM -->
+
 <section
-
-id="system"
-
-class="tab">
+  id="system"
+  class="tab">
 
 <div class="grid">
+
 
 <div class="card s3">
 
 <div class="label">
-
 Backend
-
 </div>
 
 <div
-
-id="backendState"
-
-class="metric medium">
-
+  id="backendState"
+  class="metric medium">
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Crypto API
-
 </div>
 
 <div
-
-id="cryptoState"
-
-class="metric medium">
-
+  id="cryptoState"
+  class="metric medium">
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Iran Market
-
 </div>
 
 <div
-
-id="iranState"
-
-class="metric medium">
-
+  id="iranState"
+  class="metric medium">
 --
-
 </div>
 
 </div>
+
 
 <div class="card s3">
 
 <div class="label">
-
 Version
-
 </div>
 
 <div class="metric medium">
-
-4.5.1
-
+4.6
 </div>
 
 </div>
+
 
 <div class="card s12">
 
 <div class="signal">
-
-Crypto prices: Binance Vision
-
+Permanent wallet key:
+<b>
+ALI_FLOW_RADAR_WALLETS_V1
+</b>
 </div>
 
 <div class="signal">
-
-Trader / Wallets: Hyperliquid
-
+Trader / Wallet data: Hyperliquid
 </div>
 
 <div class="signal">
-
-Money Flow: تغییر اکسپوژر Walletهای Follow شده
-
+Crypto order-flow: Binance Vision aggregate-trade sample
 </div>
 
 <div class="signal">
-
-Global Macro: Stooq
-
+Global macro: Stooq
 </div>
 
 <div class="signal">
-
-Iran Market: TGJU + cache
-
+Iran market: TGJU parser + last-good cache
 </div>
 
 </div>
+
 
 </div>
 
 </section>
 
+
 </main>
 
+
 <div class="footer">
-
-ALI Flow Radar is a market research and monitoring tool.
-
-Probability, rotation and influence scores are analytical models, not guarantees.
-
+ALI Flow Radar — research and monitoring tool; no probability, profile or flow score guarantees profit.
 </div>
+
 
 <script>
 
+/* ======================================================
+   CONSTANTS
+====================================================== */
+
 const DEFAULT_SYMBOLS = [
-
   "BTCUSDT",
-
   "ETHUSDT",
-
   "SOLUSDT",
-
   "BNBUSDT",
-
   "XRPUSDT"
-
 ];
 
-let symbols =
 
-  JSON.parse(
+/*
+  مهم:
+  این کلید را دیگر در نسخه‌های بعدی تغییر نده
+*/
+const WALLET_STORAGE_KEY =
+  "ALI_FLOW_RADAR_WALLETS_V1";
 
+const WALLET_CACHE_KEY =
+  "ALI_FLOW_RADAR_WALLET_CACHE_V1";
+
+const WALLET_MIGRATION_KEY =
+  "ALI_FLOW_RADAR_WALLET_MIGRATED_V1";
+
+
+/* ======================================================
+   FAMOUS PEOPLE
+====================================================== */
+
+const FAMOUS_CRYPTO = [
+
+  {
+    name:
+      "Arthur Hayes",
+
+    specialty:
+      "Crypto / Global Macro",
+
+    note:
+      "Profile only — no live wallet assumed"
+  },
+
+  {
+    name:
+      "Andrew Kang",
+
+    specialty:
+      "Crypto / Macro",
+
+    note:
+      "Profile only — no live wallet assumed"
+  },
+
+  {
+    name:
+      "GCR",
+
+    specialty:
+      "Crypto Trading",
+
+    note:
+      "Pseudonymous profile"
+  },
+
+  {
+    name:
+      "Hsaka",
+
+    specialty:
+      "Crypto Trading",
+
+    note:
+      "Pseudonymous profile"
+  },
+
+  {
+    name:
+      "James Wynn",
+
+    specialty:
+      "High-risk Crypto Trading",
+
+    note:
+      "Profile only — no live wallet assumed"
+  }
+];
+
+
+const FAMOUS_MACRO = [
+
+  {
+    name:
+      "George Soros",
+
+    specialty:
+      "FX / Global Macro",
+
+    note:
+      "No public live trading account assumed"
+  },
+
+  {
+    name:
+      "Stanley Druckenmiller",
+
+    specialty:
+      "Global Macro / FX / Rates",
+
+    note:
+      "Profile / public views"
+  },
+
+  {
+    name:
+      "Paul Tudor Jones",
+
+    specialty:
+      "Macro / Futures / Commodities",
+
+    note:
+      "Profile / public views"
+  },
+
+  {
+    name:
+      "Bill Lipschutz",
+
+    specialty:
+      "Foreign Exchange",
+
+    note:
+      "Forex profile"
+  },
+
+  {
+    name:
+      "Kathy Lien",
+
+    specialty:
+      "FX / Macro",
+
+    note:
+      "Forex profile"
+  }
+];
+
+
+/* ======================================================
+   WALLET PERSISTENCE
+====================================================== */
+
+function validWallet(w){
+
+  return (
+    w &&
+    /^0x[a-fA-F0-9]{40}$/.test(
+      String(
+        w.address ||
+        ""
+      ).trim()
+    )
+  );
+}
+
+
+function dedupeWallets(rows){
+
+  const map =
+    new Map();
+
+  for (
+    const w
+    of rows ||
+    []
+  ) {
+
+    if (
+      !validWallet(w)
+    ) {
+      continue;
+    }
+
+    const address =
+      String(
+        w.address
+      ).trim();
+
+    const key =
+      address
+        .toLowerCase();
+
+    if (
+      !map.has(key)
+    ) {
+
+      map.set(
+        key,
+        {
+          ...w,
+          address
+        }
+      );
+
+    } else {
+
+      map.set(
+        key,
+        {
+          ...map.get(key),
+          ...w,
+          address
+        }
+      );
+    }
+  }
+
+  return Array.from(
+    map.values()
+  );
+}
+
+
+/*
+  یکبار Walletهای نسخه‌های قبلی را
+  به کلید دائمی جدید منتقل می‌کند
+*/
+
+function migrateWalletsOnce(){
+
+  if (
     localStorage.getItem(
+      WALLET_MIGRATION_KEY
+    ) ===
+    "1"
+  ) {
 
-      "afr451_symbols"
+    return;
+  }
 
-    ) ||
+  const oldKeys = [
 
-    "null"
+    "ali_wallets",
 
-  ) ||
+    "afr4_wallets",
 
-  DEFAULT_SYMBOLS;
+    "afr41_wallets",
+
+    "afr42_wallets",
+
+    "afr451_wallets",
+
+    "afr_wallets",
+
+    "wallets"
+  ];
+
+  let merged = [];
+
+  try {
+
+    const current =
+      JSON.parse(
+        localStorage.getItem(
+          WALLET_STORAGE_KEY
+        ) ||
+        "[]"
+      );
+
+    if (
+      Array.isArray(
+        current
+      )
+    ) {
+
+      merged.push(
+        ...current
+      );
+    }
+
+  } catch {}
+
+
+  for (
+    const key
+    of oldKeys
+  ) {
+
+    try {
+
+      const rows =
+        JSON.parse(
+          localStorage.getItem(
+            key
+          ) ||
+          "[]"
+        );
+
+      if (
+        Array.isArray(
+          rows
+        )
+      ) {
+
+        merged.push(
+          ...rows
+        );
+      }
+
+    } catch {}
+  }
+
+
+  const clean =
+    dedupeWallets(
+      merged
+    );
+
+
+  localStorage.setItem(
+
+    WALLET_STORAGE_KEY,
+
+    JSON.stringify(
+      clean
+    )
+  );
+
+
+  localStorage.setItem(
+
+    WALLET_MIGRATION_KEY,
+
+    "1"
+  );
+}
+
+
+function loadWallets(){
+
+  migrateWalletsOnce();
+
+  try {
+
+    return dedupeWallets(
+
+      JSON.parse(
+
+        localStorage.getItem(
+          WALLET_STORAGE_KEY
+        ) ||
+
+        "[]"
+
+      )
+    );
+
+  } catch {
+
+    return [];
+
+  }
+}
+
+
+/* ======================================================
+   STATE
+====================================================== */
+
+let symbols =
+  DEFAULT_SYMBOLS.slice();
 
 let wallets =
-
-  JSON.parse(
-
-    localStorage.getItem(
-
-      "ali_wallets"
-
-    ) ||
-
-    "[]"
-
-  );
+  loadWallets();
 
 let walletData =
+  (() => {
 
-  JSON.parse(
+    try {
 
-    localStorage.getItem(
+      return JSON.parse(
 
-      "ali_wallet_cache"
+        localStorage.getItem(
+          WALLET_CACHE_KEY
+        ) ||
 
-    ) ||
+        "{}"
 
-    "{}"
+      );
 
-  );
+    } catch {
 
-let alerts =
+      return {};
 
-  JSON.parse(
+    }
+  })();
 
-    localStorage.getItem(
-
-      "afr451_alerts"
-
-    ) ||
-
-    "[]"
-
-  );
-
-let settings =
-
-  JSON.parse(
-
-    localStorage.getItem(
-
-      "afr451_settings"
-
-    ) ||
-
-    '{"flow":67,"move":3}'
-
-  );
 
 let market = {};
 
@@ -2724,254 +2159,161 @@ let iranData = [];
 
 let discovered = [];
 
-let moneyRotation = null;
+let moneyRotation =
+  null;
 
 let btcHistory = [];
 
-let cooldown = {};
+
+/* ======================================================
+   HELPERS
+====================================================== */
 
 const $ =
-
   id =>
-
     document.getElementById(
-
       id
-
     );
+
 
 const num =
-
   (
-
     v,
-
     f = 0
-
   ) =>
-
     Number.isFinite(
-
       Number(v)
-
     )
-
       ? Number(v)
-
       : f;
 
+
 const clamp =
-
   (
-
     v,
-
     a,
-
     b
-
   ) =>
-
     Math.max(
-
       a,
-
       Math.min(
-
         b,
-
         v
-
       )
-
     );
 
+
 const signClass =
-
   v =>
-
     num(v) >= 0
-
       ? "good"
-
       : "bad";
 
-function save(){
 
-  localStorage.setItem(
+function saveWallets(){
 
-    "afr451_symbols",
-
-    JSON.stringify(
-
-      symbols
-
-    )
-
-  );
-
-  localStorage.setItem(
-
-    "ali_wallets",
-
-    JSON.stringify(
-
+  wallets =
+    dedupeWallets(
       wallets
-
-    )
-
-  );
+    );
 
   localStorage.setItem(
 
-    "ali_wallet_cache",
+    WALLET_STORAGE_KEY,
 
     JSON.stringify(
-
-      walletData
-
+      wallets
     )
-
   );
-
-  localStorage.setItem(
-
-    "afr451_alerts",
-
-    JSON.stringify(
-
-      alerts
-
-    )
-
-  );
-
-  localStorage.setItem(
-
-    "afr451_settings",
-
-    JSON.stringify(
-
-      settings
-
-    )
-
-  );
-
 }
+
+
+function saveWalletCache(){
+
+  localStorage.setItem(
+
+    WALLET_CACHE_KEY,
+
+    JSON.stringify(
+      walletData
+    )
+  );
+}
+
 
 function money(v){
 
   v =
-
     num(v);
 
   const a =
-
     Math.abs(v);
 
   if (
-
-    a >=
-
-    1e9
-
+    a >= 1e9
   ) {
 
     return (
-
       v /
-
       1e9
-
     ).toFixed(2) +
-
     "B";
 
   }
 
   if (
-
-    a >=
-
-    1e6
-
+    a >= 1e6
   ) {
 
     return (
-
       v /
-
       1e6
-
     ).toFixed(2) +
-
     "M";
 
   }
 
   if (
-
-    a >=
-
-    1e3
-
+    a >= 1e3
   ) {
 
     return (
-
       v /
-
       1e3
-
     ).toFixed(1) +
-
     "K";
 
   }
 
   return v.toFixed(0);
-
 }
+
 
 function price(v){
 
   v =
-
     Number(v);
 
   if (
-
     !Number.isFinite(v)
-
   ) {
-
     return "--";
-
   }
 
   if (
-
     Math.abs(v) <
-
     1
-
   ) {
 
     return v.toFixed(5);
-
   }
 
   if (
-
     Math.abs(v) <
-
     100
-
   ) {
 
     return v.toFixed(3);
-
   }
 
   return v.toLocaleString(
@@ -2979,73 +2321,51 @@ function price(v){
     undefined,
 
     {
-
       maximumFractionDigits:
-
         2
-
     }
-
   );
-
 }
+
 
 function pct(v){
 
   v =
-
     Number(v);
 
   if (
-
     !Number.isFinite(v)
-
   ) {
-
     return "--";
-
   }
 
   return (
-
     v >= 0
-
       ? "+"
-
       : ""
-
   ) +
-
   v.toFixed(2) +
-
   "%";
-
 }
+
 
 function shortAddress(a){
 
   return a
-
     ? a.slice(0,6) +
-
       "…" +
-
       a.slice(-4)
-
     : "--";
-
 }
+
 
 function toman(v){
 
   v =
-
     Number(v);
 
   if (
-
     !Number.isFinite(v)
-
   ) {
 
     return "--";
@@ -3053,43 +2373,26 @@ function toman(v){
   }
 
   return Math.round(
-
     v /
-
     10
-
   ).toLocaleString(
-
     "fa-IR"
-
   );
-
 }
 
-async function getJson(
 
-  url
-
-){
+async function getJson(url){
 
   const r =
-
     await fetch(
-
       url,
-
       {
-
         cache:
-
           "no-store"
-
       }
-
     );
 
   const text =
-
     await r.text();
 
   let d;
@@ -3097,190 +2400,123 @@ async function getJson(
   try {
 
     d =
-
       JSON.parse(text);
 
   } catch {
 
     throw new Error(
-
       "Invalid server response"
-
     );
-
   }
 
   if (!r.ok) {
 
     throw new Error(
-
       d.error ||
-
       "HTTP " +
-
       r.status
-
     );
-
   }
 
   return d;
-
 }
 
-/* NAV */
+
+/* ======================================================
+   NAV
+====================================================== */
 
 document
+  .querySelectorAll(
+    ".tabbtn"
+  )
+  .forEach(
+    btn => {
 
-.querySelectorAll(
+      btn.onclick =
+        () => {
 
-  ".tabbtn"
-
-)
-
-.forEach(
-
-  btn =>
-
-    btn.onclick =
-
-      () => {
-
-        document
-
-        .querySelectorAll(
-
-          ".tabbtn"
-
-        )
-
-        .forEach(
-
-          x =>
-
-            x.classList
-
-            .remove(
-
-              "active"
-
+          document
+            .querySelectorAll(
+              ".tabbtn"
             )
+            .forEach(
+              x =>
+                x.classList.remove(
+                  "active"
+                )
+            );
 
-        );
-
-        document
-
-        .querySelectorAll(
-
-          ".tab"
-
-        )
-
-        .forEach(
-
-          x =>
-
-            x.classList
-
-            .remove(
-
-              "active"
-
+          document
+            .querySelectorAll(
+              ".tab"
             )
+            .forEach(
+              x =>
+                x.classList.remove(
+                  "active"
+                )
+            );
 
-        );
+          btn.classList.add(
+            "active"
+          );
 
-        btn.classList
+          $(
+            btn.dataset.tab
+          )
+            .classList.add(
+              "active"
+            );
 
-        .add(
+          setTimeout(
+            resizeCharts,
+            100
+          );
+        };
+    }
+  );
 
-          "active"
 
-        );
-
-        $(
-
-          btn.dataset.tab
-
-        )
-
-        .classList
-
-        .add(
-
-          "active"
-
-        );
-
-        setTimeout(
-
-          resizeCharts,
-
-          100
-
-        );
-
-      }
-
-);
-
-/* CHARTS */
+/* ======================================================
+   CHARTS
+====================================================== */
 
 const pulseChart =
-
   echarts.init(
-
     $("btcPulseChart")
-
   );
 
 const probChart =
-
   echarts.init(
-
     $("probChart")
-
   );
 
 const walletGraph =
-
   echarts.init(
-
     $("walletGraph")
-
   );
 
 const moneyFlowSankey =
-
   echarts.init(
-
     $("moneyFlowSankey")
-
   );
 
 const moneyRotationBar =
-
   echarts.init(
-
     $("moneyRotationBar")
-
   );
 
 const iranGlobalChart =
-
   echarts.init(
-
     $("iranGlobalChart")
-
   );
 
 const macroChart =
-
   echarts.init(
-
     $("macroChart")
-
   );
+
 
 function resizeCharts(){
 
@@ -3297,237 +2533,234 @@ function resizeCharts(){
   iranGlobalChart.resize();
 
   macroChart.resize();
-
 }
 
+
 window.addEventListener(
-
   "resize",
-
   resizeCharts
-
 );
 
-/* HEALTH */
+
+/* ======================================================
+   FAMOUS DIRECTORY
+====================================================== */
+
+function renderProfiles(){
+
+  const card =
+    x => `
+
+    <div class="profile-card">
+
+    <h3>
+    ${x.name}
+    </h3>
+
+    <div class="small">
+    ${x.specialty}
+    </div>
+
+    <div class="tagrow">
+
+    <span class="pill blue">
+    PROFILE
+    </span>
+
+    <span class="pill">
+    ${x.note}
+    </span>
+
+    </div>
+
+    </div>
+
+    `;
+
+
+  $("famousCrypto")
+    .innerHTML =
+      FAMOUS_CRYPTO
+        .map(card)
+        .join("");
+
+
+  $("famousMacro")
+    .innerHTML =
+      FAMOUS_MACRO
+        .map(card)
+        .join("");
+}
+
+
+/* ======================================================
+   HEALTH
+====================================================== */
 
 async function refreshHealth(){
 
   try {
 
     const d =
-
       await getJson(
-
         "/api/health"
-
       );
 
+
     $("backendState")
-
       .textContent =
-
         d.ok
-
           ? "LIVE"
-
           : "ERROR";
 
+
     $("backendState")
-
       .className =
-
         "metric medium " +
-
         (
-
           d.ok
-
             ? "good"
-
             : "bad"
-
         );
 
   } catch {
 
     $("backendState")
-
       .textContent =
-
         "OFFLINE";
 
+
     $("backendState")
-
       .className =
-
         "metric medium bad";
-
   }
-
 }
 
-/* MARKET */
+
+/* ======================================================
+   MARKET
+====================================================== */
 
 async function refreshMarket(){
 
   try {
 
     const d =
-
       await getJson(
 
         "/api/binance?symbols=" +
 
         encodeURIComponent(
-
           symbols.join(",")
-
         )
-
       );
+
 
     market = {};
 
+
     d.forEach(
-
       x =>
-
         market[
-
           x.symbol
-
         ] = x
-
     );
 
+
     $("dot")
-
-      .classList
-
-      .add(
-
+      .classList.add(
         "live"
-
       );
 
+
     $("status")
-
       .textContent =
-
         "LIVE";
 
+
     $("cryptoState")
-
       .textContent =
-
         "LIVE";
 
-    $("cryptoState")
 
+    $("cryptoState")
       .className =
-
         "metric medium good";
 
-    const btc =
 
+    const btc =
       market.BTCUSDT;
+
 
     if (btc) {
 
       btcHistory.push({
 
         t:
-
           new Date()
-
             .toLocaleTimeString(
-
               "fa-IR",
-
               {
-
                 hour:
-
                   "2-digit",
 
                 minute:
-
                   "2-digit",
 
                 second:
-
                   "2-digit"
-
               }
-
             ),
 
         p:
-
           num(
-
             btc.lastPrice
-
           )
-
       });
 
+
       if (
-
         btcHistory.length >
-
         120
-
       ) {
 
         btcHistory.shift();
-
       }
-
     }
+
 
     renderTerminal();
 
   } catch {
 
     $("dot")
-
-      .classList
-
-      .remove(
-
+      .classList.remove(
         "live"
-
       );
 
+
     $("status")
-
       .textContent =
-
         "RECONNECTING";
 
+
     $("cryptoState")
-
       .textContent =
-
         "RETRY";
 
+
     $("cryptoState")
-
       .className =
-
         "metric medium warn";
-
   }
-
 }
+
 
 async function refreshFlow(){
 
   try {
 
     const d =
-
       await getJson(
 
         "/api/flow?symbols=" +
@@ -3535,200 +2768,148 @@ async function refreshFlow(){
         encodeURIComponent(
 
           symbols
-
             .slice(
-
               0,
-
               10
-
             )
-
             .join(",")
-
         )
-
       );
+
 
     flow = {};
 
+
     d.forEach(
-
       x =>
-
         flow[
-
           x.symbol
-
         ] = x
-
     );
 
-    renderTerminal();
 
-    runMarketAlerts();
+    renderTerminal();
 
   } catch {}
 
 }
 
-/* CONSENSUS */
+
+/* ======================================================
+   CONSENSUS + PROBABILITY
+====================================================== */
 
 function getConsensus(){
 
   const coins = {};
 
+
   for (
-
     const w
-
     of wallets
-
   ) {
 
     const d =
-
       walletData[
-
         w.address
-
           .toLowerCase()
-
       ];
 
+
     if (
-
       !d ||
-
       d.error
-
     ) {
-
       continue;
-
     }
 
+
     const weight =
-
       num(
-
         d.smartScore,
-
         50
-
       ) /
-
       100;
 
+
     for (
-
       const p
-
       of d.positions ||
-
       []
-
     ) {
 
       if (
-
         !coins[p.coin]
-
       ) {
 
         coins[p.coin] = {
 
           coin:
-
             p.coin,
 
           longCount:
-
             0,
 
           shortCount:
-
             0,
 
           longValue:
-
             0,
 
           shortValue:
-
             0
-
         };
-
       }
 
+
       if (
-
         p.side ===
-
         "LONG"
-
       ) {
 
         coins[p.coin]
-
           .longCount++;
 
+
         coins[p.coin]
-
           .longValue +=
-
             num(
-
               p.positionValue
-
             ) *
-
             weight;
 
       } else {
 
         coins[p.coin]
-
           .shortCount++;
 
+
         coins[p.coin]
-
           .shortValue +=
-
             num(
-
               p.positionValue
-
             ) *
-
             weight;
 
       }
-
     }
-
   }
 
+
   return Object
-
     .values(coins)
-
     .map(
-
       x => {
 
         const total =
-
           x.longValue +
-
           x.shortValue;
+
 
         const net =
-
           x.longValue -
-
           x.shortValue;
+
 
         return {
 
@@ -3739,157 +2920,98 @@ function getConsensus(){
           net,
 
           bias:
-
             total
-
               ? net /
-
                 total
-
               : 0
-
         };
-
       }
-
     )
-
     .sort(
-
       (a,b) =>
-
         Math.abs(
-
           b.net
-
         ) -
-
         Math.abs(
-
           a.net
-
         )
-
     );
-
 }
 
-/* PROBABILITY */
 
 function assetProbability(
-
   symbol
-
 ){
 
   const m =
-
     market[symbol] ||
-
     {};
+
 
   const f =
-
     flow[symbol] ||
-
     {};
 
+
   const flowScore =
-
     num(
-
       f.flowScore,
-
       50
-
     );
+
 
   const momentum =
-
     clamp(
-
       50 +
-
       num(
-
         m.priceChangePercent
-
       ) *
-
       4,
-
       0,
-
       100
-
     );
+
 
   const coin =
-
     symbol.replace(
-
       "USDT",
-
       ""
-
     );
 
+
   const c =
-
     getConsensus()
-
       .find(
-
         x =>
-
           x.coin ===
-
           coin
-
       );
 
+
   const walletScore =
-
     c
-
       ? clamp(
-
           50 +
-
           c.bias *
-
           45,
-
           0,
-
           100
-
         )
-
       : 50;
+
 
   return {
 
     probability:
-
       clamp(
-
         flowScore *
-
         .48 +
-
         momentum *
-
         .22 +
-
         walletScore *
-
         .30,
-
         0,
-
         100
-
       ),
 
     flowScore,
@@ -3897,146 +3019,106 @@ function assetProbability(
     momentum,
 
     walletScore
-
   };
-
 }
 
-/* TERMINAL */
+
+/* ======================================================
+   TERMINAL
+====================================================== */
 
 function renderTerminal(){
 
   const btc =
-
     market.BTCUSDT ||
-
     {};
+
 
   const eth =
-
     market.ETHUSDT ||
-
     {};
 
+
   const bp =
-
     assetProbability(
-
       "BTCUSDT"
-
     );
 
+
   $("btcPrice")
-
     .textContent =
-
       price(
-
         btc.lastPrice
-
       );
+
 
   $("ethPrice")
-
     .textContent =
-
       price(
-
         eth.lastPrice
-
       );
+
 
   $("walletCount")
-
     .textContent =
-
       wallets.length;
 
+
   $("probUp")
-
     .textContent =
-
       bp.probability
-
         .toFixed(0) +
-
       "%";
+
 
   $("probDown")
-
     .textContent =
-
       (
-
         100 -
-
         bp.probability
-
       )
-
         .toFixed(0) +
-
       "%";
 
+
   $("probFlow")
-
     .textContent =
-
       bp.flowScore
-
         .toFixed(0);
+
 
   $("probMomentum")
-
     .textContent =
-
       bp.momentum
-
         .toFixed(0);
+
 
   $("probWallet")
-
     .textContent =
-
       bp.walletScore
-
         .toFixed(0);
 
+
   $("globalConfidence")
-
     .textContent =
-
       bp.probability
-
         .toFixed(0) +
-
       "/100";
 
+
   $("globalConfidence")
-
     .className =
-
       "metric " +
-
       (
-
         bp.probability >=
-
         55
-
           ? "good"
-
           : bp.probability <=
-
             45
-
           ? "bad"
-
           : "warn"
-
       );
 
-  renderMarketBoard();
 
   renderProbabilityChart();
 
@@ -4047,297 +3129,241 @@ function renderTerminal(){
   renderConsensus();
 
   renderWalletGraph();
-
-  renderTerminalAlerts();
-
 }
 
-/* MARKET BOARD */
 
-function renderMarketBoard(){
-
-  $("marketRows")
-
-    .innerHTML =
-
-      symbols
-
-        .map(
-
-          symbol => {
-
-            const m =
-
-              market[symbol] ||
-
-              {};
-
-            const f =
-
-              flow[symbol] ||
-
-              {};
-
-            const p =
-
-              assetProbability(
-
-                symbol
-
-              );
-
-            return `
-
-            <tr>
-
-            <td>
-
-            <b>${symbol}</b>
-
-            </td>
-
-            <td>
-
-            ${price(
-
-              m.lastPrice
-
-            )}
-
-            </td>
-
-            <td class="${signClass(
-
-              m.priceChangePercent
-
-            )}">
-
-            ${pct(
-
-              m.priceChangePercent
-
-            )}
-
-            </td>
-
-            <td>
-
-            ${money(
-
-              m.quoteVolume
-
-            )}
-
-            </td>
-
-            <td>
-
-            ${
-
-              f.buyRatio ==
-
-              null
-
-                ? "--"
-
-                : num(
-
-                    f.buyRatio
-
-                  )
-
-                    .toFixed(1) +
-
-                  "%"
-
-            }
-
-            </td>
-
-            <td class="${signClass(
-
-              f.netFlow
-
-            )}">
-
-            ${
-
-              f.netFlow ==
-
-              null
-
-                ? "--"
-
-                : "$" +
-
-                  money(
-
-                    f.netFlow
-
-                  )
-
-            }
-
-            </td>
-
-            <td>
-
-            ${
-
-              f.flowScore ??
-
-              "--"
-
-            }
-
-            </td>
-
-            <td>
-
-            ${
-
-              p.probability
-
-                .toFixed(0)
-
-            }%
-
-            </td>
-
-            </tr>
-
-            `;
-
-          }
-
+/* ======================================================
+   PROBABILITY CHART
+====================================================== */
+
+function renderProbabilityChart(){
+
+  const data =
+    symbols.map(
+      s => ({
+
+        name:
+          s.replace(
+            "USDT",
+            ""
+          ),
+
+        value:
+          Number(
+            assetProbability(
+              s
+            )
+              .probability
+              .toFixed(1)
+          )
+      })
+    );
+
+
+  probChart.setOption({
+
+    grid:{
+      left:45,
+      right:15,
+      top:15,
+      bottom:30
+    },
+
+
+    xAxis:{
+      type:"category",
+
+      data:
+        data.map(
+          x => x.name
         )
+    },
 
-        .join("");
 
+    yAxis:{
+      min:0,
+      max:100
+    },
+
+
+    series:[{
+
+      type:"bar",
+
+      data:
+        data.map(
+          x => ({
+
+            value:
+              x.value,
+
+            itemStyle:{
+              color:
+                x.value >= 60
+                  ? "#3bb47c"
+                  : x.value <= 40
+                  ? "#dc6565"
+                  : "#6ba6ca"
+            }
+          })
+        ),
+
+      barWidth:
+        "42%",
+
+      label:{
+        show:true,
+        position:"top",
+        formatter:"{c}%",
+        fontSize:9
+      }
+    }]
+  });
 }
 
-/* EARLY MONEY */
+
+/* ======================================================
+   BTC PULSE
+====================================================== */
+
+function renderPulseChart(){
+
+  pulseChart.setOption({
+
+    animation:false,
+
+
+    grid:{
+      left:45,
+      right:15,
+      top:15,
+      bottom:35
+    },
+
+
+    tooltip:{
+      trigger:"axis"
+    },
+
+
+    xAxis:{
+      type:"category",
+
+      boundaryGap:
+        false,
+
+      data:
+        btcHistory.map(
+          x => x.t
+        )
+    },
+
+
+    yAxis:{
+      type:"value",
+
+      scale:true
+    },
+
+
+    series:[{
+
+      type:"line",
+
+      smooth:true,
+
+      showSymbol:false,
+
+      data:
+        btcHistory.map(
+          x => x.p
+        ),
+
+      lineStyle:{
+        width:2,
+        color:"#2779bd"
+      },
+
+      areaStyle:{
+        color:
+          "rgba(39,121,189,.08)"
+      }
+    }]
+  });
+}
+
+
+/* ======================================================
+   EARLY MONEY
+====================================================== */
 
 function renderEarlyMoney(){
 
   const rows =
-
     symbols
-
       .map(
-
         s => ({
-
           s,
-
           m:
-
             market[s],
-
           f:
-
             flow[s]
-
         })
-
       )
-
       .filter(
-
         x =>
-
           x.m &&
-
           x.f &&
-
           !x.f.error
-
       )
-
       .sort(
-
         (a,b) =>
-
           Math.abs(
-
             num(
-
               b.f.flowScore
-
             ) -
-
             50
-
           ) -
-
           Math.abs(
-
             num(
-
               a.f.flowScore
-
             ) -
-
             50
-
           )
-
       )
-
       .slice(
-
         0,
-
         6
-
       );
 
+
   $("earlyMoney")
-
     .innerHTML =
-
       rows.length
-
         ? rows
-
             .map(
-
               x => `
 
               <div class="signal">
 
               <b>
-
               ${x.s}
-
               </b>
 
               <span class="${
-
                 num(
-
                   x.f.flowScore
-
                 ) >= 50
-
                   ? "good"
-
                   : "bad"
-
               }">
 
               ${
-
                 num(
-
                   x.f.flowScore
-
                 ) >= 50
-
                   ? "BUY PRESSURE"
-
                   : "SELL PRESSURE"
-
               }
 
               </span>
@@ -4345,27 +3371,20 @@ function renderEarlyMoney(){
               <div class="small">
 
               Flow
-
               ${x.f.flowScore}
 
               •
 
               24H
-
               ${pct(
-
                 x.m.priceChangePercent
-
               )}
 
               •
 
               Net
-
               $${money(
-
                 x.f.netFlow
-
               )}
 
               </div>
@@ -4373,139 +3392,97 @@ function renderEarlyMoney(){
               </div>
 
               `
-
             )
-
             .join("")
-
         : `
-
           <div class="small">
-
           Waiting for flow data...
-
           </div>
-
           `;
-
 }
 
-/* CONSENSUS */
+
+/* ======================================================
+   CONSENSUS
+====================================================== */
 
 function renderConsensus(){
 
   const rows =
-
     getConsensus();
 
+
   if (
-
     !rows.length
-
   ) {
 
     $("topConsensus")
-
       .textContent =
-
         "NO SIGNAL";
 
+
     $("consensusList")
-
       .innerHTML =
-
         `
-
         <div class="small">
-
         Follow smart wallets first.
-
         </div>
-
         `;
 
-    return;
 
+    return;
   }
 
-  const top =
 
+  const top =
     rows[0];
 
+
   $("topConsensus")
-
     .textContent =
-
       `${top.coin} ${
-
         top.net >= 0
-
           ? "LONG"
-
           : "SHORT"
-
       }`;
 
+
   $("topConsensus")
-
     .className =
-
       "metric medium " +
-
       (
-
         top.net >= 0
-
           ? "good"
-
           : "bad"
-
       );
 
+
   $("consensusList")
-
     .innerHTML =
-
       rows
-
         .slice(
-
           0,
-
           5
-
         )
-
         .map(
-
           x => `
 
           <div class="signal">
 
           <b>
-
           ${x.coin}
-
           </b>
 
           <span class="${
-
             x.net >= 0
-
               ? "good"
-
               : "bad"
-
           }">
 
           ${
-
             x.net >= 0
-
               ? "LONG"
-
               : "SHORT"
-
           }
 
           </span>
@@ -4513,27 +3490,20 @@ function renderConsensus(){
           <div class="small">
 
           ${x.longCount}
-
           long
 
           •
 
           ${x.shortCount}
-
           short
 
           •
 
           weighted
-
           $${money(
-
             Math.abs(
-
               x.net
-
             )
-
           )}
 
           </div>
@@ -4541,14 +3511,14 @@ function renderConsensus(){
           </div>
 
           `
-
         )
-
         .join("");
-
 }
 
-/* WALLET GRAPH */
+
+/* ======================================================
+   WALLET GRAPH
+====================================================== */
 
 function renderWalletGraph(){
 
@@ -4557,787 +3527,331 @@ function renderWalletGraph(){
   const links = [];
 
   const seen =
-
     new Set();
 
+
   wallets.forEach(
-
     (
-
       w,
-
       i
-
     ) => {
 
       const wid =
-
         "w" + i;
+
 
       nodes.push({
 
         name:
-
           wid,
 
         label:
-
           w.name,
 
         symbolSize:
-
           28,
 
         itemStyle:{
-
           color:
-
             "#34495a"
-
         }
-
       });
 
+
       const d =
-
         walletData[
-
           w.address
-
             .toLowerCase()
-
         ];
 
+
       for (
-
         const p
-
         of d?.positions ||
-
         []
-
       ) {
 
         const cid =
-
           "c_" +
-
           p.coin;
 
+
         if (
-
           !seen.has(cid)
-
         ) {
 
           seen.add(cid);
 
+
           nodes.push({
 
             name:
-
               cid,
 
             label:
-
               p.coin,
 
             symbolSize:
-
               22,
 
             itemStyle:{
-
               color:
-
                 "#2484bd"
-
             }
-
           });
-
         }
+
 
         links.push({
 
           source:
-
             wid,
 
           target:
-
             cid,
 
           value:
-
             p.positionValue,
 
           lineStyle:{
-
             color:
-
               p.side ===
-
               "LONG"
-
                 ? "#169b62"
-
                 : "#d84b4b"
-
           }
-
         });
-
       }
-
     }
-
   );
 
-  walletGraph
 
-    .setOption({
+  walletGraph.setOption({
 
-      tooltip:{},
+    tooltip:{},
 
-      series:[{
-
-        type:
-
-          "graph",
-
-        layout:
-
-          "force",
-
-        roam:
-
-          true,
-
-        force:{
-
-          repulsion:
-
-            180,
-
-          edgeLength:
-
-            90
-
-        },
-
-        label:{
-
-          show:
-
-            true,
-
-          formatter:
-
-            p =>
-
-              p.data.label,
-
-          fontSize:
-
-            9
-
-        },
-
-        data:
-
-          nodes,
-
-        links,
-
-        lineStyle:{
-
-          width:
-
-            1.5,
-
-          opacity:
-
-            .6,
-
-          curveness:
-
-            .1
-
-        }
-
-      }]
-
-    });
-
-}
-
-/* PULSE CHART */
-
-function renderPulseChart(){
-
-  pulseChart.setOption({
-
-    animation:
-
-      false,
-
-    grid:{
-
-      left:
-
-        45,
-
-      right:
-
-        15,
-
-      top:
-
-        15,
-
-      bottom:
-
-        35
-
-    },
-
-    tooltip:{
-
-      trigger:
-
-        "axis"
-
-    },
-
-    xAxis:{
-
-      type:
-
-        "category",
-
-      boundaryGap:
-
-        false,
-
-      data:
-
-        btcHistory.map(
-
-          x => x.t
-
-        )
-
-    },
-
-    yAxis:{
-
-      type:
-
-        "value",
-
-      scale:
-
-        true
-
-    },
 
     series:[{
 
-      type:
+      type:"graph",
 
-        "line",
+      layout:"force",
 
-      smooth:
+      roam:true,
 
-        true,
-
-      showSymbol:
-
-        false,
-
-      data:
-
-        btcHistory.map(
-
-          x => x.p
-
-        ),
-
-      lineStyle:{
-
-        width:
-
-          2,
-
-        color:
-
-          "#2779bd"
-
+      force:{
+        repulsion:180,
+        edgeLength:90
       },
 
-      areaStyle:{
-
-        color:
-
-          "rgba(39,121,189,.08)"
-
-      }
-
-    }]
-
-  });
-
-}
-
-/* PROB CHART */
-
-function renderProbabilityChart(){
-
-  const data =
-
-    symbols
-
-      .slice(
-
-        0,
-
-        8
-
-      )
-
-      .map(
-
-        s => ({
-
-          name:
-
-            s.replace(
-
-              "USDT",
-
-              ""
-
-            ),
-
-          value:
-
-            Number(
-
-              assetProbability(
-
-                s
-
-              )
-
-                .probability
-
-                .toFixed(1)
-
-            )
-
-        })
-
-      );
-
-  probChart.setOption({
-
-    grid:{
-
-      left:
-
-        45,
-
-      right:
-
-        15,
-
-      top:
-
-        15,
-
-      bottom:
-
-        30
-
-    },
-
-    xAxis:{
-
-      type:
-
-        "category",
-
-      data:
-
-        data.map(
-
-          x => x.name
-
-        )
-
-    },
-
-    yAxis:{
-
-      min:
-
-        0,
-
-      max:
-
-        100
-
-    },
-
-    series:[{
-
-      type:
-
-        "bar",
-
-      data:
-
-        data.map(
-
-          x => ({
-
-            value:
-
-              x.value,
-
-            itemStyle:{
-
-              color:
-
-                x.value >= 60
-
-                  ? "#3bb47c"
-
-                  : x.value <= 40
-
-                  ? "#dc6565"
-
-                  : "#6ba6ca"
-
-            }
-
-          })
-
-        ),
-
-      barWidth:
-
-        "42%",
-
       label:{
-
-        show:
-
-          true,
-
-        position:
-
-          "top",
+        show:true,
 
         formatter:
+          p =>
+            p.data.label,
 
-          "{c}%",
+        fontSize:9
+      },
 
-        fontSize:
+      data:
+        nodes,
 
-          9
+      links,
 
+      lineStyle:{
+        width:1.5,
+        opacity:.6,
+        curveness:.1
       }
-
     }]
-
   });
-
 }
 
-/* DISCOVERY */
+
+/* ======================================================
+   DISCOVERY
+====================================================== */
 
 async function discoverTraders(){
 
   $("discoverRows")
-
     .innerHTML =
-
       `
-
       <tr>
-
       <td colspan="9">
-
       Scanning Hyperliquid leaderboard...
-
       </td>
-
       </tr>
-
       `;
+
 
   try {
 
     const q =
-
       new URLSearchParams({
 
         minEquity:
-
           $("minEquity")
-
             .value ||
-
           50000,
 
         minMonthPnl:
-
           $("minMonthPnl")
-
             .value ||
-
           0,
 
         maxTurnover:
-
           $("maxTurnover")
-
             .value ||
-
           5000,
 
         limit:
-
           $("discoverLimit")
-
             .value ||
-
           50
-
       });
 
+
     const d =
-
       await getJson(
-
         "/api/traders?" +
-
         q.toString()
-
       );
 
+
     discovered =
-
       d.traders ||
-
       [];
+
 
     renderDiscovered();
 
   } catch (e) {
 
     $("discoverRows")
-
       .innerHTML =
-
         `
-
         <tr>
-
         <td
-
           colspan="9"
-
           class="bad">
-
         ${e.message}
-
         </td>
-
         </tr>
-
         `;
 
   }
-
 }
+
 
 function renderDiscovered(){
 
   $("discoverRows")
-
     .innerHTML =
-
       discovered.length
 
         ? discovered
-
             .map(
-
               (
-
                 t,
-
                 i
-
               ) => {
 
                 const p =
-
                   t.performance ||
-
                   {};
 
+
                 const followed =
-
                   wallets.some(
-
                     w =>
-
                       w.address
-
                         .toLowerCase() ===
-
                       t.address
-
                         .toLowerCase()
-
                   );
+
 
                 return `
 
                 <tr>
 
                 <td>
-
                 ${i+1}
-
                 </td>
 
                 <td>
 
                 <b>
-
                 ${
-
                   t.name ||
-
                   "Anonymous"
-
                 }
-
                 </b>
 
                 <div class="tiny">
-
                 ${shortAddress(
-
                   t.address
-
                 )}
-
                 </div>
 
                 </td>
 
                 <td>
-
                 <b>
-
-                ${
-
-                  t.discoveryScore
-
-                }
-
+                ${t.discoveryScore}
                 </b>
-
                 </td>
 
                 <td>
-
                 $${money(
-
                   t.equity
-
                 )}
-
                 </td>
 
                 <td class="${signClass(
-
                   p.week?.pnl
-
                 )}">
-
                 $${money(
-
                   p.week?.pnl
-
                 )}
-
                 </td>
 
                 <td class="${signClass(
-
                   p.month?.pnl
-
                 )}">
-
                 $${money(
-
                   p.month?.pnl
-
                 )}
-
                 </td>
 
                 <td class="${signClass(
-
                   p.month?.roiPct
-
                 )}">
-
                 ${pct(
-
                   p.month?.roiPct
-
                 )}
-
                 </td>
 
                 <td>
-
                 ${t.style}
-
                 </td>
 
                 <td>
 
                 <button
-
                   ${
-
                     followed
-
                       ? "disabled"
-
                       : ""
-
                   }
-
                   onclick="followTrader(${i})">
 
                 ${
-
                   followed
-
                     ? "Following"
-
                     : "Follow"
-
                 }
 
                 </button>
@@ -5345,324 +3859,247 @@ function renderDiscovered(){
                 </td>
 
                 </tr>
-
                 `;
-
               }
-
             )
-
             .join("")
 
         : `
-
           <tr>
-
           <td colspan="9">
-
           No traders found.
-
           </td>
-
           </tr>
-
           `;
-
 }
 
-window.followTrader =
 
+window.followTrader =
   i => {
 
     const t =
-
       discovered[i];
 
+
     if (!t) {
-
       return;
-
     }
 
+
     if (
-
       wallets.some(
-
         w =>
-
           w.address
-
             .toLowerCase() ===
-
           t.address
-
             .toLowerCase()
-
       )
-
     ) {
 
       return;
-
     }
+
 
     wallets.push({
 
       name:
-
         t.name ||
-
         "Trader-" +
-
         (
-
           wallets.length +
-
           1
-
         ),
 
       address:
-
         t.address,
 
       tag:
-
         "Discovery"
-
     });
 
-    save();
+
+    saveWallets();
+
 
     renderDiscovered();
 
+
     refreshWallets();
 
+
     setTimeout(
-
       refreshMoneyFlow,
-
       3000
-
     );
-
   };
 
+
 $("discoverBtn")
-
   .onclick =
-
     discoverTraders;
 
-/* WALLETS */
+
+/* ======================================================
+   WALLETS
+====================================================== */
 
 async function refreshOneWallet(w){
 
   try {
 
     const d =
-
       await getJson(
 
         "/api/hyperliquid/summary?user=" +
 
         encodeURIComponent(
-
           w.address
-
         )
-
       );
 
+
     if (
-
       d &&
-
       !d.error
-
     ) {
 
       walletData[
-
         w.address
-
           .toLowerCase()
-
       ] = {
 
         ...d,
 
         stale:
-
           false
-
       };
 
-      save();
+
+      saveWalletCache();
 
     }
 
   } catch {
 
     const old =
-
       walletData[
-
         w.address
-
           .toLowerCase()
-
       ];
+
 
     if (old) {
 
       walletData[
-
         w.address
-
           .toLowerCase()
-
       ] = {
 
         ...old,
 
         stale:
-
           true
-
       };
 
+
+      saveWalletCache();
+
     }
-
   }
-
 }
+
 
 async function refreshWallets(){
 
   const batchSize =
-
     3;
 
+
   for (
-
     let i = 0;
-
     i < wallets.length;
-
     i += batchSize
-
   ) {
 
     await Promise.all(
 
       wallets
-
         .slice(
-
           i,
-
           i + batchSize
-
         )
-
         .map(
-
           refreshOneWallet
-
         )
-
     );
+
 
     renderWallets();
 
+
     renderTerminal();
 
+
     await new Promise(
-
       r =>
-
         setTimeout(
-
           r,
-
           500
-
         )
-
     );
-
   }
 
+
   $("walletCount")
-
     .textContent =
-
       wallets.length;
-
 }
+
 
 function renderWallets(){
 
+  $("mfWalletCount")
+    .textContent =
+      wallets.length;
+
+
   if (
-
     !wallets.length
-
   ) {
 
     $("walletRows")
-
       .innerHTML =
-
         `
-
         <tr>
-
         <td
-
           colspan="10"
-
           class="small">
-
         No wallets followed yet.
-
         </td>
-
         </tr>
-
         `;
 
-    return;
 
+    return;
   }
 
+
   $("walletRows")
-
     .innerHTML =
-
       wallets
-
         .map(
-
           (
-
             w,
-
             i
-
           ) => {
 
             const d =
-
               walletData[
-
                 w.address
-
                   .toLowerCase()
-
               ] ||
-
               {};
+
 
             return `
 
@@ -5671,181 +4108,110 @@ function renderWallets(){
             <td>
 
             <b>
-
             ${w.name}
-
             </b>
 
             <div class="tiny">
-
             ${shortAddress(
-
               w.address
-
             )}
-
+            •
+            ${
+              w.tag ||
+              "Manual"
+            }
             </div>
 
             </td>
 
             <td>
-
             ${
-
               d.tier ||
-
               "--"
-
             }
-
             </td>
 
             <td>
-
             <b>
-
             ${
-
               d.smartScore ??
-
               "--"
-
             }
-
             </b>
-
             </td>
 
             <td>
-
             ${
-
               d.equity ==
-
               null
-
                 ? "--"
-
                 : "$" +
-
                   money(
-
                     d.equity
-
                   )
-
             }
-
             </td>
 
             <td class="${signClass(
-
               d.pnl?.week?.pnl
-
             )}">
-
             ${
-
               d.pnl?.week?.pnl ==
-
               null
-
                 ? "--"
-
                 : "$" +
-
                   money(
-
                     d.pnl.week.pnl
-
                   )
-
             }
-
             </td>
 
             <td class="${signClass(
-
               d.pnl?.month?.pnl
-
             )}">
-
             ${
-
               d.pnl?.month?.pnl ==
-
               null
-
                 ? "--"
-
                 : "$" +
-
                   money(
-
                     d.pnl.month.pnl
-
                   )
-
             }
-
             </td>
 
             <td>
-
             ${
-
               d.stats30?.winRate ==
-
               null
-
                 ? "--"
-
                 : num(
-
                     d.stats30.winRate
-
                   )
-
                     .toFixed(1) +
-
                   "%"
-
             }
-
             </td>
 
             <td>
-
             ${
-
               d.positions?.length ||
-
               0
-
             }
-
             </td>
 
             <td>
 
             <span class="pill ${
-
               d.stale
-
                 ? "bad"
-
                 : "good"
-
             }">
 
             ${
-
               d.stale
-
                 ? "CACHED"
-
                 : "LIVE"
-
             }
 
             </span>
@@ -5855,965 +4221,704 @@ function renderWallets(){
             <td>
 
             <button
-
               class="danger"
-
               onclick="removeWallet(${i})">
-
             Remove
-
             </button>
 
             </td>
 
             </tr>
-
             `;
-
           }
-
         )
-
         .join("");
-
 }
 
+
 $("addWallet")
-
   .onclick =
-
     () => {
 
       const address =
-
         $("walletAddress")
-
           .value
-
           .trim();
 
-      if (
 
+      if (
         !/^0x[a-fA-F0-9]{40}$/.test(
-
           address
-
         )
-
       ) {
 
         return alert(
-
           "Invalid Hyperliquid wallet address."
-
         );
 
       }
+
 
       if (
-
         wallets.some(
-
           w =>
-
             w.address
-
               .toLowerCase() ===
-
             address
-
               .toLowerCase()
-
         )
-
       ) {
 
         return alert(
-
           "Wallet already exists."
-
         );
 
       }
+
 
       wallets.push({
 
         name:
-
           $("walletName")
-
             .value
-
             .trim() ||
-
           "Trader-" +
-
           (
-
             wallets.length +
-
             1
-
           ),
 
         address,
 
         tag:
-
           $("walletTag")
-
             .value
-
       });
 
-      save();
+
+      /*
+        اینجا فوراً ذخیره می‌شود
+        و با بستن سایت از بین نمی‌رود
+      */
+      saveWallets();
+
 
       $("walletName")
-
         .value =
-
           "";
+
 
       $("walletAddress")
-
         .value =
-
           "";
+
+
+      renderWallets();
+
 
       refreshWallets();
 
+
       setTimeout(
-
         refreshMoneyFlow,
-
         3000
-
       );
-
     };
 
-window.removeWallet =
 
+window.removeWallet =
   i => {
 
     wallets.splice(
-
       i,
-
       1
-
     );
 
-    save();
+
+    saveWallets();
+
 
     renderWallets();
 
+
     renderDiscovered();
+
 
     renderTerminal();
 
-    refreshMoneyFlow();
 
+    refreshMoneyFlow();
   };
 
-/* MONEY FLOW */
+
+/* ======================================================
+   MONEY FLOW
+====================================================== */
 
 async function refreshMoneyFlow(){
 
   $("mfWalletCount")
-
     .textContent =
-
       wallets.length;
 
+
   if (
-
     !wallets.length
-
   ) {
 
     $("mfStatus")
-
       .textContent =
-
         "NO WALLETS";
+
 
     $("rotationMini")
-
       .textContent =
-
         "NO WALLETS";
 
-    return;
 
+    return;
   }
+
 
   try {
 
     const users =
-
       wallets
-
         .map(
-
           w =>
-
             w.address
-
         )
-
         .join(",");
 
-    const d =
 
+    const d =
       await getJson(
 
         "/api/rotation?users=" +
 
         encodeURIComponent(
-
           users
-
         )
-
       );
 
+
     if (
-
       d.warmup
-
     ) {
 
       $("mfStatus")
-
         .textContent =
-
           "WARMUP";
+
 
       $("mfStatus")
-
         .className =
-
           "metric medium warn";
 
+
       $("rotationMini")
-
         .textContent =
-
           "WARMUP";
 
-      return;
 
+      return;
     }
 
-    moneyRotation =
 
+    moneyRotation =
       d.rotation;
 
+
     $("mfStatus")
-
       .textContent =
-
         "LIVE";
 
+
     $("mfStatus")
-
       .className =
-
         "metric medium good";
 
+
     $("rotationMini")
-
       .textContent =
-
         "LIVE";
 
+
     $("mfTotalIn")
-
       .textContent =
-
         "$" +
-
         money(
-
-          moneyRotation
-
-            .totalIn
-
+          moneyRotation.totalIn
         );
+
 
     $("mfTotalOut")
-
       .textContent =
-
         "$" +
-
         money(
-
-          moneyRotation
-
-            .totalOut
-
+          moneyRotation.totalOut
         );
+
 
     renderMoneyFlow();
 
   } catch {
 
+    /*
+      اگر API موقتاً قطع شود
+      نمودار قبلی پاک نمی‌شود
+    */
+
     $("mfStatus")
-
       .textContent =
-
         "CACHED";
 
+
     $("mfStatus")
-
       .className =
-
         "metric medium warn";
 
+
     $("rotationMini")
-
       .textContent =
-
         "CACHED";
-
   }
-
 }
+
 
 function renderMoneyFlow(){
 
   if (
-
     !moneyRotation
-
   ) {
-
     return;
-
   }
+
 
   renderMoneySankey();
 
+
   renderMoneyRotationBar();
 
-  renderMoneyLists();
 
+  renderMoneyLists();
 }
+
 
 function renderMoneySankey(){
 
   const paths =
-
     moneyRotation.paths ||
-
     [];
 
+
   if (
-
     !paths.length
-
   ) {
 
     moneyFlowSankey.clear();
 
-    moneyFlowSankey
 
+    moneyFlowSankey
       .setOption({
 
         title:{
 
           text:
-
             "No significant rotation detected",
 
           left:
-
             "center",
 
           top:
-
             "middle",
 
           textStyle:{
 
             color:
-
               "#7b8794",
 
             fontSize:
-
               13
-
           }
-
         }
-
       });
 
-    return;
 
+    return;
   }
 
-  const nodeSet =
 
+  const nodeSet =
     new Set();
 
-  paths.forEach(
 
+  paths.forEach(
     p => {
 
       nodeSet.add(
-
         "OUT " +
-
         p.from
-
       );
+
 
       nodeSet.add(
-
         "IN " +
-
         p.to
-
       );
-
     }
-
   );
 
-  moneyFlowSankey
 
+  moneyFlowSankey
     .setOption({
 
       tooltip:{
 
         trigger:
-
           "item",
 
         formatter:
-
           p =>
-
             p.dataType ===
-
             "edge"
 
               ? `${p.data.source} → ${p.data.target}<br><b>$${money(
-
                   p.data.value
-
                 )}</b>`
 
               : p.name
-
       },
+
 
       series:[{
 
         type:
-
           "sankey",
 
         left:
-
           25,
 
         right:
-
           25,
 
         top:
-
           25,
 
         bottom:
-
           20,
 
         nodeWidth:
-
           18,
 
         nodeGap:
-
           16,
 
         draggable:
-
           true,
 
         emphasis:{
-
           focus:
-
             "adjacency"
-
         },
 
         label:{
-
           color:
-
             "#344454",
 
           fontSize:
-
             10,
 
           fontWeight:
-
             600
-
         },
 
         lineStyle:{
-
           color:
-
             "gradient",
 
           opacity:
-
             .55,
 
           curveness:
-
             .5
-
         },
 
         data:
-
           Array.from(
-
             nodeSet
-
           )
-
             .map(
-
               name => ({
-
                 name
-
               })
-
             ),
 
         links:
-
           paths
-
             .filter(
-
               p =>
-
                 p.value >
-
                 0
-
             )
-
             .map(
-
               p => ({
 
                 source:
-
                   "OUT " +
-
                   p.from,
 
                 target:
-
                   "IN " +
-
                   p.to,
 
                 value:
-
                   p.value
-
               })
-
             )
-
       }]
-
     });
-
 }
+
 
 function renderMoneyRotationBar(){
 
   const rows =
-
     (
-
       moneyRotation.net ||
-
       []
-
     )
-
       .slice(
-
         0,
-
         12
-
       )
-
       .reverse();
 
-  moneyRotationBar
 
+  moneyRotationBar
     .setOption({
 
       grid:{
-
         left:
-
           75,
 
         right:
-
           25,
 
         top:
-
           15,
 
         bottom:
-
           25
-
       },
 
       tooltip:{
-
         trigger:
-
           "axis"
-
       },
 
       xAxis:{
-
         type:
-
           "value"
-
       },
 
       yAxis:{
-
         type:
-
           "category",
 
         data:
-
           rows.map(
-
             x =>
-
               x.coin
-
           )
-
       },
 
       series:[{
 
         type:
-
           "bar",
 
         barWidth:
-
           15,
 
         data:
-
           rows.map(
-
             x => ({
 
               value:
-
                 x.delta,
 
               itemStyle:{
-
                 color:
-
                   x.delta >= 0
-
                     ? "#169b62"
-
                     : "#d84b4b"
-
               }
-
             })
-
           )
-
       }]
-
     });
-
 }
+
 
 function renderMoneyLists(){
 
   const inflows =
-
     moneyRotation.inflows ||
-
     [];
+
 
   const outflows =
-
     moneyRotation.outflows ||
-
     [];
 
+
   const maxIn =
-
     inflows[0]?.value ||
-
     1;
+
 
   const maxOut =
-
     outflows[0]?.value ||
-
     1;
 
+
   $("moneyInflows")
-
     .innerHTML =
-
       inflows
-
         .slice(
-
           0,
-
           10
-
         )
-
         .map(
-
           x => `
 
           <div class="flow-row">
 
           <b>
-
           ${x.coin}
-
           </b>
 
           <div class="track">
 
           <i
-
             class="in"
-
             style="
-
             width:${
-
               Math.max(
-
                 3,
-
                 x.value /
-
                 maxIn *
-
                 100
-
               )
-
             }%
-
             ">
-
           </i>
 
           </div>
 
           <span class="good">
-
           +$${money(
-
             x.value
-
           )}
-
           </span>
 
           </div>
 
           `
-
         )
-
         .join("") ||
 
       `
-
       <div class="small">
-
       No inflow detected
-
       </div>
-
       `;
 
+
   $("moneyOutflows")
-
     .innerHTML =
-
       outflows
-
         .slice(
-
           0,
-
           10
-
         )
-
         .map(
-
           x => `
 
           <div class="flow-row">
 
           <b>
-
           ${x.coin}
-
           </b>
 
           <div class="track">
 
           <i
-
             class="out"
-
             style="
-
             width:${
-
               Math.max(
-
                 3,
-
                 x.value /
-
                 maxOut *
-
                 100
-
               )
-
             }%
-
             ">
-
           </i>
 
           </div>
 
           <span class="bad">
-
           -$${money(
-
             x.value
-
           )}
-
           </span>
 
           </div>
 
           `
-
         )
-
         .join("") ||
 
       `
-
       <div class="small">
-
       No outflow detected
-
       </div>
-
       `;
 
+
   $("moneyPathList")
-
     .innerHTML =
-
       (
-
         moneyRotation.paths ||
-
         []
-
       )
-
         .slice(
-
           0,
-
           10
-
         )
-
         .map(
-
           (
-
             p,
-
             i
-
           ) => `
 
           <div class="signal">
 
           <span class="tiny">
-
           #${i+1}
-
           </span>
 
           <b class="bad">
-
           ${p.from}
-
           </b>
 
           →
 
           <b class="good">
-
           ${p.to}
-
           </b>
 
           <div class="small">
@@ -6821,13 +4926,9 @@ function renderMoneyLists(){
           Estimated rotation:
 
           <b>
-
           $${money(
-
             p.value
-
           )}
-
           </b>
 
           </div>
@@ -6835,441 +4936,291 @@ function renderMoneyLists(){
           </div>
 
           `
-
         )
-
         .join("") ||
 
       `
-
       <div class="small">
-
       No material path detected.
-
       </div>
-
       `;
-
 }
 
-/* MACRO */
+
+/* ======================================================
+   MACRO
+====================================================== */
 
 async function refreshMacro(){
 
   try {
 
-    const d =
-
+    macroData =
       await getJson(
-
         "/api/macro"
-
       );
 
-    macroData =
-
-      d;
 
     renderMacro();
+
 
     renderIranGlobal();
 
   } catch {}
-
 }
 
+
 function macroFind(
-
   symbol
-
 ){
 
   return macroData
-
     .find(
-
       x =>
-
         x.symbol ===
-
         symbol
-
     ) ||
-
     {};
-
 }
+
 
 function renderMacro(){
 
   const valid =
-
     macroData.filter(
-
       x =>
-
         x.price !=
-
         null
-
     );
 
+
   $("macroCards")
-
     .innerHTML =
-
       valid
-
         .map(
-
           x => `
 
           <div class="card s3">
 
           <div class="label">
-
           ${x.name}
-
           </div>
 
           <div class="metric medium">
-
           ${price(
-
             x.price
-
           )}
-
           </div>
 
           <div class="${signClass(
-
             x.changePct
-
           )}">
-
           ${pct(
-
             x.changePct
-
           )}
-
           </div>
 
           </div>
 
           `
-
         )
-
         .join("");
 
+
   $("macroRows")
-
     .innerHTML =
-
       macroData
-
         .map(
-
           x => `
 
           <tr>
 
           <td>
-
           <b>
-
           ${x.name}
-
           </b>
-
           </td>
 
           <td>
-
           ${
-
             x.price ==
-
             null
-
               ? "--"
-
               : price(
-
                   x.price
-
                 )
-
           }
-
           </td>
 
           <td class="${signClass(
-
             x.changePct
-
           )}">
-
           ${
-
             x.changePct ==
-
             null
-
               ? "--"
-
               : pct(
-
                   x.changePct
-
                 )
-
           }
-
           </td>
 
           <td>
-
           ${
-
             x.stale
-
               ? "CACHED"
-
               : "LIVE"
-
           }
-
           </td>
 
           </tr>
 
           `
-
         )
-
         .join("");
 
-  macroChart
 
-    .setOption({
+  macroChart.setOption({
 
-      grid:{
+    grid:{
+      left:55,
+      right:20,
+      top:15,
+      bottom:35
+    },
 
-        left:
+    xAxis:{
+      type:"category",
 
-          55,
+      data:
+        valid.map(
+          x =>
+            x.symbol
+        )
+    },
 
-        right:
+    yAxis:{
+      type:"value"
+    },
 
-          20,
+    series:[{
 
-        top:
+      type:"bar",
 
-          15,
+      data:
+        valid.map(
+          x => ({
 
-        bottom:
+            value:
+              num(
+                x.changePct
+              ),
 
-          35
-
-      },
-
-      xAxis:{
-
-        type:
-
-          "category",
-
-        data:
-
-          valid.map(
-
-            x =>
-
-              x.symbol
-
-          )
-
-      },
-
-      yAxis:{
-
-        type:
-
-          "value"
-
-      },
-
-      series:[{
-
-        type:
-
-          "bar",
-
-        data:
-
-          valid.map(
-
-            x => ({
-
-              value:
-
+            itemStyle:{
+              color:
                 num(
-
                   x.changePct
-
-                ),
-
-              itemStyle:{
-
-                color:
-
-                  num(
-
-                    x.changePct
-
-                  ) >= 0
-
-                    ? "#49af7d"
-
-                    : "#db6b6b"
-
-              }
-
-            })
-
-          )
-
-      }]
-
-    });
-
+                ) >= 0
+                  ? "#49af7d"
+                  : "#db6b6b"
+            }
+          })
+        )
+    }]
+  });
 }
 
-/* IRAN */
+
+/* ======================================================
+   IRAN
+====================================================== */
 
 async function refreshIran(){
 
   try {
 
-    const d =
-
+    iranData =
       await getJson(
-
         "/api/iran"
-
       );
 
-    iranData =
-
-      d;
 
     $("iranState")
-
       .textContent =
-
         "LIVE";
 
+
     $("iranState")
-
       .className =
-
         "metric medium good";
 
+
     $("iranMini")
-
       .textContent =
-
         "LIVE";
 
+
     renderIran();
+
 
     renderIranGlobal();
 
   } catch {
 
     $("iranState")
-
       .textContent =
-
         "CACHED";
+
 
     $("iranState")
-
       .className =
-
         "metric medium warn";
 
+
     $("iranMini")
-
       .textContent =
-
         "CACHED";
-
   }
-
 }
 
+
 function iranFind(
-
   key
-
 ){
 
   return iranData
-
     .find(
-
       x =>
-
         x.key ===
-
         key
-
     ) ||
-
     {};
-
 }
+
 
 function renderIran(){
 
   $("iranPrices")
-
     .innerHTML =
-
       iranData
-
         .map(
-
           x => `
 
           <div class="iran-price">
 
           <div class="small">
-
           ${x.name}
-
           </div>
 
           <div class="metric medium">
 
           ${
-
             x.value ==
-
             null
-
               ? "--"
-
               : toman(
-
                   x.value
-
                 )
-
           }
 
           </div>
@@ -7279,13 +5230,9 @@ function renderIran(){
           تومان
 
           ${
-
             x.stale
-
               ? "• CACHED"
-
               : ""
-
           }
 
           </div>
@@ -7293,1112 +5240,438 @@ function renderIran(){
           </div>
 
           `
-
         )
-
         .join("");
 
+
   const usd =
-
     iranFind(
-
       "price_dollar_rl"
-
     );
+
 
   const gold18 =
-
     iranFind(
-
       "geram18"
-
     );
+
 
   const gg =
-
     macroFind(
-
       "XAUUSD"
-
     );
 
+
   $("iranUsdText")
-
     .textContent =
-
       usd.value
-
         ? toman(
-
             usd.value
-
           ) +
-
           " تومان"
-
         : "--";
+
 
   $("iranGold18Text")
-
     .textContent =
-
       gold18.value
-
         ? toman(
-
             gold18.value
-
           ) +
-
           " تومان"
-
         : "--";
 
+
   $("globalGoldText")
-
     .textContent =
-
       price(
-
         gg.price
-
       );
-
 }
 
-/* GLOBAL -> IRAN */
+
+/* ======================================================
+   GLOBAL -> IRAN MAP
+====================================================== */
 
 function renderIranGlobal(){
 
   const gold =
-
     macroFind(
-
       "XAUUSD"
-
     );
+
 
   const brent =
-
     macroFind(
-
       "CB.F"
-
     );
+
 
   const wti =
-
     macroFind(
-
       "CL.F"
-
     );
+
 
   const dxy =
-
     macroFind(
-
       "DX.F"
-
     );
+
 
   $("igGold")
-
     .textContent =
-
       price(
-
         gold.price
-
       );
+
 
   $("igGoldMove")
-
     .innerHTML =
-
       `
-
       <span class="${signClass(
-
         gold.changePct
-
       )}">
-
       ${pct(
-
         gold.changePct
-
       )}
-
       </span>
-
       `;
+
 
   $("igBrent")
-
     .textContent =
-
       price(
-
         brent.price
-
       );
+
 
   $("igBrentMove")
-
     .innerHTML =
-
       `
-
       <span class="${signClass(
-
         brent.changePct
-
       )}">
-
       ${pct(
-
         brent.changePct
-
       )}
-
       </span>
-
       `;
+
 
   $("igWti")
-
     .textContent =
-
       price(
-
         wti.price
-
       );
+
 
   $("igWtiMove")
-
     .innerHTML =
-
       `
-
       <span class="${signClass(
-
         wti.changePct
-
       )}">
-
       ${pct(
-
         wti.changePct
-
       )}
-
       </span>
-
       `;
+
 
   $("igDxy")
-
     .textContent =
-
       price(
-
         dxy.price
-
       );
 
+
   $("igDxyMove")
-
     .innerHTML =
-
       `
-
       <span class="${signClass(
-
         dxy.changePct
-
       )}">
-
       ${pct(
-
         dxy.changePct
-
       )}
-
       </span>
-
       `;
 
+
   const goldStrength =
-
     Math.max(
-
       .2,
-
       Math.abs(
-
         num(
-
           gold.changePct
-
         )
-
       )
-
     );
+
 
   const dxyStrength =
-
     Math.max(
-
       .2,
-
       Math.abs(
-
         num(
-
           dxy.changePct
-
         )
-
       )
-
     );
+
 
   const oilStrength =
-
     Math.max(
-
       .2,
-
       (
-
         Math.abs(
-
           num(
-
             brent.changePct
-
           )
-
         ) +
-
         Math.abs(
-
           num(
-
             wti.changePct
-
           )
-
         )
-
       ) /
-
       2
-
     );
+
 
   const nodes = [
 
     {
-
       name:
-
         "Global Gold"
-
     },
 
     {
-
       name:
-
         "DXY"
-
     },
 
     {
-
       name:
-
         "Brent / WTI"
-
     },
 
     {
-
       name:
-
         "USD / IRR"
-
     },
 
     {
-
       name:
-
         "Iran Gold 18K"
-
     },
 
     {
-
       name:
-
         "Emami Coin"
-
     },
 
     {
-
       name:
-
         "Inflation Pressure"
-
     }
-
   ];
+
 
   const links = [
 
     {
-
       source:
-
         "DXY",
 
       target:
-
         "USD / IRR",
 
       value:
-
         dxyStrength
-
     },
 
     {
-
       source:
-
         "Global Gold",
 
       target:
-
         "Iran Gold 18K",
 
       value:
-
         goldStrength
-
     },
 
     {
-
       source:
-
         "USD / IRR",
 
       target:
-
         "Iran Gold 18K",
 
       value:
-
         dxyStrength *
-
         1.2
-
     },
 
     {
-
       source:
-
         "Global Gold",
 
       target:
-
         "Emami Coin",
 
       value:
-
         goldStrength
-
     },
 
     {
-
       source:
-
         "USD / IRR",
 
       target:
-
         "Emami Coin",
 
       value:
-
         dxyStrength
-
     },
 
     {
-
       source:
-
         "Brent / WTI",
 
       target:
-
         "Inflation Pressure",
 
       value:
-
         oilStrength
-
     },
 
     {
-
       source:
-
         "Inflation Pressure",
 
       target:
-
         "USD / IRR",
 
       value:
-
         oilStrength *
-
         .7
-
     }
-
   ];
 
-  iranGlobalChart
 
-    .setOption({
+  iranGlobalChart.setOption({
 
-      tooltip:{
+    tooltip:{
 
-        trigger:
+      trigger:
+        "item",
 
-          "item",
+      formatter:
+        p =>
+          p.dataType ===
+          "edge"
+            ? `${p.data.source} → ${p.data.target}<br>Influence score: ${Number(
+                p.data.value
+              ).toFixed(2)}`
+            : p.name
+    },
 
-        formatter:
 
-          p =>
+    series:[{
 
-            p.dataType ===
+      type:"sankey",
 
-            "edge"
+      left:20,
 
-              ? `${p.data.source} → ${p.data.target}<br>Influence score: ${Number(
+      right:20,
 
-                  p.data.value
+      top:20,
 
-                ).toFixed(2)}`
+      bottom:20,
 
-              : p.name
+      nodeWidth:20,
 
+      nodeGap:18,
+
+      draggable:true,
+
+      label:{
+        color:"#344454",
+        fontSize:10
       },
 
-      series:[{
+      lineStyle:{
+        color:"gradient",
+        opacity:.6,
+        curveness:.5
+      },
 
-        type:
+      data:
+        nodes,
 
-          "sankey",
+      links
+    }]
+  });
 
-        left:
-
-          20,
-
-        right:
-
-          20,
-
-        top:
-
-          20,
-
-        bottom:
-
-          20,
-
-        nodeWidth:
-
-          20,
-
-        nodeGap:
-
-          18,
-
-        draggable:
-
-          true,
-
-        label:{
-
-          color:
-
-            "#344454",
-
-          fontSize:
-
-            10
-
-        },
-
-        lineStyle:{
-
-          color:
-
-            "gradient",
-
-          opacity:
-
-            .6,
-
-          curveness:
-
-            .5
-
-        },
-
-        data:
-
-          nodes,
-
-        links
-
-      }]
-
-    });
 
   const usd =
-
     iranFind(
-
       "price_dollar_rl"
-
     );
+
 
   const gold18 =
-
     iranFind(
-
       "geram18"
-
     );
 
+
   if (
-
     usd.value &&
-
     gold18.value
-
   ) {
 
     const g =
-
       Math.abs(
-
         num(
-
           gold.changePct
-
         )
-
       );
+
 
     const d =
-
       Math.abs(
-
         num(
-
           dxy.changePct
-
         )
-
       );
 
+
     $("goldDriver")
-
       .textContent =
-
         g > d
-
           ? "GLOBAL GOLD"
-
           : "USD / FX PRESSURE";
 
   } else {
 
     $("goldDriver")
-
       .textContent =
-
         "WAITING FOR IRAN DATA";
 
   }
-
 }
 
-/* ALERTS */
 
-function pushAlert(
+/* ======================================================
+   START
+====================================================== */
 
-  key,
-
-  msg
-
-){
-
-  const now =
-
-    Date.now();
-
-  if (
-
-    now -
-
-    (
-
-      cooldown[key] ||
-
-      0
-
-    ) <
-
-    120000
-
-  ) {
-
-    return;
-
-  }
-
-  cooldown[key] =
-
-    now;
-
-  alerts.unshift({
-
-    time:
-
-      now,
-
-    msg
-
-  });
-
-  alerts =
-
-    alerts.slice(
-
-      0,
-
-      100
-
-    );
-
-  save();
-
-  renderAlerts();
-
-  if (
-
-    "Notification" in window &&
-
-    Notification.permission ===
-
-    "granted"
-
-  ) {
-
-    new Notification(
-
-      "ALI Flow Radar",
-
-      {
-
-        body:
-
-          msg
-
-      }
-
-    );
-
-  }
-
-}
-
-function runMarketAlerts(){
-
-  for (
-
-    const s
-
-    of symbols
-
-  ) {
-
-    const m =
-
-      market[s];
-
-    const f =
-
-      flow[s];
-
-    if (
-
-      !m ||
-
-      !f ||
-
-      f.error
-
-    ) {
-
-      continue;
-
-    }
-
-    const score =
-
-      num(
-
-        f.flowScore
-
-      );
-
-    const move =
-
-      Math.abs(
-
-        num(
-
-          m.priceChangePercent
-
-        )
-
-      );
-
-    if (
-
-      move <=
-
-      num(
-
-        settings.move,
-
-        3
-
-      ) &&
-
-      score >=
-
-      num(
-
-        settings.flow,
-
-        67
-
-      )
-
-    ) {
-
-      pushAlert(
-
-        "buy" +
-
-        s,
-
-        `${s}: EARLY BUY • Flow ${score} • 24H ${pct(
-
-          m.priceChangePercent
-
-        )}`
-
-      );
-
-    }
-
-    if (
-
-      move <=
-
-      num(
-
-        settings.move,
-
-        3
-
-      ) &&
-
-      score <=
-
-      100 -
-
-      num(
-
-        settings.flow,
-
-        67
-
-      )
-
-    ) {
-
-      pushAlert(
-
-        "sell" +
-
-        s,
-
-        `${s}: EARLY SELL • Flow ${score} • 24H ${pct(
-
-          m.priceChangePercent
-
-        )}`
-
-      );
-
-    }
-
-  }
-
-}
-
-function renderAlerts(){
-
-  $("alertLog")
-
-    .innerHTML =
-
-      alerts.length
-
-        ? alerts
-
-            .slice(
-
-              0,
-
-              50
-
-            )
-
-            .map(
-
-              a => `
-
-              <div class="alert-item">
-
-              ${a.msg}
-
-              <div class="tiny">
-
-              ${
-
-                new Date(
-
-                  a.time
-
-                )
-
-                  .toLocaleString(
-
-                    "fa-IR"
-
-                  )
-
-              }
-
-              </div>
-
-              </div>
-
-              `
-
-            )
-
-            .join("")
-
-        : `
-
-          <div class="small">
-
-          No alerts yet.
-
-          </div>
-
-          `;
-
-}
-
-function renderTerminalAlerts(){
-
-  $("terminalAlerts")
-
-    .innerHTML =
-
-      alerts.length
-
-        ? alerts
-
-            .slice(
-
-              0,
-
-              5
-
-            )
-
-            .map(
-
-              a => `
-
-              <div class="alert-item">
-
-              ${a.msg}
-
-              <div class="tiny">
-
-              ${
-
-                new Date(
-
-                  a.time
-
-                )
-
-                  .toLocaleTimeString(
-
-                    "fa-IR"
-
-                  )
-
-              }
-
-              </div>
-
-              </div>
-
-              `
-
-            )
-
-            .join("")
-
-        : `
-
-          <div class="small">
-
-          Waiting for signals...
-
-          </div>
-
-          `;
-
-}
-
-$("flowThreshold")
-
-  .value =
-
-    settings.flow;
-
-$("moveThreshold")
-
-  .value =
-
-    settings.move;
-
-$("saveSettings")
-
-  .onclick =
-
-    () => {
-
-      settings.flow =
-
-        num(
-
-          $("flowThreshold")
-
-            .value,
-
-          67
-
-        );
-
-      settings.move =
-
-        num(
-
-          $("moveThreshold")
-
-            .value,
-
-          3
-
-        );
-
-      save();
-
-      pushAlert(
-
-        "settings",
-
-        "Alert settings updated."
-
-      );
-
-    };
-
-$("notify")
-
-  .onclick =
-
-    async () => {
-
-      if (
-
-        !(
-
-          "Notification" in
-
-          window
-
-        )
-
-      ) {
-
-        return alert(
-
-          "Notifications are not supported by this browser."
-
-        );
-
-      }
-
-      await Notification
-
-        .requestPermission();
-
-    };
-
-/* START */
-
-renderAlerts();
+renderProfiles();
 
 renderWallets();
 
@@ -8414,68 +5687,52 @@ refreshMacro();
 
 refreshIran();
 
+
 setTimeout(
-
   refreshMoneyFlow,
-
   7000
-
 );
 
-setInterval(
 
+setInterval(
   refreshMarket,
-
   5000
-
 );
 
-setInterval(
 
+setInterval(
   refreshFlow,
-
   15000
-
 );
 
-setInterval(
 
+setInterval(
   refreshWallets,
-
   45000
-
 );
 
-setInterval(
 
+setInterval(
   refreshMoneyFlow,
-
   30000
-
 );
 
-setInterval(
 
+setInterval(
   refreshMacro,
-
   60000
-
 );
 
-setInterval(
 
+setInterval(
   refreshIran,
-
   60000
-
 );
 
+
 setInterval(
-
   refreshHealth,
-
   30000
-
 );
 
 </script>
