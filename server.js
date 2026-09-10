@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const cache = new Map();
 
-app.use(express.json());
+app.use(express.json({ limit: "256kb" }));
 app.use(express.static(path.join(__dirname)));
 
 const num = (v, f = 0) =>
@@ -18,7 +18,10 @@ const clamp = (n, a, b) =>
 async function cached(key, ttl, fn) {
   const hit = cache.get(key);
 
-  if (hit && Date.now() - hit.t < ttl) {
+  if (
+    hit &&
+    Date.now() - hit.t < ttl
+  ) {
     return hit.v;
   }
 
@@ -33,16 +36,17 @@ async function cached(key, ttl, fn) {
 }
 
 async function fetchJson(url, options = {}) {
+
   const r = await fetch(url, {
     ...options,
 
     headers: {
-      "User-Agent": "ALI-Flow-Radar/3.1",
+      "User-Agent": "ALI-Flow-Radar/3.2",
       Accept: "application/json,text/plain,*/*",
       ...(options.headers || {})
     },
 
-    timeout: 12000
+    timeout: 15000
   });
 
   const text = await r.text();
@@ -53,7 +57,7 @@ async function fetchJson(url, options = {}) {
     data = JSON.parse(text);
   } catch {
     throw new Error(
-      `Non-JSON ${r.status}: ${text.slice(0, 120)}`
+      `Non-JSON ${r.status}: ${text.slice(0,140)}`
     );
   }
 
@@ -70,6 +74,7 @@ async function fetchJson(url, options = {}) {
 }
 
 async function hyper(body) {
+
   return fetchJson(
     "https://api.hyperliquid.xyz/info",
     {
@@ -84,33 +89,188 @@ async function hyper(body) {
   );
 }
 
-function portfolioWindow(portfolio, names) {
+function perfMap(row) {
 
-  if (!Array.isArray(portfolio)) {
+  const out = {};
+
+  for (
+    const pair
+    of row?.windowPerformances || []
+  ) {
+
+    if (
+      !Array.isArray(pair) ||
+      !pair[0] ||
+      !pair[1]
+    ) {
+      continue;
+    }
+
+    out[pair[0]] = {
+
+      pnl:
+        num(pair[1].pnl),
+
+      roiPct:
+        num(pair[1].roi) * 100,
+
+      volume:
+        num(pair[1].vlm)
+    };
+  }
+
+  return out;
+}
+
+function traderStyle(turnover) {
+
+  if (turnover < 100) {
+    return "Position";
+  }
+
+  if (turnover < 500) {
+    return "Swing";
+  }
+
+  if (turnover < 5000) {
+    return "Active";
+  }
+
+  return "HFT-like";
+}
+
+function discoveryScore(t) {
+
+  let s = 35;
+
+  const p = t.performance;
+
+  if (
+    p.allTime?.pnl > 0
+  ) {
+    s += 12;
+  }
+
+  if (
+    p.month?.pnl > 0
+  ) {
+    s += 14;
+  }
+
+  if (
+    p.week?.pnl > 0
+  ) {
+    s += 10;
+  }
+
+  if (
+    p.day?.pnl > 0
+  ) {
+    s += 4;
+  }
+
+  s +=
+    clamp(
+      p.month?.roiPct || 0,
+      -30,
+      30
+    ) *
+    0.45;
+
+  s +=
+    clamp(
+      p.week?.roiPct || 0,
+      -15,
+      15
+    ) *
+    0.35;
+
+  if (
+    t.turnover30d >= 10 &&
+    t.turnover30d <= 500
+  ) {
+    s += 8;
+  }
+
+  else if (
+    t.turnover30d <= 5000
+  ) {
+    s += 3;
+  }
+
+  else {
+    s -= 12;
+  }
+
+  if (
+    t.equity >= 50000
+  ) {
+    s += 4;
+  }
+
+  if (
+    t.equity >= 250000
+  ) {
+    s += 3;
+  }
+
+  if (
+    (p.month?.roiPct || 0) >
+    200
+  ) {
+    s -= 8;
+  }
+
+  return Math.round(
+    clamp(
+      s,
+      0,
+      100
+    )
+  );
+}
+
+function portfolioWindow(
+  portfolio,
+  names
+) {
+
+  if (
+    !Array.isArray(portfolio)
+  ) {
     return null;
   }
 
-  for (const name of names) {
+  for (
+    const name
+    of names
+  ) {
 
-    const row = portfolio.find(
-      x =>
-        Array.isArray(x) &&
-        x[0] === name
-    );
+    const row =
+      portfolio.find(
+        x =>
+          Array.isArray(x) &&
+          x[0] === name
+      );
 
     if (!row?.[1]) {
       continue;
     }
 
-    const d = row[1];
+    const d =
+      row[1];
 
     const av =
-      Array.isArray(d.accountValueHistory)
+      Array.isArray(
+        d.accountValueHistory
+      )
         ? d.accountValueHistory
         : [];
 
     const ph =
-      Array.isArray(d.pnlHistory)
+      Array.isArray(
+        d.pnlHistory
+      )
         ? d.pnlHistory
         : [];
 
@@ -132,38 +292,58 @@ function portfolioWindow(portfolio, names) {
 
     const roi =
       firstAv
-        ? ((lastAv - firstAv) /
-            Math.abs(firstAv)) *
+        ? (
+            (
+              lastAv -
+              firstAv
+            ) /
+            Math.abs(firstAv)
+          ) *
           100
         : null;
 
     let peak = 0;
     let dd = 0;
 
-    for (const p of av) {
+    for (
+      const p
+      of av
+    ) {
 
-      const v = num(
-        p?.[1],
-        NaN
-      );
+      const v =
+        num(
+          p?.[1],
+          NaN
+        );
 
-      if (!Number.isFinite(v)) {
+      if (
+        !Number.isFinite(v)
+      ) {
         continue;
       }
 
-      peak = Math.max(
-        peak,
-        v
-      );
-
-      if (peak > 0) {
-
-        dd = Math.min(
-          dd,
-          ((v - peak) /
-            peak) *
-            100
+      peak =
+        Math.max(
+          peak,
+          v
         );
+
+      if (
+        peak > 0
+      ) {
+
+        dd =
+          Math.min(
+            dd,
+            (
+              (
+                v -
+                peak
+              ) /
+              peak
+            ) *
+            100
+          );
       }
     }
 
@@ -193,17 +373,22 @@ function fillStats(
       Array.isArray(fills)
         ? fills
         : []
-    ).filter(
-      f =>
-        num(f.time) >= cutoff
-    );
+    )
+      .filter(
+        f =>
+          num(f.time) >=
+          cutoff
+      );
 
   let closed = 0;
   let wins = 0;
   let closedPnl = 0;
   let fees = 0;
 
-  for (const f of arr) {
+  for (
+    const f
+    of arr
+  ) {
 
     const p =
       num(f.closedPnl);
@@ -220,15 +405,21 @@ function fillStats(
 
       closedPnl += p;
 
-      if (p > 0) {
+      if (
+        p > 0
+      ) {
         wins++;
       }
     }
   }
 
   return {
-    fills: arr.length,
+
+    fills:
+      arr.length,
+
     closed,
+
     wins,
 
     winRate:
@@ -239,6 +430,7 @@ function fillStats(
         : null,
 
     closedPnl,
+
     fees
   };
 }
@@ -252,7 +444,7 @@ function smartScore(
 
   let s = 50;
 
-  const p = [
+  const ps = [
     day?.pnl,
     week?.pnl,
     month?.pnl
@@ -260,15 +452,17 @@ function smartScore(
     Number.isFinite
   );
 
-  if (p.length) {
+  if (
+    ps.length
+  ) {
 
     s +=
       (
         (
-          p.filter(
+          ps.filter(
             x => x > 0
           ).length /
-          p.length
+          ps.length
         ) -
         0.5
       ) *
@@ -328,7 +522,6 @@ function smartScore(
     (stats30?.closed || 0)
     >= 20
   ) {
-
     s += 5;
   }
 
@@ -336,7 +529,6 @@ function smartScore(
     (stats30?.closed || 0)
     < 3
   ) {
-
     s -= 6;
   }
 
@@ -354,8 +546,15 @@ app.get(
   (req, res) => {
 
     res.json({
+
       ok: true,
-      version: "3.1",
+
+      app:
+        "ALI Flow Radar",
+
+      version:
+        "3.2",
+
       time:
         new Date()
           .toISOString()
@@ -392,8 +591,10 @@ app.get(
 
       const rows =
         await cached(
+
           "m:" +
           symbols.join(","),
+
           2500,
 
           async () => {
@@ -417,8 +618,11 @@ app.get(
               ) {
 
                 data.push(
+
                   await fetchJson(
+
                     "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=" +
+
                     encodeURIComponent(
                       symbol
                     )
@@ -432,21 +636,23 @@ app.get(
                 data
               )
             ) {
-
               throw new Error(
                 "Unexpected Binance response"
               );
             }
 
             return data
+
               .filter(
                 x =>
                   symbols.includes(
                     x.symbol
                   )
               )
+
               .map(
                 x => ({
+
                   symbol:
                     x.symbol,
 
@@ -506,8 +712,10 @@ app.get(
 
       const rows =
         await cached(
+
           "f:" +
           symbols.join(","),
+
           8000,
 
           async () => {
@@ -523,10 +731,13 @@ app.get(
 
                 const trades =
                   await fetchJson(
+
                     "https://data-api.binance.vision/api/v3/aggTrades?symbol=" +
+
                     encodeURIComponent(
                       symbol
                     ) +
+
                     "&limit=500"
                   );
 
@@ -566,7 +777,8 @@ app.get(
                 }
 
                 const total =
-                  buy + sell;
+                  buy +
+                  sell;
 
                 const buyRatio =
                   total
@@ -641,6 +853,213 @@ app.get(
 );
 
 app.get(
+  "/api/traders",
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const limit =
+        clamp(
+          num(
+            req.query.limit,
+            50
+          ),
+          10,
+          150
+        );
+
+      const minEquity =
+        Math.max(
+          0,
+          num(
+            req.query.minEquity,
+            50000
+          )
+        );
+
+      const minMonthPnl =
+        num(
+          req.query.minMonthPnl,
+          0
+        );
+
+      const maxTurnover =
+        Math.max(
+          1,
+          num(
+            req.query.maxTurnover,
+            5000
+          )
+        );
+
+      const rows =
+        await cached(
+
+          "leaderboard",
+
+          10 *
+          60 *
+          1000,
+
+          async () => {
+
+            const d =
+              await fetchJson(
+                "https://stats-data.hyperliquid.xyz/Mainnet/leaderboard"
+              );
+
+            if (
+              !Array.isArray(
+                d?.leaderboardRows
+              )
+            ) {
+
+              throw new Error(
+                "Unexpected leaderboard response"
+              );
+            }
+
+            return d
+              .leaderboardRows
+              .map(
+                row => {
+
+                  const performance =
+                    perfMap(row);
+
+                  const equity =
+                    num(
+                      row.accountValue
+                    );
+
+                  const turnover30d =
+                    equity > 0
+                      ? (
+                          performance.month
+                            ?.volume ||
+                          0
+                        ) /
+                        equity
+                      : Infinity;
+
+                  const t = {
+
+                    address:
+                      row.ethAddress,
+
+                    name:
+                      row.displayName ||
+                      "Anonymous",
+
+                    equity,
+
+                    performance,
+
+                    turnover30d,
+
+                    style:
+                      traderStyle(
+                        turnover30d
+                      )
+                  };
+
+                  t.discoveryScore =
+                    discoveryScore(t);
+
+                  return t;
+                }
+              );
+          }
+        );
+
+      const filtered =
+        rows
+
+          .filter(
+            t =>
+              t.address &&
+              t.equity >=
+              minEquity
+          )
+
+          .filter(
+            t =>
+              (
+                t.performance.month
+                  ?.pnl ||
+                0
+              ) >=
+              minMonthPnl
+          )
+
+          .filter(
+            t =>
+              (
+                t.performance.week
+                  ?.pnl ||
+                0
+              ) >
+              0
+          )
+
+          .filter(
+            t =>
+              (
+                t.performance.allTime
+                  ?.pnl ||
+                0
+              ) >
+              0
+          )
+
+          .filter(
+            t =>
+              t.turnover30d <=
+              maxTurnover
+          )
+
+          .sort(
+            (
+              a,
+              b
+            ) =>
+              b.discoveryScore -
+              a.discoveryScore
+          )
+
+          .slice(
+            0,
+            limit
+          );
+
+      res.json({
+
+        updatedAt:
+          Date.now(),
+
+        count:
+          filtered.length,
+
+        traders:
+          filtered
+      });
+
+    } catch (e) {
+
+      res
+        .status(502)
+        .json({
+          error:
+            String(e)
+        });
+    }
+  }
+);
+
+app.get(
   "/api/hyperliquid/summary",
   async (
     req,
@@ -668,8 +1087,10 @@ app.get(
 
       const data =
         await cached(
+
           "hl:" +
           user.toLowerCase(),
+
           7000,
 
           async () => {
@@ -782,11 +1203,13 @@ app.get(
                 state.assetPositions ||
                 []
               )
+
                 .map(
                   x =>
                     x.position ||
                     x
                 )
+
                 .filter(
                   p =>
                     Math.abs(
@@ -794,6 +1217,7 @@ app.get(
                     ) >
                     0
                 )
+
                 .map(
                   p => ({
 
@@ -908,10 +1332,12 @@ app.get(
                 (
                   fills || []
                 )
+
                   .slice(
                     0,
                     20
                   )
+
                   .map(
                     f => ({
 
@@ -1026,7 +1452,9 @@ app.get(
 
       const rows =
         await cached(
+
           "macro",
+
           15000,
 
           async () => {
@@ -1070,12 +1498,14 @@ app.get(
                       ?.close ||
                     []
                   )
+
                     .filter(
                       x =>
                         Number.isFinite(
                           Number(x)
                         )
                     )
+
                     .map(Number);
 
                 const price =
@@ -1094,8 +1524,11 @@ app.get(
                 out.push({
 
                   name,
+
                   symbol,
+
                   group,
+
                   price,
 
                   changePct:
@@ -1118,9 +1551,13 @@ app.get(
               } catch (e) {
 
                 out.push({
+
                   name,
+
                   symbol,
+
                   group,
+
                   error:
                     String(e)
                 });
@@ -1149,7 +1586,7 @@ app.listen(
   PORT,
   () =>
     console.log(
-      "ALI Flow Radar v3.1 running on " +
+      "ALI Flow Radar v3.2 running on " +
       PORT
     )
 );
