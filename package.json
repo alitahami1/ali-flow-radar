@@ -1,0 +1,12 @@
+{
+  "name": "ali-flow-radar",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "node-fetch": "^2.7.0"
+  }
+}
