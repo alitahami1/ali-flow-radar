@@ -1,32 +1,12 @@
 <!doctype html>
-
-<html
-  lang="fa"
-  dir="rtl"
->
-
+<html lang="fa" dir="rtl">
 <head>
-
-<meta
-  charset="utf-8"
->
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1"
->
-
-<meta
-  name="theme-color"
-  content="#071018"
->
-
-<title>
-ALI Flow Radar v3.2
-</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071018">
+<title>ALI Flow Radar v3.2</title>
 
 <style>
-
 :root{
   --bg:#071018;
   --panel:#0d1822;
@@ -39,18 +19,13 @@ ALI Flow Radar v3.2
   --accent:#38bdf8
 }
 
-*{
-  box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
   background:var(--bg);
   color:var(--text);
-  font-family:
-    Tahoma,
-    "Segoe UI",
-    sans-serif
+  font-family:Tahoma,"Segoe UI",sans-serif
 }
 
 header{
@@ -58,16 +33,13 @@ header{
   top:0;
   z-index:10;
   background:#071018f2;
-  border-bottom:
-    1px solid
-    var(--line);
+  border-bottom:1px solid var(--line);
   padding:14px
 }
 
 .brand{
   display:flex;
-  justify-content:
-    space-between;
+  justify-content:space-between;
   gap:12px;
   align-items:center
 }
@@ -79,8 +51,7 @@ h1{
 
 h2{
   font-size:18px;
-  margin:
-    0 0 10px
+  margin:0 0 10px
 }
 
 .small{
@@ -98,11 +69,8 @@ h2{
 }
 
 .dot.live{
-  background:
-    var(--good);
-  box-shadow:
-    0 0 10px
-    var(--good)
+  background:var(--good);
+  box-shadow:0 0 10px var(--good)
 }
 
 nav{
@@ -119,25 +87,23 @@ select{
 }
 
 button{
-  border:
-    1px solid
-    var(--line);
-  background:
-    var(--panel);
-  color:
-    var(--text);
-  padding:
-    9px 12px;
-  border-radius:
-    10px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--text);
+  padding:9px 12px;
+  border-radius:10px;
   cursor:pointer
 }
 
 button.active{
-  background:
-    var(--accent);
+  background:var(--accent);
   color:#00111b;
   font-weight:700
+}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed
 }
 
 .danger{
@@ -150,98 +116,49 @@ main{
   padding:16px
 }
 
-.tab{
-  display:none
-}
-
-.tab.active{
-  display:block
-}
+.tab{display:none}
+.tab.active{display:block}
 
 .grid{
   display:grid;
-  grid-template-columns:
-    repeat(
-      12,
-      1fr
-    );
+  grid-template-columns:repeat(12,1fr);
   gap:12px
 }
 
 .card{
-  background:
-    var(--panel);
-  border:
-    1px solid
-    var(--line);
-  border-radius:
-    15px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:15px;
   padding:14px
 }
 
-.s3{
-  grid-column:
-    span 3
-}
-
-.s4{
-  grid-column:
-    span 4
-}
-
-.s5{
-  grid-column:
-    span 5
-}
-
-.s6{
-  grid-column:
-    span 6
-}
-
-.s7{
-  grid-column:
-    span 7
-}
-
-.s8{
-  grid-column:
-    span 8
-}
-
-.s12{
-  grid-column:
-    span 12
-}
+.s3{grid-column:span 3}
+.s4{grid-column:span 4}
+.s5{grid-column:span 5}
+.s6{grid-column:span 6}
+.s7{grid-column:span 7}
+.s8{grid-column:span 8}
+.s12{grid-column:span 12}
 
 .metric{
   font-size:25px;
   font-weight:800
 }
 
-.good{
-  color:
-    var(--good)
-}
-
-.bad{
-  color:
-    var(--bad)
-}
+.good{color:var(--good)}
+.bad{color:var(--bad)}
+.warn{color:var(--warn)}
 
 table{
   width:100%;
-  border-collapse:
-    collapse;
+  border-collapse:collapse;
   font-size:13px
 }
 
 th,
 td{
   padding:9px;
-  border-bottom:
-    1px solid
-    var(--line);
+  border-bottom:1px solid var(--line);
   text-align:right;
   white-space:nowrap
 }
@@ -258,37 +175,27 @@ input,
 select{
   width:100%;
   background:#071018;
-  color:
-    var(--text);
-  border:
-    1px solid
-    var(--line);
+  color:var(--text);
+  border:1px solid var(--line);
   border-radius:9px;
   padding:9px
 }
 
 .form2{
   display:grid;
-  grid-template-columns:
-    2fr auto;
+  grid-template-columns:2fr auto;
   gap:8px
 }
 
 .form4{
   display:grid;
-  grid-template-columns:
-    1fr 2fr 1fr auto;
+  grid-template-columns:1fr 2fr 1fr auto;
   gap:8px
 }
 
 .filters{
   display:grid;
-  grid-template-columns:
-    repeat(
-      4,
-      1fr
-    )
-    auto;
+  grid-template-columns:repeat(4,1fr) auto;
   gap:8px
 }
 
@@ -296,9 +203,7 @@ select{
 .alert{
   padding:10px;
   margin-top:8px;
-  border:
-    1px solid
-    var(--line);
+  border:1px solid var(--line);
   border-radius:10px;
   background:#0a1721
 }
@@ -314,26 +219,20 @@ select{
 .bar i{
   display:block;
   height:100%;
-  background:
-    var(--accent)
+  background:var(--accent)
 }
 
 .pill{
   display:inline-block;
-  padding:
-    2px 7px;
-  border:
-    1px solid
-    var(--line);
-  border-radius:
-    999px;
+  padding:2px 7px;
+  border:1px solid var(--line);
+  border-radius:999px;
   font-size:11px
 }
 
 .footer{
   text-align:center;
-  color:
-    var(--muted);
+  color:var(--muted);
   font-size:11px;
   padding:24px
 }
@@ -354,887 +253,366 @@ select{
 
 .modalbox{
   max-width:1000px;
-  margin:
-    30px auto;
-  background:
-    var(--panel);
-  border:
-    1px solid
-    var(--line);
+  margin:30px auto;
+  background:var(--panel);
+  border:1px solid var(--line);
   border-radius:15px;
   padding:16px
 }
 
-@media(
-  max-width:900px
-){
-
-  .s3,
-  .s4,
-  .s5,
-  .s6,
-  .s7,
-  .s8{
-    grid-column:
-      span 12
+@media(max-width:900px){
+  .s3,.s4,.s5,.s6,.s7,.s8{
+    grid-column:span 12
   }
 
   .form4,
   .filters{
-    grid-template-columns:
-      1fr 1fr
+    grid-template-columns:1fr 1fr
   }
 }
-
 </style>
-
 </head>
 
 <body>
 
 <header>
+  <div class="brand">
+    <div>
+      <h1>
+        ALI FLOW RADAR
+        <span class="pill">v3.2</span>
+      </h1>
 
-<div class="brand">
+      <div class="small">
+        Crypto Flow • Trader Discovery • Smart Wallet • Gold • Oil • FX
+      </div>
+    </div>
 
-<div>
+    <div>
+      <span id="dot" class="dot"></span>
+      <span id="status" class="small">در حال اتصال...</span>
+    </div>
+  </div>
 
-<h1>
-
-ALI FLOW RADAR
-
-<span class="pill">
-v3.2
-</span>
-
-</h1>
-
-<div class="small">
-
-Crypto Flow
-•
-Trader Discovery
-•
-Smart Wallet
-•
-Gold
-•
-Oil
-•
-FX
-
-</div>
-
-</div>
-
-<div>
-
-<span
-  id="dot"
-  class="dot"
->
-</span>
-
-<span
-  id="status"
-  class="small"
->
-در حال اتصال...
-</span>
-
-</div>
-
-</div>
-
-
-<nav>
-
-<button
-  class="tabbtn active"
-  data-tab="overview"
->
-نمای کلی
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="crypto"
->
-Crypto Flow
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="discover"
->
-Trader Discovery
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="wallets"
->
-Smart Wallets
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="macro"
->
-طلا / نفت / فارکس
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="alerts"
->
-آلارم‌ها
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="system"
->
-وضعیت سیستم
-</button>
-
-</nav>
-
+  <nav>
+    <button class="tabbtn active" data-tab="overview">نمای کلی</button>
+    <button class="tabbtn" data-tab="crypto">Crypto Flow</button>
+    <button class="tabbtn" data-tab="discover">Trader Discovery</button>
+    <button class="tabbtn" data-tab="wallets">Smart Wallets</button>
+    <button class="tabbtn" data-tab="macro">طلا / نفت / فارکس</button>
+    <button class="tabbtn" data-tab="alerts">آلارم‌ها</button>
+    <button class="tabbtn" data-tab="system">وضعیت سیستم</button>
+  </nav>
 </header>
-
 
 <main>
 
+<section id="overview" class="tab active">
+  <div class="grid">
 
-<section
-  id="overview"
-  class="tab active"
->
+    <div class="card s3">
+      <div class="small">BTC</div>
+      <div id="btc" class="metric">--</div>
+      <div id="btc24" class="small">--</div>
+    </div>
 
-<div class="grid">
+    <div class="card s3">
+      <div class="small">ETH</div>
+      <div id="eth" class="metric">--</div>
+      <div id="eth24" class="small">--</div>
+    </div>
 
+    <div class="card s3">
+      <div class="small">Smart Wallets</div>
+      <div id="walletCount" class="metric">0</div>
+    </div>
 
-<div class="card s3">
+    <div class="card s3">
+      <div class="small">آلارم‌های امروز</div>
+      <div id="alertCount" class="metric">0</div>
+    </div>
 
-<div class="small">
-BTC
-</div>
+    <div class="card s8">
+      <h2>Early Money Radar</h2>
+      <div id="early"></div>
+    </div>
 
-<div
-  id="btc"
-  class="metric"
->
---
-</div>
+    <div class="card s4">
+      <h2>Coordinated Money</h2>
+      <div id="consensus"></div>
+    </div>
 
-<div
-  id="btc24"
-  class="small"
->
---
-</div>
+    <div class="card s12 scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>نماد</th>
+            <th>قیمت</th>
+            <th>24h</th>
+            <th>حجم 24h</th>
+            <th>Buy Ratio</th>
+            <th>Net Flow</th>
+            <th>Score</th>
+          </tr>
+        </thead>
 
-</div>
+        <tbody id="overviewRows"></tbody>
+      </table>
+    </div>
 
-
-<div class="card s3">
-
-<div class="small">
-ETH
-</div>
-
-<div
-  id="eth"
-  class="metric"
->
---
-</div>
-
-<div
-  id="eth24"
-  class="small"
->
---
-</div>
-
-</div>
-
-
-<div class="card s3">
-
-<div class="small">
-Smart Wallets
-</div>
-
-<div
-  id="walletCount"
-  class="metric"
->
-0
-</div>
-
-</div>
-
-
-<div class="card s3">
-
-<div class="small">
-آلارم‌های امروز
-</div>
-
-<div
-  id="alertCount"
-  class="metric"
->
-0
-</div>
-
-</div>
-
-
-<div class="card s8">
-
-<h2>
-Early Money Radar
-</h2>
-
-<div id="early">
-</div>
-
-</div>
-
-
-<div class="card s4">
-
-<h2>
-Coordinated Money
-</h2>
-
-<div id="consensus">
-</div>
-
-</div>
-
-
-<div class="card s12 scroll">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>
-نماد
-</th>
-
-<th>
-قیمت
-</th>
-
-<th>
-24h
-</th>
-
-<th>
-حجم 24h
-</th>
-
-<th>
-Buy Ratio
-</th>
-
-<th>
-Net Flow
-</th>
-
-<th>
-Score
-</th>
-
-</tr>
-
-</thead>
-
-<tbody id="overviewRows">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
 
-<section
-  id="crypto"
-  class="tab"
->
+<section id="crypto" class="tab">
+  <div class="grid">
 
-<div class="grid">
+    <div class="card s12">
+      <h2>Crypto Flow</h2>
 
-<div class="card s12">
+      <div class="form2">
+        <input id="symbolInput" placeholder="مثلاً ADAUSDT">
+        <button id="addSymbol">افزودن نماد</button>
+      </div>
 
-<h2>
-Crypto Flow
-</h2>
+      <div class="small" style="margin-top:8px">
+        قیمت هر ۳ ثانیه و Flow هر ۱۵ ثانیه تازه می‌شود.
+        Flow نمونه ۵۰۰ معامله اخیر است.
+      </div>
+    </div>
 
-<div class="form2">
+    <div class="card s12 scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>نماد</th>
+            <th>قیمت</th>
+            <th>24h</th>
+            <th>Buy $</th>
+            <th>Sell $</th>
+            <th>Net $</th>
+            <th>Buy Ratio</th>
+            <th>Sample</th>
+            <th></th>
+          </tr>
+        </thead>
 
-<input
-  id="symbolInput"
-  placeholder="مثلاً ADAUSDT"
->
+        <tbody id="cryptoRows"></tbody>
+      </table>
+    </div>
 
-<button id="addSymbol">
-افزودن نماد
-</button>
-
-</div>
-
-<div
-  class="small"
-  style="margin-top:8px"
->
-
-قیمت هر ۳ ثانیه و Flow هر ۱۵ ثانیه تازه می‌شود.
-Flow نمونه ۵۰۰ معامله اخیر است.
-
-</div>
-
-</div>
-
-
-<div class="card s12 scroll">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>نماد</th>
-
-<th>قیمت</th>
-
-<th>24h</th>
-
-<th>Buy $</th>
-
-<th>Sell $</th>
-
-<th>Net $</th>
-
-<th>Buy Ratio</th>
-
-<th>Sample</th>
-
-<th></th>
-
-</tr>
-
-</thead>
-
-<tbody id="cryptoRows">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
 
-<section
-  id="discover"
-  class="tab"
->
+<section id="discover" class="tab">
+  <div class="grid">
 
-<div class="grid">
+    <div class="card s12">
+      <h2>Trader Discovery — Hyperliquid</h2>
 
+      <div class="filters">
+        <input id="minEquity" type="number" value="50000" placeholder="Min Equity">
+        <input id="minMonthPnl" type="number" value="0" placeholder="Min Month PnL">
+        <input id="maxTurnover" type="number" value="5000" placeholder="Max Turnover">
+        <input id="discoverLimit" type="number" value="50" placeholder="Limit">
+        <button id="discoverBtn">جستجو</button>
+      </div>
 
-<div class="card s12">
+      <div class="small" style="margin-top:8px">
+        تریدرها بر اساس سود، ROI، Equity و Turnover رتبه‌بندی می‌شوند.
+      </div>
+    </div>
 
-<h2>
-Trader Discovery — Hyperliquid
-</h2>
+    <div class="card s12 scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>رتبه</th>
+            <th>نام</th>
+            <th>Score</th>
+            <th>Equity</th>
+            <th>PnL روز</th>
+            <th>PnL هفته</th>
+            <th>PnL ماه</th>
+            <th>ROI ماه</th>
+            <th>PnL کل</th>
+            <th>Turnover 30d</th>
+            <th>Style</th>
+            <th></th>
+          </tr>
+        </thead>
 
-<div class="filters">
+        <tbody id="discoverRows"></tbody>
+      </table>
+    </div>
 
-<input
-  id="minEquity"
-  type="number"
-  value="50000"
-  placeholder="Min Equity"
->
-
-<input
-  id="minMonthPnl"
-  type="number"
-  value="0"
-  placeholder="Min Month PnL"
->
-
-<input
-  id="maxTurnover"
-  type="number"
-  value="5000"
-  placeholder="Max Turnover"
->
-
-<input
-  id="discoverLimit"
-  type="number"
-  value="50"
-  placeholder="Limit"
->
-
-<button id="discoverBtn">
-جستجو
-</button>
-
-</div>
-
-
-<div
-  class="small"
-  style="margin-top:8px"
->
-
-سیستم تریدرهایی را فیلتر می‌کند که
-ماهانه، هفتگی و بلندمدت عملکرد مناسب دارند
-و Turnover غیرعادی ندارند.
-
-</div>
-
-</div>
-
-
-<div class="card s12 scroll">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>رتبه</th>
-
-<th>نام</th>
-
-<th>Score</th>
-
-<th>Equity</th>
-
-<th>PnL روز</th>
-
-<th>PnL هفته</th>
-
-<th>PnL ماه</th>
-
-<th>ROI ماه</th>
-
-<th>PnL کل</th>
-
-<th>Turnover 30d</th>
-
-<th>Style</th>
-
-<th></th>
-
-</tr>
-
-</thead>
-
-<tbody id="discoverRows">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
 
-<section
-  id="wallets"
-  class="tab"
->
+<section id="wallets" class="tab">
+  <div class="grid">
 
-<div class="grid">
+    <div class="card s12">
+      <h2>Smart Wallet Watchlist</h2>
 
-<div class="card s12">
+      <div class="form4">
+        <input id="walletName" placeholder="نام دلخواه">
+        <input id="walletAddress" placeholder="0x...">
 
-<h2>
-Smart Wallet Watchlist
-</h2>
+        <select id="walletTag">
+          <option>ناشناس</option>
+          <option>منتخب من</option>
+          <option>تحت بررسی</option>
+        </select>
 
-<div class="form4">
+        <button id="addWallet">افزودن Wallet</button>
+      </div>
+    </div>
 
-<input
-  id="walletName"
-  placeholder="نام دلخواه"
->
+    <div class="card s12 scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>نام</th>
+            <th>Tier</th>
+            <th>Score</th>
+            <th>Equity</th>
+            <th>PnL روز</th>
+            <th>PnL هفته</th>
+            <th>PnL ماه</th>
+            <th>ROI ماه</th>
+            <th>Win Rate</th>
+            <th>DD ماه</th>
+            <th>پوزیشن</th>
+            <th></th>
+          </tr>
+        </thead>
 
-<input
-  id="walletAddress"
-  placeholder="0x..."
->
+        <tbody id="walletRows"></tbody>
+      </table>
+    </div>
 
-<select id="walletTag">
-
-<option>
-ناشناس
-</option>
-
-<option>
-منتخب من
-</option>
-
-<option>
-تحت بررسی
-</option>
-
-</select>
-
-<button id="addWallet">
-افزودن Wallet
-</button>
-
-</div>
-
-</div>
-
-
-<div class="card s12 scroll">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>نام</th>
-
-<th>Tier</th>
-
-<th>Score</th>
-
-<th>Equity</th>
-
-<th>PnL روز</th>
-
-<th>PnL هفته</th>
-
-<th>PnL ماه</th>
-
-<th>ROI ماه</th>
-
-<th>Win Rate</th>
-
-<th>DD ماه</th>
-
-<th>پوزیشن</th>
-
-<th></th>
-
-</tr>
-
-</thead>
-
-<tbody id="walletRows">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
 
-<section
-  id="macro"
-  class="tab"
->
+<section id="macro" class="tab">
+  <div class="grid">
 
-<div class="grid">
+    <div class="card s12">
+      <h2>Global Macro Monitor</h2>
 
-<div class="card s12">
+      <div class="small">
+        Gold Spot • WTI • Brent • DXY • EUR/USD • GBP/USD • USD/JPY
+      </div>
+    </div>
 
-<h2>
-Global Macro Monitor
-</h2>
+    <div id="macroCards" class="s12 grid"></div>
 
-<div class="small">
+    <div class="card s12 scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>بازار</th>
+            <th>نماد</th>
+            <th>قیمت</th>
+            <th>تغییر روز</th>
+            <th>گروه</th>
+            <th>زمان بازار</th>
+          </tr>
+        </thead>
 
-Gold Futures
-•
-WTI
-•
-Brent
-•
-DXY
-•
-FX
-•
-US10Y
+        <tbody id="macroRows"></tbody>
+      </table>
+    </div>
 
-</div>
-
-</div>
-
-
-<div
-  id="macroCards"
-  class="s12 grid"
->
-</div>
-
-
-<div class="card s12 scroll">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>بازار</th>
-
-<th>نماد</th>
-
-<th>قیمت</th>
-
-<th>تغییر روز</th>
-
-<th>گروه</th>
-
-<th>زمان بازار</th>
-
-</tr>
-
-</thead>
-
-<tbody id="macroRows">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
 
-<section
-  id="alerts"
-  class="tab"
->
+<section id="alerts" class="tab">
+  <div class="grid">
 
-<div class="grid">
+    <div class="card s5">
+      <h2>قواعد آلارم</h2>
 
+      <div class="small">حداقل Flow Score</div>
+      <input id="flowThreshold" type="number" value="67">
 
-<div class="card s5">
+      <br><br>
 
-<h2>
-قواعد آلارم
-</h2>
+      <div class="small">حداقل Smart Score</div>
+      <input id="walletThreshold" type="number" value="70">
 
-<div class="small">
-حداقل Flow Score
-</div>
+      <br><br>
 
-<input
-  id="flowThreshold"
-  type="number"
-  value="67"
->
+      <div class="small">حداکثر حرکت 24h برای Early (%)</div>
+      <input id="moveThreshold" type="number" value="3" step="0.1">
 
-<br><br>
+      <br><br>
 
-<div class="small">
-حداقل Smart Score
-</div>
+      <button id="saveSettings">ذخیره</button>
+      <button id="notify">فعال‌سازی Notification</button>
+    </div>
 
-<input
-  id="walletThreshold"
-  type="number"
-  value="70"
->
+    <div class="card s7">
+      <h2>Alert Log</h2>
+      <div id="alertLog"></div>
+    </div>
 
-<br><br>
-
-<div class="small">
-
-حداکثر حرکت 24h برای Early (%)
-
-</div>
-
-<input
-  id="moveThreshold"
-  type="number"
-  value="3"
-  step="0.1"
->
-
-<br><br>
-
-<button id="saveSettings">
-ذخیره
-</button>
-
-<button id="notify">
-فعال‌سازی Notification
-</button>
-
-</div>
-
-
-<div class="card s7">
-
-<h2>
-Alert Log
-</h2>
-
-<div id="alertLog">
-</div>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
 
-<section
-  id="system"
-  class="tab"
->
+<section id="system" class="tab">
+  <div class="grid">
 
-<div class="grid">
+    <div class="card s4">
+      <div class="small">Backend</div>
+      <div id="healthState" class="metric">--</div>
+    </div>
 
-<div class="card s4">
+    <div class="card s4">
+      <div class="small">Market API</div>
+      <div id="marketState" class="metric">--</div>
+    </div>
 
-<div class="small">
-Backend
-</div>
+    <div class="card s4">
+      <div class="small">آخرین بروزرسانی</div>
+      <div id="updated" class="metric" style="font-size:18px">--</div>
+    </div>
 
-<div
-  id="healthState"
-  class="metric"
->
---
-</div>
+    <div class="card s12">
+      <div class="signal">Crypto: Binance Vision</div>
+      <div class="signal">Trader Discovery: Hyperliquid Leaderboard</div>
+      <div class="signal">Wallet Monitoring: Hyperliquid API</div>
+      <div class="signal">Macro: Stooq</div>
+    </div>
 
-</div>
-
-
-<div class="card s4">
-
-<div class="small">
-Market API
-</div>
-
-<div
-  id="marketState"
-  class="metric"
->
---
-</div>
-
-</div>
-
-
-<div class="card s4">
-
-<div class="small">
-آخرین بروزرسانی
-</div>
-
-<div
-  id="updated"
-  class="metric"
-  style="font-size:18px"
->
---
-</div>
-
-</div>
-
-
-<div class="card s12">
-
-<div class="signal">
-Crypto: Binance Vision
-</div>
-
-<div class="signal">
-Trader Discovery: Hyperliquid Leaderboard
-</div>
-
-<div class="signal">
-Wallet Monitoring: Hyperliquid API
-</div>
-
-<div class="signal">
-Macro: Yahoo Finance
-</div>
-
-</div>
-
-</div>
-
+  </div>
 </section>
-
 
 </main>
 
 
 <div class="footer">
-
-ALI Flow Radar ابزار تحقیق و رصد بازار است؛
-تضمین سود یا توصیه خرید و فروش نیست.
-
+  ALI Flow Radar ابزار تحقیق و رصد بازار است؛ تضمین سود یا توصیه خرید و فروش نیست.
 </div>
 
 
-<div
-  id="modal"
-  class="modal"
->
+<div id="modal" class="modal">
+  <div class="modalbox">
 
-<div class="modalbox">
+    <div style="display:flex;justify-content:space-between">
+      <h2 id="modalTitle">Wallet</h2>
+      <button id="closeModal">بستن</button>
+    </div>
 
-<div
-  style="
-  display:flex;
-  justify-content:space-between
-  "
->
+    <div id="modalBody"></div>
 
-<h2 id="modalTitle">
-Wallet
-</h2>
-
-<button id="closeModal">
-بستن
-</button>
-
-</div>
-
-<div id="modalBody">
-</div>
-
-</div>
-
+  </div>
 </div>
 
 
@@ -1249,36 +627,19 @@ const DEFAULT = [
 ];
 
 let symbols =
-  JSON.parse(
-    localStorage.getItem(
-      "afr_symbols"
-    ) ||
-    "null"
-  ) ||
-  DEFAULT;
+  JSON.parse(localStorage.getItem("afr_symbols") || "null")
+  || DEFAULT;
 
 let wallets =
-  JSON.parse(
-    localStorage.getItem(
-      "afr_wallets"
-    ) ||
-    "[]"
-  );
+  JSON.parse(localStorage.getItem("afr_wallets") || "[]");
 
 let alerts =
-  JSON.parse(
-    localStorage.getItem(
-      "afr_alerts"
-    ) ||
-    "[]"
-  );
+  JSON.parse(localStorage.getItem("afr_alerts") || "[]");
 
 let settings =
   JSON.parse(
-    localStorage.getItem(
-      "afr_settings"
-    ) ||
-    '{"flow":67,"wallet":70,"move":3}'
+    localStorage.getItem("afr_settings")
+    || '{"flow":67,"wallet":70,"move":3}'
   );
 
 let market = {};
@@ -1286,173 +647,111 @@ let flow = {};
 let walletData = {};
 let macro = [];
 let discovered = [];
-
 let cooldown = {};
 
-const $ =
-  id =>
-    document.getElementById(
-      id
-    );
+const $ = id => document.getElementById(id);
 
-const n =
-  (
-    v,
-    f = 0
-  ) =>
-    Number.isFinite(
-      Number(v)
-    )
-      ? Number(v)
-      : f;
+const n = (v,f=0) =>
+  Number.isFinite(Number(v))
+    ? Number(v)
+    : f;
 
-const cls =
-  v =>
-    n(v) >= 0
-      ? "good"
-      : "bad";
+const cls = v =>
+  n(v) >= 0
+    ? "good"
+    : "bad";
 
 
-function save() {
+function save(){
 
   localStorage.setItem(
     "afr_symbols",
-    JSON.stringify(
-      symbols
-    )
+    JSON.stringify(symbols)
   );
 
   localStorage.setItem(
     "afr_wallets",
-    JSON.stringify(
-      wallets
-    )
+    JSON.stringify(wallets)
   );
 
   localStorage.setItem(
     "afr_alerts",
-    JSON.stringify(
-      alerts
-    )
+    JSON.stringify(alerts)
   );
 
   localStorage.setItem(
     "afr_settings",
-    JSON.stringify(
-      settings
-    )
+    JSON.stringify(settings)
   );
 }
 
 
-function money(v) {
+function money(v){
 
   v = n(v);
 
-  let a =
-    Math.abs(v);
+  const a = Math.abs(v);
 
-  if (a >= 1e9) {
-    return (
-      v /
-      1e9
-    ).toFixed(2) +
-      "B";
-  }
+  if(a >= 1e9)
+    return (v/1e9).toFixed(2) + "B";
 
-  if (a >= 1e6) {
-    return (
-      v /
-      1e6
-    ).toFixed(2) +
-      "M";
-  }
+  if(a >= 1e6)
+    return (v/1e6).toFixed(2) + "M";
 
-  if (a >= 1e3) {
-    return (
-      v /
-      1e3
-    ).toFixed(1) +
-      "K";
-  }
+  if(a >= 1e3)
+    return (v/1e3).toFixed(1) + "K";
 
   return v.toFixed(0);
 }
 
 
-function price(v) {
+function price(v){
 
   v = Number(v);
 
-  if (
-    !Number.isFinite(v)
-  ) {
+  if(!Number.isFinite(v))
     return "--";
-  }
 
-  if (
-    Math.abs(v) <
-    1
-  ) {
+  if(Math.abs(v) < 1)
     return v.toFixed(5);
-  }
 
-  if (
-    Math.abs(v) <
-    100
-  ) {
+  if(Math.abs(v) < 100)
     return v.toFixed(3);
-  }
 
   return v.toLocaleString(
     undefined,
-    {
-      maximumFractionDigits:
-        2
-    }
+    {maximumFractionDigits:2}
   );
 }
 
 
-function pct(v) {
+function pct(v){
 
   v = Number(v);
 
-  if (
-    !Number.isFinite(v)
-  ) {
+  if(!Number.isFinite(v))
     return "--";
-  }
 
-  return (
-    v >= 0
-      ? "+"
-      : ""
-  ) +
-    v.toFixed(2) +
-    "%";
+  return (v >= 0 ? "+" : "")
+    + v.toFixed(2)
+    + "%";
 }
 
 
-function short(a) {
+function short(a){
 
-  return (
-    a.slice(0,6) +
-    "…" +
-    a.slice(-4)
-  );
+  return a.slice(0,6)
+    + "…"
+    + a.slice(-4);
 }
 
 
-async function get(url) {
+async function get(url){
 
   const r =
     await fetch(
       url,
-      {
-        cache:
-          "no-store"
-      }
+      {cache:"no-store"}
     );
 
   const text =
@@ -1460,24 +759,17 @@ async function get(url) {
 
   let d;
 
-  try {
-
-    d =
-      JSON.parse(text);
-
-  } catch {
-
-    throw new Error(
-      "Bad JSON"
-    );
+  try{
+    d = JSON.parse(text);
+  }
+  catch{
+    throw new Error("Bad JSON");
   }
 
-  if (!r.ok) {
-
+  if(!r.ok){
     throw new Error(
       d.error ||
-      "HTTP " +
-      r.status
+      "HTTP " + r.status
     );
   }
 
@@ -1486,100 +778,69 @@ async function get(url) {
 
 
 document
-  .querySelectorAll(
-    ".tabbtn"
-  )
-  .forEach(
-    b =>
-      b.onclick =
-        () => {
+.querySelectorAll(".tabbtn")
+.forEach(
+  b =>
+    b.onclick =
+      () => {
 
-          document
-            .querySelectorAll(
-              ".tabbtn"
-            )
-            .forEach(
-              x =>
-                x.classList
-                  .remove(
-                    "active"
-                  )
-            );
-
-          document
-            .querySelectorAll(
-              ".tab"
-            )
-            .forEach(
-              x =>
-                x.classList
-                  .remove(
-                    "active"
-                  )
-            );
-
-          b.classList
-            .add(
-              "active"
-            );
-
-          $(
-            b.dataset.tab
-          )
-            .classList
-            .add(
-              "active"
-            );
-        }
-  );
-
-
-async function health() {
-
-  try {
-
-    let d =
-      await get(
-        "/api/health"
-      );
-
-    $("healthState")
-      .textContent =
-        d.ok
-          ? "LIVE"
-          : "خطا";
-
-    $("healthState")
-      .className =
-        "metric " +
-        (
-          d.ok
-            ? "good"
-            : "bad"
+        document
+        .querySelectorAll(".tabbtn")
+        .forEach(
+          x =>
+            x.classList.remove("active")
         );
 
-  } catch {
+        document
+        .querySelectorAll(".tab")
+        .forEach(
+          x =>
+            x.classList.remove("active")
+        );
 
-    $("healthState")
-      .textContent =
-        "قطع";
+        b.classList.add("active");
 
-    $("healthState")
-      .className =
-        "metric bad";
+        $(b.dataset.tab)
+        .classList.add("active");
+      }
+);
+
+
+async function health(){
+
+  try{
+
+    const d =
+      await get("/api/health");
+
+    $("healthState").textContent =
+      d.ok
+        ? "LIVE"
+        : "خطا";
+
+    $("healthState").className =
+      "metric " +
+      (d.ok ? "good" : "bad");
+
+  }
+  catch{
+
+    $("healthState").textContent =
+      "قطع";
+
+    $("healthState").className =
+      "metric bad";
   }
 }
 
 
-async function refreshMarket() {
+async function refreshMarket(){
 
-  try {
+  try{
 
-    let d =
+    const d =
       await get(
-
         "/api/binance?symbols=" +
-
         encodeURIComponent(
           symbols.join(",")
         )
@@ -1589,77 +850,54 @@ async function refreshMarket() {
 
     d.forEach(
       x =>
-        market[x.symbol] =
-          x
+        market[x.symbol] = x
     );
 
-    $("dot")
-      .classList
-      .add(
-        "live"
-      );
+    $("dot").classList.add("live");
 
-    $("status")
-      .textContent =
-        "LIVE";
+    $("status").textContent =
+      "LIVE";
 
-    $("marketState")
-      .textContent =
-        "متصل";
+    $("marketState").textContent =
+      "متصل";
 
-    $("marketState")
-      .className =
-        "metric good";
+    $("marketState").className =
+      "metric good";
 
-    $("updated")
-      .textContent =
-        new Date()
-          .toLocaleTimeString(
-            "fa-IR"
-          );
+    $("updated").textContent =
+      new Date()
+      .toLocaleTimeString("fa-IR");
 
     renderMarket();
 
-  } catch {
+  }
+  catch{
 
-    $("dot")
-      .classList
-      .remove(
-        "live"
-      );
+    $("dot").classList.remove("live");
 
-    $("status")
-      .textContent =
-        "API قطع";
+    $("status").textContent =
+      "API قطع";
 
-    $("marketState")
-      .textContent =
-        "قطع";
+    $("marketState").textContent =
+      "قطع";
 
-    $("marketState")
-      .className =
-        "metric bad";
+    $("marketState").className =
+      "metric bad";
   }
 }
 
 
-async function refreshFlow() {
+async function refreshFlow(){
 
-  try {
+  try{
 
-    let d =
+    const d =
       await get(
-
         "/api/flow?symbols=" +
-
         encodeURIComponent(
-
           symbols
-            .slice(
-              0,
-              10
-            )
-            .join(",")
+          .slice(0,10)
+          .join(",")
         )
       );
 
@@ -1667,153 +905,93 @@ async function refreshFlow() {
 
     d.forEach(
       x =>
-        flow[x.symbol] =
-          x
+        flow[x.symbol] = x
     );
 
     renderMarket();
-
     marketAlerts();
 
-  } catch {}
+  }
+  catch{}
 }
 
 
-function renderMarket() {
+function renderMarket(){
 
-  let b =
-    market.BTCUSDT;
+  const b = market.BTCUSDT;
+  const e = market.ETHUSDT;
 
-  let e =
-    market.ETHUSDT;
+  $("btc").textContent =
+    b
+      ? price(b.lastPrice)
+      : "--";
 
-  $("btc")
-    .textContent =
-      b
-        ? price(
-            b.lastPrice
-          )
-        : "--";
+  $("eth").textContent =
+    e
+      ? price(e.lastPrice)
+      : "--";
 
-  $("eth")
-    .textContent =
-      e
-        ? price(
-            e.lastPrice
-          )
-        : "--";
+  $("btc24").innerHTML =
+    b
+      ? `<span class="${cls(b.priceChangePercent)}">
+          ${pct(b.priceChangePercent)}
+         </span>`
+      : "--";
 
-
-  $("btc24")
-    .innerHTML =
-      b
-        ? `
-          <span class="${cls(
-            b.priceChangePercent
-          )}">
-          ${pct(
-            b.priceChangePercent
-          )}
-          </span>
-          `
-        : "--";
+  $("eth24").innerHTML =
+    e
+      ? `<span class="${cls(e.priceChangePercent)}">
+          ${pct(e.priceChangePercent)}
+         </span>`
+      : "--";
 
 
-  $("eth24")
-    .innerHTML =
-      e
-        ? `
-          <span class="${cls(
-            e.priceChangePercent
-          )}">
-          ${pct(
-            e.priceChangePercent
-          )}
-          </span>
-          `
-        : "--";
+  $("overviewRows").innerHTML =
+    symbols.map(
+      s => {
 
+        const m = market[s] || {};
+        const f = flow[s] || {};
 
-  $("overviewRows")
-    .innerHTML =
-      symbols
+        const sc =
+          Number.isFinite(Number(f.flowScore))
+            ? Number(f.flowScore)
+            : null;
 
-        .map(
-          s => {
+        return `
+        <tr>
 
-            let m =
-              market[s] ||
-              {};
+          <td><b>${s}</b></td>
 
-            let f =
-              flow[s] ||
-              {};
+          <td>
+            ${price(m.lastPrice)}
+          </td>
 
-            let sc =
-              Number.isFinite(
-                Number(
-                  f.flowScore
-                )
-              )
-                ? Number(
-                    f.flowScore
-                  )
-                : null;
+          <td class="${cls(m.priceChangePercent)}">
+            ${pct(m.priceChangePercent)}
+          </td>
 
-            return `
+          <td>
+            ${money(m.quoteVolume)}
+          </td>
 
-            <tr>
-
-            <td>
-            <b>${s}</b>
-            </td>
-
-            <td>
-            ${price(
-              m.lastPrice
-            )}
-            </td>
-
-            <td class="${cls(
-              m.priceChangePercent
-            )}">
-            ${pct(
-              m.priceChangePercent
-            )}
-            </td>
-
-            <td>
-            ${money(
-              m.quoteVolume
-            )}
-            </td>
-
-            <td>
+          <td>
             ${
               sc == null
                 ? "--"
-                : n(
-                    f.buyRatio
-                  ).toFixed(1) +
-                  "%"
+                : n(f.buyRatio).toFixed(1) + "%"
             }
-            </td>
+          </td>
 
-            <td class="${cls(
-              f.netFlow
-            )}">
+          <td class="${cls(f.netFlow)}">
             ${
               f.netFlow == null
                 ? "--"
-                : "$" +
-                  money(
-                    f.netFlow
-                  )
+                : "$" + money(f.netFlow)
             }
-            </td>
+          </td>
 
-            <td>
-
+          <td>
             ${
               sc == null
                 ? "--"
@@ -1821,294 +999,171 @@ function renderMarket() {
             }
 
             <div class="bar">
-
-            <i style="width:${
-              sc || 0
-            }%">
-            </i>
-
+              <i style="width:${sc || 0}%"></i>
             </div>
+          </td>
 
-            </td>
-
-            </tr>
-            `;
-          }
-        )
-
-        .join("");
+        </tr>
+        `;
+      }
+    ).join("");
 
 
-  $("cryptoRows")
-    .innerHTML =
-      symbols
+  $("cryptoRows").innerHTML =
+    symbols.map(
+      s => {
 
-        .map(
-          s => {
+        const m = market[s] || {};
+        const f = flow[s] || {};
 
-            let m =
-              market[s] ||
-              {};
+        return `
+        <tr>
 
-            let f =
-              flow[s] ||
-              {};
+          <td><b>${s}</b></td>
 
-            return `
+          <td>
+            ${price(m.lastPrice)}
+          </td>
 
-            <tr>
+          <td class="${cls(m.priceChangePercent)}">
+            ${pct(m.priceChangePercent)}
+          </td>
 
-            <td>
-            <b>${s}</b>
-            </td>
-
-            <td>
-            ${price(
-              m.lastPrice
-            )}
-            </td>
-
-            <td class="${cls(
-              m.priceChangePercent
-            )}">
-            ${pct(
-              m.priceChangePercent
-            )}
-            </td>
-
-            <td class="good">
-
+          <td class="good">
             ${
               f.takerBuy == null
                 ? "--"
-                : "$" +
-                  money(
-                    f.takerBuy
-                  )
+                : "$" + money(f.takerBuy)
             }
+          </td>
 
-            </td>
-
-            <td class="bad">
-
+          <td class="bad">
             ${
               f.takerSell == null
                 ? "--"
-                : "$" +
-                  money(
-                    f.takerSell
-                  )
+                : "$" + money(f.takerSell)
             }
+          </td>
 
-            </td>
-
-            <td class="${cls(
-              f.netFlow
-            )}">
-
+          <td class="${cls(f.netFlow)}">
             ${
               f.netFlow == null
                 ? "--"
-                : "$" +
-                  money(
-                    f.netFlow
-                  )
+                : "$" + money(f.netFlow)
             }
+          </td>
 
-            </td>
-
-            <td>
-
+          <td>
             ${
               f.buyRatio == null
                 ? "--"
-                : n(
-                    f.buyRatio
-                  ).toFixed(1) +
-                  "%"
+                : n(f.buyRatio).toFixed(1) + "%"
             }
+          </td>
 
-            </td>
+          <td>
+            ${f.sampleTrades || "--"}
+          </td>
 
-            <td>
-            ${
-              f.sampleTrades ||
-              "--"
-            }
-            </td>
-
-            <td>
-
+          <td>
             <button
               class="danger"
-              onclick="removeSymbol('${s}')"
-            >
-            حذف
+              onclick="removeSymbol('${s}')">
+              حذف
             </button>
+          </td>
 
-            </td>
-
-            </tr>
-            `;
-          }
-        )
-
-        .join("");
+        </tr>
+        `;
+      }
+    ).join("");
 
   renderEarly();
 }
 
 
-function renderEarly() {
+function renderEarly(){
 
-  let rows =
+  const rows =
     symbols
-
-      .map(
-        s => ({
-          s,
-          m:
-            market[s],
-          f:
-            flow[s]
-        })
-      )
-
-      .filter(
-        x =>
-          x.m &&
-          x.f &&
-          !x.f.error
-      )
-
-      .map(
-        x => ({
-
-          s:
-            x.s,
-
-          move:
-            n(
-              x.m
-                .priceChangePercent
-            ),
-
-          score:
-            n(
-              x.f
-                .flowScore
-            ),
-
-          net:
-            n(
-              x.f
-                .netFlow
-            )
-        })
-      )
-
-      .sort(
-        (
-          a,
-          b
-        ) =>
-          Math.abs(
-            b.score -
-            50
-          ) -
-          Math.abs(
-            a.score -
-            50
-          )
-      )
-
-      .slice(
-        0,
-        6
-      );
+    .map(
+      s => ({
+        s,
+        m:market[s],
+        f:flow[s]
+      })
+    )
+    .filter(
+      x =>
+        x.m &&
+        x.f &&
+        !x.f.error
+    )
+    .map(
+      x => ({
+        s:x.s,
+        move:n(x.m.priceChangePercent),
+        score:n(x.f.flowScore),
+        net:n(x.f.netFlow)
+      })
+    )
+    .sort(
+      (a,b) =>
+        Math.abs(b.score - 50) -
+        Math.abs(a.score - 50)
+    )
+    .slice(0,6);
 
 
-  $("early")
-    .innerHTML =
-      rows.length
+  $("early").innerHTML =
+    rows.length
 
-        ? rows
+    ? rows.map(
+        x => `
 
-            .map(
-              x => `
+        <div class="signal">
 
-              <div class="signal">
+          <b>${x.s}</b>
 
-              <b>
-              ${x.s}
-              </b>
+          <span class="${
+            x.score >= 50
+              ? "good"
+              : "bad"
+          }">
 
-              <span class="${
-                x.score >= 50
-                  ? "good"
-                  : "bad"
-              }">
+            ${
+              x.score >= 50
+                ? "فشار خرید"
+                : "فشار فروش"
+            }
 
-              ${
-                x.score >= 50
-                  ? "فشار خرید"
-                  : "فشار فروش"
-              }
+          </span>
 
-              </span>
+          ${
+            Math.abs(x.move) <= n(settings.move,3)
+            &&
+            Math.abs(x.score - 50) >= 12
 
-              ${
-                Math.abs(
-                  x.move
-                ) <=
-                  n(
-                    settings.move,
-                    3
-                  ) &&
-                Math.abs(
-                  x.score -
-                  50
-                ) >=
-                  12
+            ? `<span class="pill">EARLY</span>`
 
-                  ? `
-                    <span class="pill">
-                    EARLY
-                    </span>
-                    `
+            : ""
+          }
 
-                  : ""
-              }
-
-              <div class="small">
-
-              Flow ${x.score}
-
-              •
-
-              24h ${pct(
-                x.move
-              )}
-
-              •
-
-              Net $${money(
-                x.net
-              )}
-
-              </div>
-
-              </div>
-              `
-            )
-
-            .join("")
-
-        : `
           <div class="small">
-          داده کافی نیست.
+
+            Flow ${x.score}
+            •
+            24h ${pct(x.move)}
+            •
+            Net $${money(x.net)}
+
           </div>
-          `;
+
+        </div>
+        `
+      ).join("")
+
+    : `<div class="small">داده کافی نیست.</div>`;
 }
 
 
@@ -2117,90 +1172,67 @@ window.removeSymbol =
 
     symbols =
       symbols.filter(
-        x =>
-          x !== s
+        x => x !== s
       );
 
     save();
 
     refreshMarket();
-
     refreshFlow();
   };
 
 
-$("addSymbol")
-  .onclick =
-    () => {
+$("addSymbol").onclick =
+  () => {
 
-      let s =
-        $("symbolInput")
-          .value
-          .trim()
-          .toUpperCase()
-          .replace(
-            "/",
-            ""
-          );
-
-      if (
-        s &&
-        !symbols.includes(s)
-      ) {
-
-        symbols.push(s);
-
-        save();
-
-        refreshMarket();
-
-        refreshFlow();
-      }
-
+    const s =
       $("symbolInput")
-        .value =
-          "";
-    };
+      .value
+      .trim()
+      .toUpperCase()
+      .replace("/","");
+
+    if(
+      s &&
+      !symbols.includes(s)
+    ){
+      symbols.push(s);
+      save();
+      refreshMarket();
+      refreshFlow();
+    }
+
+    $("symbolInput").value = "";
+  };
 
 
-async function discoverTraders() {
+async function discoverTraders(){
 
-  $("discoverRows")
-    .innerHTML = `
-
-      <tr>
-
+  $("discoverRows").innerHTML =
+    `
+    <tr>
       <td colspan="12">
-      در حال دریافت و رتبه‌بندی...
+        در حال دریافت و رتبه‌بندی...
       </td>
+    </tr>
+    `;
 
-      </tr>
-      `;
-
-  try {
+  try{
 
     const q =
       new URLSearchParams({
 
         minEquity:
-          $("minEquity")
-            .value ||
-          50000,
+          $("minEquity").value || 50000,
 
         minMonthPnl:
-          $("minMonthPnl")
-            .value ||
-          0,
+          $("minMonthPnl").value || 0,
 
         maxTurnover:
-          $("maxTurnover")
-            .value ||
-          5000,
+          $("maxTurnover").value || 5000,
 
         limit:
-          $("discoverLimit")
-            .value ||
-          50
+          $("discoverLimit").value || 50
       });
 
 
@@ -2211,159 +1243,101 @@ async function discoverTraders() {
       );
 
     discovered =
-      d.traders ||
-      [];
+      d.traders || [];
 
     renderDiscovered();
 
-  } catch (e) {
+  }
+  catch(e){
 
-    $("discoverRows")
-      .innerHTML = `
-
+    $("discoverRows").innerHTML =
+      `
       <tr>
-
-      <td
-        colspan="12"
-        class="bad"
-      >
-
-      ${e.message}
-
-      </td>
-
+        <td colspan="12" class="bad">
+          ${e.message}
+        </td>
       </tr>
       `;
   }
 }
 
 
-function renderDiscovered() {
+function renderDiscovered(){
 
-  $("discoverRows")
-    .innerHTML =
-      discovered.length
+  $("discoverRows").innerHTML =
 
-        ? discovered
+    discovered.length
 
-            .map(
-              (
-                t,
-                i
-              ) => {
+    ? discovered.map(
+        (t,i) => {
 
-                let p =
-                  t.performance ||
-                  {};
+          const p =
+            t.performance || {};
 
-                let followed =
-                  wallets.some(
-                    w =>
-                      w.address
-                        .toLowerCase() ===
-                      t.address
-                        .toLowerCase()
-                  );
+          const followed =
+            wallets.some(
+              w =>
+                w.address.toLowerCase() ===
+                t.address.toLowerCase()
+            );
 
-                return `
+          return `
+          <tr>
 
-                <tr>
+            <td>${i+1}</td>
 
-                <td>
-                ${i + 1}
-                </td>
+            <td>
+              <b>${t.name || "Anonymous"}</b>
 
-                <td>
+              <div class="small">
+                ${short(t.address)}
+              </div>
+            </td>
 
-                <b>
+            <td>
+              <b>${t.discoveryScore}</b>
+            </td>
+
+            <td>
+              $${money(t.equity)}
+            </td>
+
+            <td class="${cls(p.day?.pnl)}">
+              $${money(p.day?.pnl)}
+            </td>
+
+            <td class="${cls(p.week?.pnl)}">
+              $${money(p.week?.pnl)}
+            </td>
+
+            <td class="${cls(p.month?.pnl)}">
+              $${money(p.month?.pnl)}
+            </td>
+
+            <td class="${cls(p.month?.roiPct)}">
+              ${pct(p.month?.roiPct)}
+            </td>
+
+            <td class="${cls(p.allTime?.pnl)}">
+              $${money(p.allTime?.pnl)}
+            </td>
+
+            <td>
+              ${n(t.turnover30d).toFixed(0)}x
+            </td>
+
+            <td>
+              ${t.style}
+            </td>
+
+            <td>
+              <button
                 ${
-                  t.name ||
-                  "Anonymous"
+                  followed
+                    ? "disabled"
+                    : ""
                 }
-                </b>
-
-                <div class="small">
-
-                ${short(
-                  t.address
-                )}
-
-                </div>
-
-                </td>
-
-                <td>
-                <b>
-                ${t.discoveryScore}
-                </b>
-                </td>
-
-                <td>
-                $${money(
-                  t.equity
-                )}
-                </td>
-
-                <td class="${cls(
-                  p.day?.pnl
-                )}">
-                $${money(
-                  p.day?.pnl
-                )}
-                </td>
-
-                <td class="${cls(
-                  p.week?.pnl
-                )}">
-                $${money(
-                  p.week?.pnl
-                )}
-                </td>
-
-                <td class="${cls(
-                  p.month?.pnl
-                )}">
-                $${money(
-                  p.month?.pnl
-                )}
-                </td>
-
-                <td class="${cls(
-                  p.month?.roiPct
-                )}">
-                ${pct(
-                  p.month?.roiPct
-                )}
-                </td>
-
-                <td class="${cls(
-                  p.allTime?.pnl
-                )}">
-                $${money(
-                  p.allTime?.pnl
-                )}
-                </td>
-
-                <td>
-                ${n(
-                  t.turnover30d
-                ).toFixed(0)}x
-                </td>
-
-                <td>
-                ${t.style}
-                </td>
-
-                <td>
-
-                <button
-                  ${
-                    followed
-                      ? "disabled"
-                      : ""
-                  }
-                  onclick="followTrader(${i})"
-                >
+                onclick="followTrader(${i})">
 
                 ${
                   followed
@@ -2371,52 +1345,40 @@ function renderDiscovered() {
                     : "Follow"
                 }
 
-                </button>
-
-                </td>
-
-                </tr>
-                `;
-              }
-            )
-
-            .join("")
-
-        : `
-
-          <tr>
-
-          <td colspan="12">
-
-          موردی پیدا نشد.
-          فیلترها را بازتر کن.
-
-          </td>
+              </button>
+            </td>
 
           </tr>
           `;
+        }
+      ).join("")
+
+    : `
+      <tr>
+        <td colspan="12">
+          موردی پیدا نشد.
+        </td>
+      </tr>
+      `;
 }
 
 
 window.followTrader =
   i => {
 
-    let t =
+    const t =
       discovered[i];
 
-    if (!t) {
+    if(!t)
       return;
-    }
 
-    if (
+    if(
       wallets.some(
         w =>
-          w.address
-            .toLowerCase() ===
-          t.address
-            .toLowerCase()
+          w.address.toLowerCase() ===
+          t.address.toLowerCase()
       )
-    ) {
+    ){
       return;
     }
 
@@ -2425,10 +1387,7 @@ window.followTrader =
       name:
         t.name ||
         "Trader-" +
-        (
-          wallets.length +
-          1
-        ),
+        (wallets.length + 1),
 
       address:
         t.address,
@@ -2440,30 +1399,23 @@ window.followTrader =
     save();
 
     renderDiscovered();
-
     refreshWallets();
 
     pushAlert(
-
-      "follow:" +
-      t.address,
-
+      "follow:" + t.address,
       `Follow شد: ${
         t.name ||
         short(t.address)
-      } • Score ${
-        t.discoveryScore
-      }`
+      } • Score ${t.discoveryScore}`
     );
   };
 
 
-$("discoverBtn")
-  .onclick =
-    discoverTraders;
+$("discoverBtn").onclick =
+  discoverTraders;
 
 
-async function refreshWallets() {
+async function refreshWallets(){
 
   await Promise.all(
 
@@ -2471,29 +1423,23 @@ async function refreshWallets() {
 
       async w => {
 
-        try {
+        try{
 
           walletData[
-            w.address
-              .toLowerCase()
+            w.address.toLowerCase()
           ] =
             await get(
-
               "/api/hyperliquid/summary?user=" +
-
-              encodeURIComponent(
-                w.address
-              )
+              encodeURIComponent(w.address)
             );
 
-        } catch (e) {
+        }
+        catch(e){
 
           walletData[
-            w.address
-              .toLowerCase()
+            w.address.toLowerCase()
           ] = {
-            error:
-              String(e)
+            error:String(e)
           };
         }
       }
@@ -2501,38 +1447,25 @@ async function refreshWallets() {
   );
 
   renderWallets();
-
   renderConsensus();
-
   walletAlerts();
 }
 
 
-function renderWallets() {
+function renderWallets(){
 
-  $("walletCount")
-    .textContent =
-      wallets.length;
+  $("walletCount").textContent =
+    wallets.length;
 
 
-  if (
-    !wallets.length
-  ) {
+  if(!wallets.length){
 
-    $("walletRows")
-      .innerHTML = `
-
+    $("walletRows").innerHTML =
+      `
       <tr>
-
-      <td
-        colspan="12"
-        class="small"
-      >
-
-      Wallet اضافه نشده.
-
-      </td>
-
+        <td colspan="12" class="small">
+          Wallet اضافه نشده.
+        </td>
       </tr>
       `;
 
@@ -2540,1121 +1473,759 @@ function renderWallets() {
   }
 
 
-  $("walletRows")
-    .innerHTML =
-      wallets
+  $("walletRows").innerHTML =
+    wallets.map(
+      (w,i) => {
 
-        .map(
-          (
-            w,
-            i
-          ) => {
-
-            let d =
-              walletData[
-                w.address
-                  .toLowerCase()
-              ] ||
-              {};
+        const d =
+          walletData[
+            w.address.toLowerCase()
+          ] || {};
 
 
-            if (
-              d.error
-            ) {
+        if(d.error){
 
-              return `
+          return `
+          <tr>
 
-              <tr>
-
-              <td>
-
+            <td>
               ${w.name}
 
               <div class="small">
-              ${short(
-                w.address
-              )}
+                ${short(w.address)}
               </div>
+            </td>
 
-              </td>
-
-              <td
-                colspan="10"
-                class="bad"
-              >
+            <td colspan="10" class="bad">
               خطا
-              </td>
-
-              <td>
-
-              <button
-                onclick="removeWallet(${i})"
-              >
-              حذف
-              </button>
-
-              </td>
-
-              </tr>
-              `;
-            }
-
-
-            let day =
-              d.pnl
-                ?.day
-                ?.pnl;
-
-            let week =
-              d.pnl
-                ?.week
-                ?.pnl;
-
-            let month =
-              d.pnl
-                ?.month
-                ?.pnl;
-
-            let roi =
-              d.pnl
-                ?.month
-                ?.roi;
-
-            let dd =
-              d.pnl
-                ?.month
-                ?.maxDrawdownPct;
-
-            let wr =
-              d.stats30
-                ?.winRate;
-
-
-            return `
-
-            <tr>
+            </td>
 
             <td>
+              <button
+                onclick="removeWallet(${i})">
+                حذف
+              </button>
+            </td>
 
-            <b>
-            ${w.name}
-            </b>
+          </tr>
+          `;
+        }
+
+
+        const day =
+          d.pnl?.day?.pnl;
+
+        const week =
+          d.pnl?.week?.pnl;
+
+        const month =
+          d.pnl?.month?.pnl;
+
+        const roi =
+          d.pnl?.month?.roi;
+
+        const dd =
+          d.pnl?.month?.maxDrawdownPct;
+
+        const wr =
+          d.stats30?.winRate;
+
+
+        return `
+        <tr>
+
+          <td>
+            <b>${w.name}</b>
 
             <div class="small">
-
-            ${w.tag}
-
-            •
-
-            ${short(
-              w.address
-            )}
-
+              ${w.tag}
+              •
+              ${short(w.address)}
             </div>
+          </td>
 
-            </td>
+          <td>
+            ${d.tier || "--"}
+          </td>
 
-            <td>
-            ${
-              d.tier ||
-              "--"
-            }
-            </td>
+          <td>
+            <b>${d.smartScore ?? "--"}</b>
+          </td>
 
-            <td>
-            <b>
-            ${
-              d.smartScore ??
-              "--"
-            }
-            </b>
-            </td>
+          <td>
+            $${money(d.equity)}
+          </td>
 
-            <td>
-            $${money(
-              d.equity
-            )}
-            </td>
-
-            <td class="${cls(
-              day
-            )}">
+          <td class="${cls(day)}">
             ${
               day == null
                 ? "--"
-                : "$" +
-                  money(day)
+                : "$" + money(day)
             }
-            </td>
+          </td>
 
-            <td class="${cls(
-              week
-            )}">
+          <td class="${cls(week)}">
             ${
               week == null
                 ? "--"
-                : "$" +
-                  money(week)
+                : "$" + money(week)
             }
-            </td>
+          </td>
 
-            <td class="${cls(
-              month
-            )}">
+          <td class="${cls(month)}">
             ${
               month == null
                 ? "--"
-                : "$" +
-                  money(month)
+                : "$" + money(month)
             }
-            </td>
+          </td>
 
-            <td class="${cls(
-              roi
-            )}">
+          <td class="${cls(roi)}">
             ${
               roi == null
                 ? "--"
                 : pct(roi)
             }
-            </td>
+          </td>
 
-            <td>
+          <td>
             ${
               wr == null
                 ? "--"
-                : n(wr)
-                    .toFixed(1) +
-                  "%"
+                : n(wr).toFixed(1) + "%"
             }
-            </td>
+          </td>
 
-            <td class="${cls(
-              dd
-            )}">
+          <td class="${cls(dd)}">
             ${
               dd == null
                 ? "--"
                 : pct(dd)
             }
-            </td>
+          </td>
 
-            <td>
-            ${
-              d.positions
-                ?.length ||
-              0
-            }
-            </td>
+          <td>
+            ${d.positions?.length || 0}
+          </td>
 
-            <td>
+          <td>
 
             <button
-              onclick="openWallet(${i})"
-            >
-            جزئیات
+              onclick="openWallet(${i})">
+              جزئیات
             </button>
 
             <button
               class="danger"
-              onclick="removeWallet(${i})"
-            >
-            حذف
+              onclick="removeWallet(${i})">
+              حذف
             </button>
 
-            </td>
+          </td>
 
-            </tr>
-            `;
-          }
-        )
-
-        .join("");
+        </tr>
+        `;
+      }
+    ).join("");
 }
 
 
 window.removeWallet =
   i => {
 
-    wallets.splice(
-      i,
-      1
-    );
+    wallets.splice(i,1);
 
     save();
 
     renderDiscovered();
+    refreshWallets();
+  };
+
+
+$("addWallet").onclick =
+  () => {
+
+    const name =
+      $("walletName").value.trim()
+      ||
+      "Trader-" +
+      (wallets.length + 1);
+
+    const address =
+      $("walletAddress").value.trim();
+
+    const tag =
+      $("walletTag").value;
+
+
+    if(
+      !/^0x[a-fA-F0-9]{40}$/.test(address)
+    ){
+      return alert(
+        "آدرس معتبر 0x وارد کن."
+      );
+    }
+
+
+    if(
+      wallets.some(
+        w =>
+          w.address.toLowerCase() ===
+          address.toLowerCase()
+      )
+    ){
+      return alert(
+        "این Wallet تکراری است."
+      );
+    }
+
+
+    wallets.push({
+      name,
+      address,
+      tag
+    });
+
+    save();
+
+    $("walletName").value = "";
+    $("walletAddress").value = "";
 
     refreshWallets();
   };
 
 
-$("addWallet")
-  .onclick =
-    () => {
-
-      let name =
-        $("walletName")
-          .value
-          .trim() ||
-        "Trader-" +
-        (
-          wallets.length +
-          1
-        );
-
-      let address =
-        $("walletAddress")
-          .value
-          .trim();
-
-      let tag =
-        $("walletTag")
-          .value;
-
-
-      if (
-        !/^0x[a-fA-F0-9]{40}$/.test(
-          address
-        )
-      ) {
-
-        return alert(
-          "آدرس معتبر 0x وارد کن."
-        );
-      }
-
-
-      if (
-        wallets.some(
-          w =>
-            w.address
-              .toLowerCase() ===
-            address
-              .toLowerCase()
-        )
-      ) {
-
-        return alert(
-          "این Wallet تکراری است."
-        );
-      }
-
-
-      wallets.push({
-        name,
-        address,
-        tag
-      });
-
-      save();
-
-      $("walletName")
-        .value =
-          "";
-
-      $("walletAddress")
-        .value =
-          "";
-
-      refreshWallets();
-    };
-
-
 window.openWallet =
   i => {
 
-    let w =
+    const w =
       wallets[i];
 
-    let d =
+    const d =
       walletData[
-        w.address
-          .toLowerCase()
-      ] ||
-      {};
+        w.address.toLowerCase()
+      ] || {};
 
 
-    $("modalTitle")
-      .textContent =
-        w.name +
-        " — " +
-        short(
-          w.address
-        );
+    $("modalTitle").textContent =
+      w.name +
+      " — " +
+      short(w.address);
 
 
-    let pos =
-      (
-        d.positions ||
-        []
-      )
+    const pos =
+      (d.positions || [])
+      .map(
+        p => `
+        <tr>
 
-        .map(
-          p => `
-
-          <tr>
-
-          <td>
-          ${p.coin}
-          </td>
+          <td>${p.coin}</td>
 
           <td class="${
-            p.side ===
-            "LONG"
+            p.side === "LONG"
               ? "good"
               : "bad"
           }">
-          ${p.side}
+            ${p.side}
           </td>
 
           <td>
-          $${money(
-            p.positionValue
-          )}
+            $${money(p.positionValue)}
           </td>
 
           <td>
-          ${price(
-            p.entryPx
-          )}
+            ${price(p.entryPx)}
           </td>
 
-          <td class="${cls(
-            p.unrealizedPnl
-          )}">
-          $${money(
-            p.unrealizedPnl
-          )}
+          <td class="${cls(p.unrealizedPnl)}">
+            $${money(p.unrealizedPnl)}
           </td>
 
           <td>
-          ${
-            p.leverage == null
-              ? "--"
-              : p.leverage +
-                "x"
-          }
+            ${
+              p.leverage == null
+                ? "--"
+                : p.leverage + "x"
+            }
           </td>
 
-          </tr>
-          `
-        )
-
-        .join("");
-
-
-    let fills =
-      (
-        d.recentFills ||
-        []
+        </tr>
+        `
       )
+      .join("");
 
-        .map(
-          f => `
 
-          <tr>
+    const fills =
+      (d.recentFills || [])
+      .map(
+        f => `
+        <tr>
 
-          <td>
-          ${f.coin}
-          </td>
+          <td>${f.coin}</td>
 
-          <td>
-          ${f.dir}
-          </td>
-
-          <td>
-          ${price(
-            f.px
-          )}
-          </td>
+          <td>${f.dir}</td>
 
           <td>
-          ${f.sz}
+            ${price(f.px)}
           </td>
 
-          <td class="${cls(
-            f.closedPnl
-          )}">
-          $${money(
-            f.closedPnl
-          )}
+          <td>${f.sz}</td>
+
+          <td class="${cls(f.closedPnl)}">
+            $${money(f.closedPnl)}
           </td>
 
           <td>
-
-          ${
-            new Date(
-              f.time
-            )
-              .toLocaleString(
-                "fa-IR"
-              )
-          }
-
+            ${
+              new Date(f.time)
+              .toLocaleString("fa-IR")
+            }
           </td>
 
-          </tr>
-          `
-        )
+        </tr>
+        `
+      )
+      .join("");
 
-        .join("");
 
-
-    $("modalBody")
-      .innerHTML = `
+    $("modalBody").innerHTML =
+      `
 
       <div class="signal">
 
-      Smart Score:
+        Smart Score:
+        <b>${d.smartScore ?? "--"}</b>
 
-      <b>
-      ${
-        d.smartScore ??
-        "--"
-      }
-      </b>
+        •
 
-      •
+        Equity:
+        <b>$${money(d.equity)}</b>
 
-      Equity:
+        •
 
-      <b>
-      $${money(
-        d.equity
-      )}
-      </b>
-
-      •
-
-      Win Rate:
-
-      <b>
-
-      ${
-        d.stats30
-          ?.winRate ==
-        null
-          ? "--"
-          : n(
-              d.stats30
-                .winRate
-            )
-              .toFixed(1) +
-            "%"
-      }
-
-      </b>
+        Win Rate:
+        <b>
+        ${
+          d.stats30?.winRate == null
+            ? "--"
+            : n(d.stats30.winRate).toFixed(1) + "%"
+        }
+        </b>
 
       </div>
 
 
       <h2 style="margin-top:16px">
-      پوزیشن‌ها
+        پوزیشن‌ها
       </h2>
-
 
       <div class="scroll">
 
-      <table>
+        <table>
 
-      <tr>
+          <tr>
+            <th>Coin</th>
+            <th>Side</th>
+            <th>Value</th>
+            <th>Entry</th>
+            <th>uPnL</th>
+            <th>Lev</th>
+          </tr>
 
-      <th>Coin</th>
+          ${
+            pos ||
+            `
+            <tr>
+              <td colspan="6">
+                پوزیشن ندارد.
+              </td>
+            </tr>
+            `
+          }
 
-      <th>Side</th>
-
-      <th>Value</th>
-
-      <th>Entry</th>
-
-      <th>uPnL</th>
-
-      <th>Lev</th>
-
-      </tr>
-
-      ${
-        pos ||
-        `
-        <tr>
-        <td colspan="6">
-        پوزیشن ندارد.
-        </td>
-        </tr>
-        `
-      }
-
-      </table>
+        </table>
 
       </div>
 
 
       <h2 style="margin-top:16px">
-      معاملات اخیر
+        معاملات اخیر
       </h2>
 
       <div class="scroll">
 
-      <table>
+        <table>
 
-      <tr>
+          <tr>
+            <th>Coin</th>
+            <th>Dir</th>
+            <th>Price</th>
+            <th>Size</th>
+            <th>PnL</th>
+            <th>Time</th>
+          </tr>
 
-      <th>Coin</th>
+          ${
+            fills ||
+            `
+            <tr>
+              <td colspan="6">
+                معامله‌ای موجود نیست.
+              </td>
+            </tr>
+            `
+          }
 
-      <th>Dir</th>
-
-      <th>Price</th>
-
-      <th>Size</th>
-
-      <th>PnL</th>
-
-      <th>Time</th>
-
-      </tr>
-
-      ${
-        fills ||
-        `
-        <tr>
-        <td colspan="6">
-        معامله‌ای موجود نیست.
-        </td>
-        </tr>
-        `
-      }
-
-      </table>
+        </table>
 
       </div>
       `;
 
 
-    $("modal")
-      .classList
-      .add(
-        "open"
-      );
+    $("modal").classList.add("open");
   };
 
 
-$("closeModal")
-  .onclick =
-    () =>
-      $("modal")
-        .classList
-        .remove(
-          "open"
-        );
+$("closeModal").onclick =
+  () =>
+    $("modal").classList.remove("open");
 
 
-$("modal")
-  .onclick =
-    e => {
+$("modal").onclick =
+  e => {
 
-      if (
-        e.target.id ===
-        "modal"
-      ) {
-
-        $("modal")
-          .classList
-          .remove(
-            "open"
-          );
-      }
-    };
+    if(e.target.id === "modal"){
+      $("modal").classList.remove("open");
+    }
+  };
 
 
-function renderConsensus() {
+function renderConsensus(){
 
-  let a = {};
+  const a = {};
 
 
   wallets.forEach(
     w => {
 
-      let d =
+      const d =
         walletData[
-          w.address
-            .toLowerCase()
+          w.address.toLowerCase()
         ];
 
-      if (
-        !d ||
-        d.error
-      ) {
+      if(!d || d.error)
         return;
-      }
 
 
-      let weight =
-        n(
-          d.smartScore,
-          50
-        ) /
-        100;
+      const weight =
+        n(d.smartScore,50) / 100;
 
 
-      (
-        d.positions ||
-        []
-      )
+      (d.positions || [])
+      .forEach(
+        p => {
 
-        .forEach(
-          p => {
+          if(!a[p.coin]){
 
-            if (
-              !a[p.coin]
-            ) {
-
-              a[p.coin] = {
-
-                longCount:0,
-
-                shortCount:0,
-
-                long:0,
-
-                short:0
-              };
-            }
-
-
-            if (
-              p.side ===
-              "LONG"
-            ) {
-
-              a[p.coin]
-                .longCount++;
-
-              a[p.coin]
-                .long +=
-                  n(
-                    p.positionValue
-                  ) *
-                  weight;
-
-            } else {
-
-              a[p.coin]
-                .shortCount++;
-
-              a[p.coin]
-                .short +=
-                  n(
-                    p.positionValue
-                  ) *
-                  weight;
-            }
+            a[p.coin] = {
+              longCount:0,
+              shortCount:0,
+              long:0,
+              short:0
+            };
           }
-        );
+
+
+          if(p.side === "LONG"){
+
+            a[p.coin].longCount++;
+
+            a[p.coin].long +=
+              n(p.positionValue)
+              *
+              weight;
+
+          }
+          else{
+
+            a[p.coin].shortCount++;
+
+            a[p.coin].short +=
+              n(p.positionValue)
+              *
+              weight;
+          }
+        }
+      );
     }
   );
 
 
-  let rows =
+  const rows =
     Object.entries(a)
+    .map(
+      ([coin,v]) => ({
 
-      .map(
-        (
-          [
-            coin,
-            v
-          ]
-        ) => ({
+        coin,
+        ...v,
 
-          coin,
+        net:
+          v.long -
+          v.short,
 
-          ...v,
-
-          net:
-            v.long -
-            v.short,
-
-          aligned:
-            Math.max(
-              v.longCount,
-              v.shortCount
-            )
-        })
-      )
-
-      .sort(
-        (
-          x,
-          y
-        ) =>
-          Math.abs(
-            y.net
-          ) -
-          Math.abs(
-            x.net
+        aligned:
+          Math.max(
+            v.longCount,
+            v.shortCount
           )
-      )
-
-      .slice(
-        0,
-        6
-      );
-
-
-  $("consensus")
-    .innerHTML =
-      rows.length
-
-        ? rows
-
-            .map(
-              x => `
-
-              <div class="signal">
-
-              <b>
-              ${x.coin}
-              </b>
-
-              <span class="${
-                x.net >= 0
-                  ? "good"
-                  : "bad"
-              }">
-
-              ${
-                x.net >= 0
-                  ? "LONG"
-                  : "SHORT"
-              }
-
-              </span>
+      })
+    )
+    .sort(
+      (x,y) =>
+        Math.abs(y.net) -
+        Math.abs(x.net)
+    )
+    .slice(0,6);
 
 
-              ${
-                x.aligned >= 3
-                  ? `
-                    <span class="pill">
-                    COORDINATED
-                    </span>
-                    `
-                  : ""
-              }
+  $("consensus").innerHTML =
 
+    rows.length
 
-              <div class="small">
+    ? rows.map(
+        x => `
 
-              Long Wallets:
-              ${x.longCount}
+        <div class="signal">
 
-              •
+          <b>${x.coin}</b>
 
-              Short Wallets:
-              ${x.shortCount}
+          <span class="${
+            x.net >= 0
+              ? "good"
+              : "bad"
+          }">
 
-              •
+            ${
+              x.net >= 0
+                ? "LONG"
+                : "SHORT"
+            }
 
-              Weighted:
-              $${money(
-                Math.abs(
-                  x.net
-                )
-              )}
+          </span>
 
-              </div>
+          ${
+            x.aligned >= 3
+              ? `<span class="pill">COORDINATED</span>`
+              : ""
+          }
 
-              </div>
-              `
-            )
-
-            .join("")
-
-        : `
           <div class="small">
 
-          ابتدا چند تریدر را
-          Follow کن.
+            Long Wallets:
+            ${x.longCount}
+
+            •
+
+            Short Wallets:
+            ${x.shortCount}
+
+            •
+
+            Weighted:
+            $${money(Math.abs(x.net))}
 
           </div>
-          `;
+
+        </div>
+        `
+      ).join("")
+
+    : `
+      <div class="small">
+        ابتدا چند تریدر را Follow کن.
+      </div>
+      `;
 }
 
 
-async function refreshMacro() {
+async function refreshMacro(){
 
-  try {
+  try{
 
     macro =
-      await get(
-        "/api/macro"
-      );
+      await get("/api/macro");
 
 
-    $("macroCards")
-      .innerHTML =
-        macro
+    $("macroCards").innerHTML =
+      macro
+      .filter(x => !x.error)
+      .slice(0,4)
+      .map(
+        x => `
 
-          .filter(
-            x =>
-              !x.error
-          )
+        <div class="card s3">
 
-          .slice(
-            0,
-            4
-          )
-
-          .map(
-            x => `
-
-            <div class="card s3">
-
-            <div class="small">
+          <div class="small">
             ${x.name}
-            </div>
+          </div>
 
-            <div class="metric">
-            ${price(
-              x.price
-            )}
-            </div>
+          <div class="metric">
+            ${price(x.price)}
+          </div>
 
-            <div class="${cls(
-              x.changePct
-            )}">
-            ${pct(
-              x.changePct
-            )}
-            </div>
+          <div class="${cls(x.changePct)}">
+            ${pct(x.changePct)}
+          </div>
 
-            </div>
+          <div class="small">
+            ${x.marketTimeText || "--"}
+          </div>
+
+        </div>
+        `
+      )
+      .join("");
+
+
+    $("macroRows").innerHTML =
+      macro
+      .map(
+        x =>
+
+          x.error
+
+          ? `
+            <tr>
+
+              <td>${x.name}</td>
+
+              <td>${x.symbol}</td>
+
+              <td colspan="4" class="bad">
+                داده در دسترس نیست
+              </td>
+
+            </tr>
             `
-          )
 
-          .join("");
+          : `
+            <tr>
 
+              <td>
+                <b>${x.name}</b>
+              </td>
 
-    $("macroRows")
-      .innerHTML =
-        macro
+              <td>
+                ${x.symbol}
+              </td>
 
-          .map(
-            x =>
+              <td>
+                ${price(x.price)}
+              </td>
 
-              x.error
+              <td class="${cls(x.changePct)}">
+                ${pct(x.changePct)}
+              </td>
 
-                ? `
+              <td>
+                ${x.group}
+              </td>
 
-                  <tr>
+              <td>
+                ${x.marketTimeText || "--"}
+              </td>
 
-                  <td>
-                  ${x.name}
-                  </td>
+            </tr>
+            `
+      )
+      .join("");
 
-                  <td>
-                  ${x.symbol}
-                  </td>
+  }
+  catch{
 
-                  <td
-                    colspan="4"
-                    class="bad"
-                  >
-                  داده در دسترس نیست
-                  </td>
-
-                  </tr>
-                  `
-
-                : `
-
-                  <tr>
-
-                  <td>
-                  <b>
-                  ${x.name}
-                  </b>
-                  </td>
-
-                  <td>
-                  ${x.symbol}
-                  </td>
-
-                  <td>
-                  ${price(
-                    x.price
-                  )}
-                  </td>
-
-                  <td class="${cls(
-                    x.changePct
-                  )}">
-                  ${pct(
-                    x.changePct
-                  )}
-                  </td>
-
-                  <td>
-                  ${x.group}
-                  </td>
-
-                  <td>
-
-                  ${
-                    x.marketTime
-                      ? new Date(
-                          x.marketTime
-                        )
-                          .toLocaleString(
-                            "fa-IR"
-                          )
-                      : "--"
-                  }
-
-                  </td>
-
-                  </tr>
-                  `
-          )
-
-          .join("");
-
-  } catch {
-
-    $("macroRows")
-      .innerHTML = `
-
+    $("macroRows").innerHTML =
+      `
       <tr>
-
-      <td
-        colspan="6"
-        class="bad"
-      >
-      Macro API خطا دارد
-      </td>
-
+        <td colspan="6" class="bad">
+          Macro API خطا دارد
+        </td>
       </tr>
       `;
   }
 }
 
 
-function pushAlert(
-  key,
-  msg
-) {
+function pushAlert(key,msg){
 
-  let now =
-    Date.now();
+  const now = Date.now();
 
-
-  if (
+  if(
     now -
-    (
-      cooldown[key] ||
-      0
-    ) <
+    (cooldown[key] || 0)
+    <
     120000
-  ) {
+  ){
     return;
   }
 
-
-  cooldown[key] =
-    now;
-
+  cooldown[key] = now;
 
   alerts.unshift({
-    time:
-      now,
+    time:now,
     msg
   });
 
-
   alerts =
-    alerts.slice(
-      0,
-      100
-    );
-
+    alerts.slice(0,100);
 
   save();
 
   renderAlerts();
 
 
-  if (
-    "Notification"
-    in window &&
-    Notification
-      .permission ===
-    "granted"
-  ) {
+  if(
+    "Notification" in window
+    &&
+    Notification.permission === "granted"
+  ){
 
     new Notification(
-
       "ALI Flow Radar",
-
-      {
-        body:
-          msg
-      }
+      {body:msg}
     );
   }
 }
 
 
-function marketAlerts() {
+function marketAlerts(){
 
   symbols.forEach(
     s => {
 
-      let m =
-        market[s];
+      const m = market[s];
+      const f = flow[s];
 
-      let f =
-        flow[s];
-
-
-      if (
-        !m ||
-        !f ||
-        f.error
-      ) {
+      if(!m || !f || f.error)
         return;
-      }
 
 
-      let score =
-        n(
-          f.flowScore
-        );
+      const score =
+        n(f.flowScore);
 
-
-      let move =
+      const move =
         Math.abs(
-          n(
-            m.priceChangePercent
-          )
+          n(m.priceChangePercent)
         );
 
 
-      if (
-        move <=
-          n(
-            settings.move,
-            3
-          ) &&
-        score >=
-          n(
-            settings.flow,
-            67
-          )
-      ) {
+      if(
+        move <= n(settings.move,3)
+        &&
+        score >= n(settings.flow,67)
+      ){
 
         pushAlert(
-
-          "buy" +
-          s,
+          "buy" + s,
 
           `${s}: Early Buy • Flow ${score} • 24h ${pct(
             m.priceChangePercent
@@ -3663,24 +2234,16 @@ function marketAlerts() {
       }
 
 
-      if (
-        move <=
-          n(
-            settings.move,
-            3
-          ) &&
+      if(
+        move <= n(settings.move,3)
+        &&
         score <=
-          100 -
-          n(
-            settings.flow,
-            67
-          )
-      ) {
+        100 -
+        n(settings.flow,67)
+      ){
 
         pushAlert(
-
-          "sell" +
-          s,
+          "sell" + s,
 
           `${s}: Early Sell • Flow ${score} • 24h ${pct(
             m.priceChangePercent
@@ -3692,237 +2255,170 @@ function marketAlerts() {
 }
 
 
-function walletAlerts() {
+function walletAlerts(){
 
   wallets.forEach(
     w => {
 
-      let d =
+      const d =
         walletData[
-          w.address
-            .toLowerCase()
+          w.address.toLowerCase()
         ];
 
 
-      if (
+      if(
         !d ||
         d.error ||
-        n(
-          d.smartScore
-        ) <
-        n(
-          settings.wallet,
-          70
-        )
-      ) {
+        n(d.smartScore) <
+        n(settings.wallet,70)
+      ){
         return;
       }
 
 
-      (
-        d.positions ||
-        []
-      )
+      (d.positions || [])
+      .forEach(
+        p => {
 
-        .forEach(
-          p => {
+          if(
+            n(p.positionValue) >= 50000
+          ){
 
-            if (
-              n(
+            pushAlert(
+              w.address +
+              p.coin +
+              p.side,
+
+              `${w.name}: ${p.side} ${p.coin} • $${money(
                 p.positionValue
-              ) >=
-              50000
-            ) {
-
-              pushAlert(
-
-                w.address +
-                p.coin +
-                p.side,
-
-                `${w.name}: ${p.side} ${p.coin} • $${money(
-                  p.positionValue
-                )} • Score ${
-                  d.smartScore
-                }`
-              );
-            }
+              )} • Score ${d.smartScore}`
+            );
           }
-        );
+        }
+      );
     }
   );
 }
 
 
-function renderAlerts() {
+function renderAlerts(){
 
-  $("alertCount")
-    .textContent =
-      alerts.filter(
-        a =>
-          Date.now() -
-          a.time <
-          86400000
-      ).length;
+  $("alertCount").textContent =
+    alerts.filter(
+      a =>
+        Date.now() -
+        a.time <
+        86400000
+    ).length;
 
 
-  $("alertLog")
-    .innerHTML =
-      alerts.length
+  $("alertLog").innerHTML =
 
-        ? alerts
+    alerts.length
 
-            .slice(
-              0,
-              40
-            )
+    ? alerts
+      .slice(0,40)
+      .map(
+        a => `
 
-            .map(
-              a => `
+        <div class="alert">
 
-              <div class="alert">
+          ${a.msg}
 
-              ${a.msg}
-
-              <div class="small">
-
-              ${
-                new Date(
-                  a.time
-                )
-                  .toLocaleString(
-                    "fa-IR"
-                  )
-              }
-
-              </div>
-
-              </div>
-              `
-            )
-
-            .join("")
-
-        : `
           <div class="small">
-          آلارمی ثبت نشده.
+
+            ${
+              new Date(a.time)
+              .toLocaleString("fa-IR")
+            }
+
           </div>
-          `;
+
+        </div>
+        `
+      )
+      .join("")
+
+    : `
+      <div class="small">
+        آلارمی ثبت نشده.
+      </div>
+      `;
 }
 
 
-$("flowThreshold")
-  .value =
-    settings.flow;
+$("flowThreshold").value =
+  settings.flow;
 
-$("walletThreshold")
-  .value =
-    settings.wallet;
+$("walletThreshold").value =
+  settings.wallet;
 
-$("moveThreshold")
-  .value =
-    settings.move;
+$("moveThreshold").value =
+  settings.move;
 
 
-$("saveSettings")
-  .onclick =
-    () => {
+$("saveSettings").onclick =
+  () => {
 
-      settings.flow =
-        n(
-          $("flowThreshold")
-            .value,
-          67
-        );
-
-      settings.wallet =
-        n(
-          $("walletThreshold")
-            .value,
-          70
-        );
-
-      settings.move =
-        n(
-          $("moveThreshold")
-            .value,
-          3
-        );
-
-      save();
-
-      pushAlert(
-        "settings",
-        "تنظیمات ذخیره شد."
+    settings.flow =
+      n(
+        $("flowThreshold").value,
+        67
       );
-    };
+
+    settings.wallet =
+      n(
+        $("walletThreshold").value,
+        70
+      );
+
+    settings.move =
+      n(
+        $("moveThreshold").value,
+        3
+      );
+
+    save();
+
+    pushAlert(
+      "settings",
+      "تنظیمات ذخیره شد."
+    );
+  };
 
 
-$("notify")
-  .onclick =
-    async () => {
+$("notify").onclick =
+  async () => {
 
-      if (
-        !(
-          "Notification"
-          in window
-        )
-      ) {
+    if(
+      !("Notification" in window)
+    ){
+      return alert(
+        "این مرورگر Notification را پشتیبانی نمی‌کند."
+      );
+    }
 
-        return alert(
-          "این مرورگر Notification را پشتیبانی نمی‌کند."
-        );
-      }
-
-      await Notification
-        .requestPermission();
-    };
+    await Notification.requestPermission();
+  };
 
 
 renderAlerts();
-
 renderWallets();
-
 renderConsensus();
 
 health();
-
 refreshMarket();
-
 refreshFlow();
-
 refreshWallets();
-
 refreshMacro();
 
-
-setInterval(
-  refreshMarket,
-  3000
-);
-
-setInterval(
-  refreshFlow,
-  15000
-);
-
-setInterval(
-  refreshWallets,
-  20000
-);
-
-setInterval(
-  refreshMacro,
-  60000
-);
-
-setInterval(
-  health,
-  30000
-);
+setInterval(refreshMarket,3000);
+setInterval(refreshFlow,15000);
+setInterval(refreshWallets,20000);
+setInterval(refreshMacro,60000);
+setInterval(health,30000);
 
 </script>
 
 </body>
-
 </html>
