@@ -11,7 +11,6 @@ app.use(express.static(path.join(__dirname)));
 const cache = new Map();
 const walletHistory = new Map();
 const lastGood = new Map();
-
 const MAX_HISTORY = 240;
 
 const num = (v, fallback = 0) => {
@@ -19,21 +18,12 @@ const num = (v, fallback = 0) => {
   return Number.isFinite(x) ? x : fallback;
 };
 
-const clamp = (x, a, b) =>
-  Math.max(a, Math.min(b, x));
-
-const sleep = ms =>
-  new Promise(resolve => setTimeout(resolve, ms));
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function cached(key, ttl, fn) {
   const hit = cache.get(key);
-
-  if (
-    hit &&
-    Date.now() - hit.time < ttl
-  ) {
-    return hit.value;
-  }
+  if (hit && Date.now() - hit.time < ttl) return hit.value;
 
   const value = await fn();
 
@@ -50,12 +40,8 @@ async function fetchText(url, options = {}) {
     ...options,
 
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 ALI-Flow-Radar/4.5.1",
-
-      Accept:
-        "text/html,text/plain,text/csv,application/json,*/*",
-
+      "User-Agent": "Mozilla/5.0 ALI-Flow-Radar/4.6",
+      Accept: "text/html,text/plain,text/csv,application/json,*/*",
       ...(options.headers || {})
     },
 
@@ -74,15 +60,12 @@ async function fetchText(url, options = {}) {
 }
 
 async function fetchJson(url, options = {}) {
-  const text =
-    await fetchText(url, options);
+  const text = await fetchText(url, options);
 
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(
-      "Invalid JSON response"
-    );
+    throw new Error("Invalid JSON response");
   }
 }
 
@@ -93,333 +76,259 @@ async function hyper(body) {
       method: "POST",
 
       headers: {
-        "content-type":
-          "application/json"
+        "content-type": "application/json"
       },
 
-      body:
-        JSON.stringify(body)
+      body: JSON.stringify(body)
     }
   );
 }
 
 
-/* =========================================
+/* ======================================================
    HEALTH
-========================================= */
+====================================================== */
 
-app.get(
-  "/api/health",
-  (req, res) => {
-
-    res.json({
-      ok: true,
-      version: "4.5.1",
-      app: "ALI Flow Radar",
-      time:
-        new Date().toISOString()
-    });
-  }
-);
+app.get("/api/health", (req, res) => {
+  res.json({
+    ok: true,
+    version: "4.6",
+    app: "ALI Flow Radar",
+    time: new Date().toISOString()
+  });
+});
 
 
-/* =========================================
-   BINANCE MARKET
-========================================= */
+/* ======================================================
+   BINANCE PRICES
+====================================================== */
 
-app.get(
-  "/api/binance",
-  async (req, res) => {
+app.get("/api/binance", async (req, res) => {
 
-    const symbols =
-      String(
-        req.query.symbols ||
-        "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT"
-      )
-        .split(",")
-        .map(
-          x =>
-            x.trim().toUpperCase()
-        )
-        .filter(Boolean)
-        .slice(0, 20);
+  const symbols =
+    String(
+      req.query.symbols ||
+      "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT"
+    )
+      .split(",")
+      .map(x => x.trim().toUpperCase())
+      .filter(Boolean)
+      .slice(0, 20);
 
-    try {
+  try {
 
-      const data =
-        await cached(
-          "binance:" +
-          symbols.join(","),
+    const data = await cached(
+      "binance:" + symbols.join(","),
+      3000,
 
-          3000,
+      async () => {
 
-          async () => {
-
-            let rows;
-
-            try {
-
-              rows =
-                await fetchJson(
-                  "https://data-api.binance.vision/api/v3/ticker/24hr"
-                );
-
-            } catch {
-
-              rows = [];
-
-              for (
-                const symbol
-                of symbols
-              ) {
-
-                rows.push(
-                  await fetchJson(
-                    "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=" +
-                    encodeURIComponent(
-                      symbol
-                    )
-                  )
-                );
-              }
-            }
-
-            if (
-              !Array.isArray(rows)
-            ) {
-              throw new Error(
-                "Bad Binance response"
-              );
-            }
-
-            return rows
-              .filter(
-                x =>
-                  symbols.includes(
-                    x.symbol
-                  )
-              )
-              .map(
-                x => ({
-
-                  symbol:
-                    x.symbol,
-
-                  lastPrice:
-                    num(x.lastPrice),
-
-                  priceChangePercent:
-                    num(
-                      x.priceChangePercent
-                    ),
-
-                  quoteVolume:
-                    num(
-                      x.quoteVolume
-                    ),
-
-                  highPrice:
-                    num(x.highPrice),
-
-                  lowPrice:
-                    num(x.lowPrice)
-                })
-              );
-          }
-        );
-
-      res.json(data);
-
-    } catch (e) {
-
-      res
-        .status(502)
-        .json({
-          error:
-            String(e)
-        });
-    }
-  }
-);
-
-
-/* =========================================
-   BINANCE FLOW
-========================================= */
-
-app.get(
-  "/api/flow",
-  async (req, res) => {
-
-    const symbols =
-      String(
-        req.query.symbols ||
-        "BTCUSDT,ETHUSDT,SOLUSDT"
-      )
-        .split(",")
-        .map(
-          x =>
-            x.trim().toUpperCase()
-        )
-        .filter(Boolean)
-        .slice(0, 10);
-
-    try {
-
-      const output = [];
-
-      for (
-        const symbol
-        of symbols
-      ) {
+        let rows;
 
         try {
 
-          const trades =
-            await cached(
-              "flow:" + symbol,
+          rows = await fetchJson(
+            "https://data-api.binance.vision/api/v3/ticker/24hr"
+          );
 
-              7000,
+        } catch {
 
-              () =>
-                fetchJson(
-                  "https://data-api.binance.vision/api/v3/aggTrades?symbol=" +
-                  encodeURIComponent(
-                    symbol
-                  ) +
-                  "&limit=500"
-                )
+          rows = [];
+
+          for (const symbol of symbols) {
+
+            rows.push(
+              await fetchJson(
+                "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=" +
+                encodeURIComponent(symbol)
+              )
             );
 
-          let buy = 0;
-          let sell = 0;
+          }
+        }
 
-          let oldest =
-            Infinity;
+        if (!Array.isArray(rows)) {
+          throw new Error("Bad Binance response");
+        }
 
-          let newest = 0;
+        return rows
+          .filter(x => symbols.includes(x.symbol))
+          .map(x => ({
 
-          for (
-            const t
-            of trades
-          ) {
+            symbol: x.symbol,
 
-            const value =
-              num(t.p) *
-              num(t.q);
+            lastPrice:
+              num(x.lastPrice),
 
-            if (t.m) {
-              sell += value;
-            } else {
-              buy += value;
-            }
+            priceChangePercent:
+              num(x.priceChangePercent),
 
-            oldest =
-              Math.min(
-                oldest,
-                num(t.T)
-              );
+            quoteVolume:
+              num(x.quoteVolume),
 
-            newest =
-              Math.max(
-                newest,
-                num(t.T)
-              );
+            highPrice:
+              num(x.highPrice),
+
+            lowPrice:
+              num(x.lowPrice)
+          }));
+      }
+    );
+
+    res.json(data);
+
+  } catch (e) {
+
+    res
+      .status(502)
+      .json({
+        error: String(e)
+      });
+
+  }
+});
+
+
+/* ======================================================
+   BINANCE FLOW
+====================================================== */
+
+app.get("/api/flow", async (req, res) => {
+
+  const symbols =
+    String(
+      req.query.symbols ||
+      "BTCUSDT,ETHUSDT,SOLUSDT"
+    )
+      .split(",")
+      .map(x => x.trim().toUpperCase())
+      .filter(Boolean)
+      .slice(0, 10);
+
+  try {
+
+    const output = [];
+
+    for (const symbol of symbols) {
+
+      try {
+
+        const trades = await cached(
+          "flow:" + symbol,
+          7000,
+
+          () =>
+            fetchJson(
+              "https://data-api.binance.vision/api/v3/aggTrades?symbol=" +
+              encodeURIComponent(symbol) +
+              "&limit=500"
+            )
+        );
+
+        let buy = 0;
+        let sell = 0;
+        let oldest = Infinity;
+        let newest = 0;
+
+        for (const t of trades) {
+
+          const value =
+            num(t.p) *
+            num(t.q);
+
+          if (t.m) {
+            sell += value;
+          } else {
+            buy += value;
           }
 
-          const total =
-            buy + sell;
+          oldest =
+            Math.min(
+              oldest,
+              num(t.T)
+            );
 
-          const buyRatio =
-            total
-              ? buy /
-                total *
-                100
-              : 50;
-
-          output.push({
-
-            symbol,
-
-            takerBuy:
-              buy,
-
-            takerSell:
-              sell,
-
-            netFlow:
-              buy -
-              sell,
-
-            buyRatio,
-
-            flowScore:
-              Math.round(
-                buyRatio
-              ),
-
-            sampleTrades:
-              trades.length,
-
-            sampleSeconds:
-              newest &&
-              Number.isFinite(
-                oldest
-              )
-                ? (
-                    newest -
-                    oldest
-                  ) /
-                  1000
-                : 0
-          });
-
-        } catch (e) {
-
-          output.push({
-            symbol,
-            error:
-              String(e)
-          });
+          newest =
+            Math.max(
+              newest,
+              num(t.T)
+            );
         }
-      }
 
-      res.json(output);
+        const total =
+          buy + sell;
 
-    } catch (e) {
+        const buyRatio =
+          total
+            ? (buy / total) * 100
+            : 50;
 
-      res
-        .status(502)
-        .json({
-          error:
-            String(e)
+        output.push({
+
+          symbol,
+
+          takerBuy:
+            buy,
+
+          takerSell:
+            sell,
+
+          netFlow:
+            buy - sell,
+
+          buyRatio,
+
+          flowScore:
+            Math.round(buyRatio),
+
+          sampleTrades:
+            trades.length,
+
+          sampleSeconds:
+            newest &&
+            Number.isFinite(oldest)
+              ? (newest - oldest) / 1000
+              : 0
         });
+
+      } catch (e) {
+
+        output.push({
+          symbol,
+          error: String(e)
+        });
+
+      }
     }
+
+    res.json(output);
+
+  } catch (e) {
+
+    res
+      .status(502)
+      .json({
+        error: String(e)
+      });
+
   }
-);
+});
 
 
-/* =========================================
+/* ======================================================
    WALLET ANALYSIS
-========================================= */
+====================================================== */
 
 function portfolioWindow(
   portfolio,
   names
 ) {
 
-  if (
-    !Array.isArray(
-      portfolio
-    )
-  ) {
+  if (!Array.isArray(portfolio)) {
     return null;
   }
 
-  for (
-    const name
-    of names
-  ) {
+  for (const name of names) {
 
     const row =
       portfolio.find(
@@ -451,16 +360,12 @@ function portfolioWindow(
 
     const first =
       av.length
-        ? num(
-            av[0]?.[1]
-          )
+        ? num(av[0]?.[1])
         : 0;
 
     const last =
       av.length
-        ? num(
-            av.at(-1)?.[1]
-          )
+        ? num(av.at(-1)?.[1])
         : 0;
 
     const pnl =
@@ -481,17 +386,13 @@ function portfolioWindow(
               first
             ) /
             Math.abs(first)
-          ) *
-          100
+          ) * 100
         : null;
 
     let peak = 0;
     let maxDD = 0;
 
-    for (
-      const point
-      of av
-    ) {
+    for (const point of av) {
 
       const value =
         num(
@@ -499,9 +400,7 @@ function portfolioWindow(
           NaN
         );
 
-      if (
-        !Number.isFinite(value)
-      ) {
+      if (!Number.isFinite(value)) {
         continue;
       }
 
@@ -522,20 +421,17 @@ function portfolioWindow(
                 peak
               ) /
               peak
-            ) *
-            100
+            ) * 100
           );
+
       }
     }
 
     return {
       pnl,
       roi,
-      maxDrawdownPct:
-        maxDD,
-
-      volume:
-        num(d.vlm)
+      maxDrawdownPct: maxDD,
+      volume: num(d.vlm)
     };
   }
 
@@ -550,8 +446,7 @@ function fillStats(
 
   const cutoff =
     Date.now() -
-    days *
-    86400000;
+    days * 86400000;
 
   const rows =
     (
@@ -569,15 +464,10 @@ function fillStats(
   let wins = 0;
   let pnl = 0;
 
-  for (
-    const f
-    of rows
-  ) {
+  for (const f of rows) {
 
     const x =
-      num(
-        f.closedPnl
-      );
+      num(f.closedPnl);
 
     if (
       Math.abs(x) >
@@ -591,6 +481,7 @@ function fillStats(
       if (x > 0) {
         wins++;
       }
+
     }
   }
 
@@ -605,9 +496,7 @@ function fillStats(
 
     winRate:
       closed
-        ? wins /
-          closed *
-          100
+        ? (wins / closed) * 100
         : null,
 
     closedPnl:
@@ -633,9 +522,7 @@ function walletScore(
     Number.isFinite
   );
 
-  if (
-    pnls.length
-  ) {
+  if (pnls.length) {
 
     const positives =
       pnls.filter(
@@ -644,8 +531,10 @@ function walletScore(
 
     score +=
       (
-        positives /
-        pnls.length -
+        (
+          positives /
+          pnls.length
+        ) -
         0.5
       ) *
       24;
@@ -664,6 +553,7 @@ function walletScore(
         30
       ) *
       0.55;
+
   }
 
   if (
@@ -680,6 +570,7 @@ function walletScore(
         25
       ) *
       0.5;
+
   }
 
   if (
@@ -698,6 +589,7 @@ function walletScore(
         12
       ) *
       0.65;
+
   }
 
   return Math.round(
@@ -710,14 +602,11 @@ function walletScore(
 }
 
 
-async function walletSummary(
-  user
-) {
+async function walletSummary(user) {
 
   return cached(
     "wallet:" +
     user.toLowerCase(),
-
     10000,
 
     async () => {
@@ -728,24 +617,21 @@ async function walletSummary(
         fillsR
       ] =
         await Promise.allSettled([
+
           hyper({
-            type:
-              "clearinghouseState",
+            type: "clearinghouseState",
             user
           }),
 
           hyper({
-            type:
-              "portfolio",
+            type: "portfolio",
             user
           }),
 
           hyper({
-            type:
-              "userFills",
+            type: "userFills",
             user,
-            aggregateByTime:
-              true
+            aggregateByTime: true
           })
         ]);
 
@@ -850,9 +736,7 @@ async function walletSummary(
                 ),
 
               entryPx:
-                num(
-                  p.entryPx
-                ),
+                num(p.entryPx),
 
               unrealizedPnl:
                 num(
@@ -950,6 +834,7 @@ app.get(
           error:
             "Invalid wallet"
         });
+
     }
 
     try {
@@ -968,14 +853,15 @@ app.get(
           error:
             String(e)
         });
+
     }
   }
 );
 
 
-/* =========================================
+/* ======================================================
    TRADER DISCOVERY
-========================================= */
+====================================================== */
 
 function perfMap(row) {
 
@@ -1267,14 +1153,15 @@ app.get(
           error:
             String(e)
         });
+
     }
   }
 );
 
 
-/* =========================================
+/* ======================================================
    MONEY ROTATION
-========================================= */
+====================================================== */
 
 function exposureSnapshot(
   summaries
@@ -1334,11 +1221,8 @@ function exposureSnapshot(
   }
 
   return {
-    time:
-      Date.now(),
-
+    time: Date.now(),
     exposure,
-
     gross
   };
 }
@@ -1395,12 +1279,9 @@ function rotationCalc(
 
           return {
             coin,
-            before:
-              a,
-            after:
-              b,
-            delta:
-              b - a
+            before: a,
+            after: b,
+            delta: b - a
           };
         }
       )
@@ -1517,6 +1398,7 @@ function rotationCalc(
       }
 
       paths.push({
+
         from:
           s.coin,
 
@@ -1620,6 +1502,7 @@ app.get(
             error:
               "No wallets"
           });
+
       }
 
       const summaries = [];
@@ -1654,6 +1537,7 @@ app.get(
                     error:
                       String(e)
                   };
+
                 }
               }
             )
@@ -1686,6 +1570,7 @@ app.get(
           key,
           []
         );
+
       }
 
       const hist =
@@ -1733,12 +1618,14 @@ app.get(
       if (!previous) {
 
         return res.json({
+
           warmup:
             true,
 
           wallets:
             users.length
         });
+
       }
 
       res.json({
@@ -1764,85 +1651,51 @@ app.get(
           error:
             String(e)
         });
+
     }
   }
 );
 
 
-/* =========================================
+/* ======================================================
    GLOBAL MACRO
-========================================= */
+====================================================== */
 
 const MACRO = [
 
   {
-    name:
-      "Gold Spot",
-
-    symbol:
-      "XAUUSD",
-
-    stooq:
-      "xauusd",
-
-    group:
-      "Gold"
+    name: "Gold Spot",
+    symbol: "XAUUSD",
+    stooq: "xauusd",
+    group: "Gold"
   },
 
   {
-    name:
-      "WTI",
-
-    symbol:
-      "CL.F",
-
-    stooq:
-      "cl.f",
-
-    group:
-      "Oil"
+    name: "WTI",
+    symbol: "CL.F",
+    stooq: "cl.f",
+    group: "Oil"
   },
 
   {
-    name:
-      "Brent",
-
-    symbol:
-      "CB.F",
-
-    stooq:
-      "cb.f",
-
-    group:
-      "Oil"
+    name: "Brent",
+    symbol: "CB.F",
+    stooq: "cb.f",
+    group: "Oil"
   },
 
   {
-    name:
-      "DXY",
-
-    symbol:
-      "DX.F",
-
-    stooq:
-      "dx.f",
-
-    group:
-      "FX"
+    name: "DXY",
+    symbol: "DX.F",
+    stooq: "dx.f",
+    group: "FX"
   },
 
   {
-    name:
-      "EUR/USD",
-
-    symbol:
-      "EURUSD",
-
-    stooq:
-      "eurusd",
-
-    group:
-      "FX"
+    name: "EUR/USD",
+    symbol: "EURUSD",
+    stooq: "eurusd",
+    group: "FX"
   }
 ];
 
@@ -1865,6 +1718,7 @@ function parseCSV(text) {
     throw new Error(
       "No CSV data"
     );
+
   }
 
   const header =
@@ -1890,6 +1744,7 @@ function parseCSV(text) {
 
       row[h] =
         values[i];
+
     }
   );
 
@@ -1903,10 +1758,13 @@ async function macroQuote(
 
   const text =
     await fetchText(
+
       "https://stooq.com/q/l/?s=" +
+
       encodeURIComponent(
         asset.stooq
       ) +
+
       "&f=sd2t2ohlcv&h&e=csv"
     );
 
@@ -1936,6 +1794,7 @@ async function macroQuote(
     throw new Error(
       "No quote"
     );
+
   }
 
   return {
@@ -1986,9 +1845,7 @@ app.get(
           await cached(
             "macro:" +
             asset.symbol,
-
             30000,
-
             () =>
               macroQuote(
                 asset
@@ -2015,8 +1872,7 @@ app.get(
 
           out.push({
             ...previous,
-            stale:
-              true
+            stale: true
           });
 
         } else {
@@ -2026,6 +1882,7 @@ app.get(
             error:
               String(e)
           });
+
         }
       }
     }
@@ -2035,42 +1892,30 @@ app.get(
 );
 
 
-/* =========================================
+/* ======================================================
    IRAN MARKET
-========================================= */
+====================================================== */
 
 const IRAN_ITEMS = [
 
   {
-    key:
-      "price_dollar_rl",
-
-    name:
-      "USD Free Market"
+    key: "price_dollar_rl",
+    name: "USD Free Market"
   },
 
   {
-    key:
-      "geram18",
-
-    name:
-      "Gold 18K"
+    key: "geram18",
+    name: "Gold 18K"
   },
 
   {
-    key:
-      "mesghal",
-
-    name:
-      "Mesghal"
+    key: "mesghal",
+    name: "Mesghal"
   },
 
   {
-    key:
-      "sekee",
-
-    name:
-      "Emami Coin"
+    key: "sekee",
+    name: "Emami Coin"
   }
 ];
 
@@ -2160,6 +2005,7 @@ function extractTGJU(
     ) {
 
       return value;
+
     }
   }
 
@@ -2176,9 +2022,7 @@ app.get(
       const html =
         await cached(
           "tgju-home",
-
           30000,
-
           () =>
             fetchText(
               "https://www.tgju.org/"
@@ -2248,6 +2092,7 @@ app.get(
           } else {
 
             data.push({
+
               ...item,
 
               value:
@@ -2256,6 +2101,7 @@ app.get(
               error:
                 "TGJU parse unavailable"
             });
+
           }
         }
       }
@@ -2265,6 +2111,7 @@ app.get(
     } catch (e) {
 
       res.json(
+
         IRAN_ITEMS.map(
           item => {
 
@@ -2287,6 +2134,7 @@ app.get(
                   error:
                     String(e)
                 };
+
           }
         )
       );
@@ -2295,17 +2143,136 @@ app.get(
 );
 
 
-/* =========================================
+/* ======================================================
+   FAMOUS TRADERS DIRECTORY
+====================================================== */
+
+app.get(
+  "/api/famous",
+  (req, res) => {
+
+    res.json({
+
+      crypto: [
+
+        {
+          name:
+            "Arthur Hayes",
+
+          specialty:
+            "Crypto / Macro",
+
+          liveWallet:
+            false
+        },
+
+        {
+          name:
+            "Andrew Kang",
+
+          specialty:
+            "Crypto / Macro",
+
+          liveWallet:
+            false
+        },
+
+        {
+          name:
+            "GCR",
+
+          specialty:
+            "Crypto Trading",
+
+          liveWallet:
+            false
+        },
+
+        {
+          name:
+            "Hsaka",
+
+          specialty:
+            "Crypto Trading",
+
+          liveWallet:
+            false
+        },
+
+        {
+          name:
+            "James Wynn",
+
+          specialty:
+            "High-risk Crypto Trading",
+
+          liveWallet:
+            false
+        }
+      ],
+
+      forexMacro: [
+
+        {
+          name:
+            "George Soros",
+
+          specialty:
+            "FX / Global Macro"
+        },
+
+        {
+          name:
+            "Stanley Druckenmiller",
+
+          specialty:
+            "Global Macro / FX / Rates"
+        },
+
+        {
+          name:
+            "Paul Tudor Jones",
+
+          specialty:
+            "Macro / Futures / Commodities"
+        },
+
+        {
+          name:
+            "Bill Lipschutz",
+
+          specialty:
+            "FX Trading"
+        },
+
+        {
+          name:
+            "Kathy Lien",
+
+          specialty:
+            "FX / Macro"
+        }
+      ],
+
+      note:
+        "Profiles are informational. No live position is claimed unless a verified wallet is explicitly added by the user."
+    });
+  }
+);
+
+
+/* ======================================================
    START
-========================================= */
+====================================================== */
 
 app.listen(
   PORT,
   () => {
 
     console.log(
-      "ALI Flow Radar v4.5.1 running on " +
+      "ALI Flow Radar v4.6 running on " +
       PORT
     );
+
   }
 );
