@@ -9,20 +9,23 @@ app.use(express.json({ limit: "256kb" }));
 app.use(express.static(path.join(__dirname)));
 
 const cache = new Map();
-const walletHistory = new Map();
 const lastGood = new Map();
 const lastGoodWallet = new Map();
-const MAX_HISTORY = 240;
+const walletHistory = new Map();
+const universeHistory = new Map();
+
+const MAX_ROTATION_SNAPSHOTS = 240;
 
 const num = (v, fallback = 0) => {
   const x = Number(v);
   return Number.isFinite(x) ? x : fallback;
 };
 
-const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const clamp = (x, a, b) =>
+  Math.max(a, Math.min(b, x));
 
 async function cached(key, ttl, fn) {
+
   const hit = cache.get(key);
 
   if (
@@ -42,40 +45,36 @@ async function cached(key, ttl, fn) {
   return value;
 }
 
+
 async function fetchText(url, options = {}) {
 
-  const r = await fetch(
-    url,
-    {
-      ...options,
+  const r = await fetch(url, {
+    ...options,
 
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 ALI-Flow-Radar/4.7",
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 ALI-Flow-Radar/5.2",
 
-        Accept:
-          "text/html,text/plain,text/csv,application/json,*/*",
+      Accept:
+        "text/html,text/plain,text/csv,application/json,*/*",
 
-        ...(options.headers || {})
-      },
+      ...(options.headers || {})
+    },
 
-      timeout:
-        15000
-    }
-  );
+    timeout: 15000
+  });
 
-  const text =
-    await r.text();
+  const text = await r.text();
 
   if (!r.ok) {
-
     throw new Error(
-      `HTTP ${r.status}: ${text.slice(0,120)}`
+      `HTTP ${r.status}: ${text.slice(0, 140)}`
     );
   }
 
   return text;
 }
+
 
 async function fetchJson(url, options = {}) {
 
@@ -87,9 +86,7 @@ async function fetchJson(url, options = {}) {
 
   try {
 
-    return JSON.parse(
-      text
-    );
+    return JSON.parse(text);
 
   } catch {
 
@@ -99,13 +96,13 @@ async function fetchJson(url, options = {}) {
   }
 }
 
+
 async function hyper(body) {
 
   return fetchJson(
     "https://api.hyperliquid.xyz/info",
     {
-      method:
-        "POST",
+      method: "POST",
 
       headers: {
         "content-type":
@@ -113,31 +110,289 @@ async function hyper(body) {
       },
 
       body:
-        JSON.stringify(
-          body
-        )
+        JSON.stringify(body)
     }
   );
 }
 
 
-/* =========================================================
+async function mapLimit(
+  items,
+  limit,
+  worker
+) {
+
+  const out =
+    new Array(items.length);
+
+  let next = 0;
+
+  async function run() {
+
+    while (true) {
+
+      const i =
+        next++;
+
+      if (
+        i >= items.length
+      ) {
+        return;
+      }
+
+      out[i] =
+        await worker(
+          items[i],
+          i
+        );
+    }
+  }
+
+  await Promise.all(
+
+    Array.from(
+      {
+        length:
+          Math.min(
+            limit,
+            items.length
+          )
+      },
+
+      run
+    )
+  );
+
+  return out;
+}
+
+
+/* ======================================================
+   TECHNICAL HELPERS
+====================================================== */
+
+function ema(
+  values,
+  period
+) {
+
+  if (!values.length) {
+    return null;
+  }
+
+  const k =
+    2 /
+    (
+      period +
+      1
+    );
+
+  let e =
+    values[0];
+
+  for (
+    let i = 1;
+    i < values.length;
+    i++
+  ) {
+
+    e =
+      values[i] *
+      k +
+      e *
+      (
+        1 -
+        k
+      );
+  }
+
+  return e;
+}
+
+
+function rsi(
+  values,
+  period = 14
+) {
+
+  if (
+    !values ||
+    values.length <= period
+  ) {
+    return 50;
+  }
+
+  let gains = 0;
+  let losses = 0;
+
+  const start =
+    values.length -
+    period;
+
+  for (
+    let i = start;
+    i < values.length;
+    i++
+  ) {
+
+    const d =
+      values[i] -
+      values[i - 1];
+
+    if (d >= 0) {
+      gains += d;
+    } else {
+      losses +=
+        Math.abs(d);
+    }
+  }
+
+  if (
+    losses === 0
+  ) {
+    return 100;
+  }
+
+  const rs =
+    (
+      gains /
+      period
+    ) /
+    (
+      losses /
+      period
+    );
+
+  return (
+    100 -
+    100 /
+    (
+      1 +
+      rs
+    )
+  );
+}
+
+
+function atrFromKlines(
+  rows,
+  period = 14
+) {
+
+  if (
+    !rows ||
+    rows.length < 2
+  ) {
+    return 0;
+  }
+
+  const trs = [];
+
+  for (
+    let i = 1;
+    i < rows.length;
+    i++
+  ) {
+
+    const h =
+      num(rows[i][2]);
+
+    const l =
+      num(rows[i][3]);
+
+    const previousClose =
+      num(
+        rows[i - 1][4]
+      );
+
+    trs.push(
+
+      Math.max(
+
+        h - l,
+
+        Math.abs(
+          h -
+          previousClose
+        ),
+
+        Math.abs(
+          l -
+          previousClose
+        )
+      )
+    );
+  }
+
+  const x =
+    trs.slice(
+      -period
+    );
+
+  return x.length
+    ? x.reduce(
+        (a, b) =>
+          a + b,
+        0
+      ) /
+      x.length
+    : 0;
+}
+
+
+function returnPct(
+  values,
+  barsBack
+) {
+
+  if (
+    !values.length ||
+    values.length <= barsBack
+  ) {
+    return 0;
+  }
+
+  const last =
+    values.at(-1);
+
+  const previous =
+    values.at(
+      -(barsBack + 1)
+    );
+
+  return previous
+    ? (
+        (
+          last -
+          previous
+        ) /
+        previous
+      ) *
+      100
+    : 0;
+}
+
+
+/* ======================================================
    HEALTH
-========================================================= */
+====================================================== */
 
 app.get(
   "/api/health",
   (req, res) => {
 
     res.json({
-      ok:
-        true,
+
+      ok: true,
 
       version:
-        "4.7",
+        "5.2",
 
       app:
         "ALI Flow Radar",
+
+      universe:
+        "Dynamic top-20 inflow + technical ranking",
 
       time:
         new Date()
@@ -147,9 +402,9 @@ app.get(
 );
 
 
-/* =========================================================
-   BINANCE PRICE
-========================================================= */
+/* ======================================================
+   BINANCE MARKET
+====================================================== */
 
 app.get(
   "/api/binance",
@@ -158,7 +413,7 @@ app.get(
     const symbols =
       String(
         req.query.symbols ||
-        "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT"
+        "BTCUSDT,ETHUSDT"
       )
         .split(",")
         .map(
@@ -169,110 +424,78 @@ app.get(
         .filter(Boolean)
         .slice(
           0,
-          20
+          40
         );
 
     try {
 
-      const data =
+      const rows =
         await cached(
-          "binance:" +
-          symbols.join(","),
 
-          3000,
+          "binance:all24h",
 
-          async () => {
+          2500,
 
-            let rows;
-
-            try {
-
-              rows =
-                await fetchJson(
-                  "https://data-api.binance.vision/api/v3/ticker/24hr"
-                );
-
-            } catch {
-
-              rows = [];
-
-              for (
-                const symbol
-                of symbols
-              ) {
-
-                rows.push(
-
-                  await fetchJson(
-
-                    "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=" +
-
-                    encodeURIComponent(
-                      symbol
-                    )
-                  )
-                );
-              }
-            }
-
-            if (
-              !Array.isArray(
-                rows
-              )
-            ) {
-
-              throw new Error(
-                "Bad Binance response"
-              );
-            }
-
-            return rows
-
-              .filter(
-                x =>
-                  symbols.includes(
-                    x.symbol
-                  )
-              )
-
-              .map(
-                x => ({
-
-                  symbol:
-                    x.symbol,
-
-                  lastPrice:
-                    num(
-                      x.lastPrice
-                    ),
-
-                  priceChangePercent:
-                    num(
-                      x.priceChangePercent
-                    ),
-
-                  quoteVolume:
-                    num(
-                      x.quoteVolume
-                    ),
-
-                  highPrice:
-                    num(
-                      x.highPrice
-                    ),
-
-                  lowPrice:
-                    num(
-                      x.lowPrice
-                    )
-                })
-              );
-          }
+          () =>
+            fetchJson(
+              "https://data-api.binance.vision/api/v3/ticker/24hr"
+            )
         );
 
-      res.json(
-        data
-      );
+      const wanted =
+        new Set(symbols);
+
+      const data =
+        (
+          Array.isArray(rows)
+            ? rows
+            : []
+        )
+          .filter(
+            x =>
+              wanted.has(
+                x.symbol
+              )
+          )
+          .map(
+            x => ({
+
+              symbol:
+                x.symbol,
+
+              lastPrice:
+                num(
+                  x.lastPrice
+                ),
+
+              openPrice:
+                num(
+                  x.openPrice
+                ),
+
+              highPrice:
+                num(
+                  x.highPrice
+                ),
+
+              lowPrice:
+                num(
+                  x.lowPrice
+                ),
+
+              priceChangePercent:
+                num(
+                  x.priceChangePercent
+                ),
+
+              quoteVolume:
+                num(
+                  x.quoteVolume
+                )
+            })
+          );
+
+      res.json(data);
 
     } catch (e) {
 
@@ -287,9 +510,161 @@ app.get(
 );
 
 
-/* =========================================================
-   BINANCE FLOW
-========================================================= */
+/* ======================================================
+   ORDER FLOW
+====================================================== */
+
+async function getFlowForSymbol(
+  symbol
+) {
+
+  return cached(
+
+    `flow:${symbol}`,
+
+    7000,
+
+    async () => {
+
+      const trades =
+        await fetchJson(
+
+          "https://data-api.binance.vision/api/v3/aggTrades?symbol=" +
+
+          encodeURIComponent(
+            symbol
+          ) +
+
+          "&limit=500"
+        );
+
+      let buy = 0;
+      let sell = 0;
+
+      let oldest =
+        Infinity;
+
+      let newest =
+        0;
+
+      for (
+        const t
+        of trades ||
+        []
+      ) {
+
+        const value =
+          num(t.p) *
+          num(t.q);
+
+        if (t.m) {
+
+          sell += value;
+
+        } else {
+
+          buy += value;
+        }
+
+        oldest =
+          Math.min(
+            oldest,
+            num(t.T)
+          );
+
+        newest =
+          Math.max(
+            newest,
+            num(t.T)
+          );
+      }
+
+      const total =
+        buy +
+        sell;
+
+      const buyRatio =
+        total
+          ? (
+              buy /
+              total
+            ) *
+            100
+          : 50;
+
+      const netFlow =
+        buy -
+        sell;
+
+      const flowIntensityPct =
+        total
+          ? (
+              netFlow /
+              total
+            ) *
+            100
+          : 0;
+
+      return {
+
+        symbol,
+
+        takerBuy:
+          buy,
+
+        takerSell:
+          sell,
+
+        netFlow,
+
+        buyRatio,
+
+        flowIntensityPct,
+
+        flowScore:
+          clamp(
+
+            50 +
+
+            (
+              buyRatio -
+              50
+            ) *
+            1.35 +
+
+            flowIntensityPct *
+            0.9,
+
+            0,
+            100
+          ),
+
+        sampleTrades:
+          Array.isArray(
+            trades
+          )
+            ? trades.length
+            : 0,
+
+        sampleSeconds:
+          newest &&
+          Number.isFinite(
+            oldest
+          )
+            ? Math.max(
+                1,
+                (
+                  newest -
+                  oldest
+                ) /
+                1000
+              )
+            : 0
+      };
+    }
+  );
+}
+
 
 app.get(
   "/api/flow",
@@ -298,7 +673,7 @@ app.get(
     const symbols =
       String(
         req.query.symbols ||
-        "BTCUSDT,ETHUSDT,SOLUSDT"
+        "BTCUSDT,ETHUSDT"
       )
         .split(",")
         .map(
@@ -309,164 +684,43 @@ app.get(
         .filter(Boolean)
         .slice(
           0,
-          10
+          35
         );
 
-    try {
+    const rows =
+      await mapLimit(
 
-      const output =
-        [];
+        symbols,
 
-      for (
-        const symbol
-        of symbols
-      ) {
+        5,
 
-        try {
+        async symbol => {
 
-          const trades =
-            await cached(
+          try {
 
-              "flow:" +
-              symbol,
-
-              7000,
-
-              () =>
-                fetchJson(
-
-                  "https://data-api.binance.vision/api/v3/aggTrades?symbol=" +
-
-                  encodeURIComponent(
-                    symbol
-                  ) +
-
-                  "&limit=500"
-                )
+            return await getFlowForSymbol(
+              symbol
             );
 
-          let buy = 0;
-          let sell = 0;
+          } catch (e) {
 
-          let oldest =
-            Infinity;
-
-          let newest =
-            0;
-
-          for (
-            const t
-            of trades
-          ) {
-
-            const value =
-              num(t.p) *
-              num(t.q);
-
-            if (t.m) {
-
-              sell +=
-                value;
-
-            } else {
-
-              buy +=
-                value;
-            }
-
-            oldest =
-              Math.min(
-                oldest,
-                num(t.T)
-              );
-
-            newest =
-              Math.max(
-                newest,
-                num(t.T)
-              );
+            return {
+              symbol,
+              error:
+                String(e)
+            };
           }
-
-          const total =
-            buy +
-            sell;
-
-          const buyRatio =
-            total
-              ? (
-                  buy /
-                  total
-                ) *
-                100
-              : 50;
-
-          output.push({
-
-            symbol,
-
-            takerBuy:
-              buy,
-
-            takerSell:
-              sell,
-
-            netFlow:
-              buy -
-              sell,
-
-            buyRatio,
-
-            flowScore:
-              Math.round(
-                buyRatio
-              ),
-
-            sampleTrades:
-              trades.length,
-
-            sampleSeconds:
-              newest &&
-              Number.isFinite(
-                oldest
-              )
-                ? (
-                    newest -
-                    oldest
-                  ) /
-                  1000
-                : 0
-          });
-
-        } catch (e) {
-
-          output.push({
-            symbol,
-            error:
-              String(e)
-          });
         }
-      }
-
-      res.json(
-        output
       );
 
-    } catch (e) {
-
-      res
-        .status(502)
-        .json({
-          error:
-            String(e)
-        });
-    }
+    res.json(rows);
   }
 );
 
 
-/* =========================================================
-   BINANCE KLINES FOR DEMO TRADE ENGINE
-========================================================= */
+/* ======================================================
+   KLINES
+====================================================== */
 
 app.get(
   "/api/klines",
@@ -497,7 +751,7 @@ app.get(
         300
       );
 
-    const allowedIntervals =
+    const allowed =
       new Set([
         "1m",
         "3m",
@@ -523,7 +777,7 @@ app.get(
     }
 
     if (
-      !allowedIntervals.has(
+      !allowed.has(
         interval
       )
     ) {
@@ -565,68 +819,61 @@ app.get(
             )
         );
 
-      if (
-        !Array.isArray(
-          rows
-        )
-      ) {
-
-        throw new Error(
-          "Bad klines response"
-        );
-      }
-
       res.json(
 
-        rows.map(
-          r => ({
-
-            openTime:
-              num(
-                r[0]
-              ),
-
-            open:
-              num(
-                r[1]
-              ),
-
-            high:
-              num(
-                r[2]
-              ),
-
-            low:
-              num(
-                r[3]
-              ),
-
-            close:
-              num(
-                r[4]
-              ),
-
-            volume:
-              num(
-                r[5]
-              ),
-
-            closeTime:
-              num(
-                r[6]
-              ),
-
-            quoteVolume:
-              num(
-                r[7]
-              ),
-
-            trades:
-              num(
-                r[8]
-              )
-          })
+        (
+          rows ||
+          []
         )
+          .map(
+            r => ({
+
+              openTime:
+                num(
+                  r[0]
+                ),
+
+              open:
+                num(
+                  r[1]
+                ),
+
+              high:
+                num(
+                  r[2]
+                ),
+
+              low:
+                num(
+                  r[3]
+                ),
+
+              close:
+                num(
+                  r[4]
+                ),
+
+              volume:
+                num(
+                  r[5]
+                ),
+
+              closeTime:
+                num(
+                  r[6]
+                ),
+
+              quoteVolume:
+                num(
+                  r[7]
+                ),
+
+              trades:
+                num(
+                  r[8]
+                )
+            })
+          )
       );
 
     } catch (e) {
@@ -642,9 +889,903 @@ app.get(
 );
 
 
-/* =========================================================
+/* ======================================================
+   DYNAMIC TOP 20
+====================================================== */
+
+const EXCLUDED_BASES =
+  new Set([
+    "USDC",
+    "FDUSD",
+    "TUSD",
+    "USDP",
+    "DAI",
+    "BUSD",
+    "EUR",
+    "TRY",
+    "BRL",
+    "AEUR",
+    "EURI",
+    "PAXG",
+    "WBTC"
+  ]);
+
+
+function isEligibleUSDT(
+  symbol
+) {
+
+  if (
+    !symbol ||
+    !symbol.endsWith(
+      "USDT"
+    )
+  ) {
+    return false;
+  }
+
+  const base =
+    symbol.slice(
+      0,
+      -4
+    );
+
+  if (
+    EXCLUDED_BASES.has(
+      base
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    /UP$|DOWN$|BULL$|BEAR$/.test(
+      base
+    )
+  ) {
+    return false;
+  }
+
+  return /^[A-Z0-9]+$/.test(
+    base
+  );
+}
+
+
+function updateUniverseHistory(
+  symbol,
+  netFlow,
+  buyRatio
+) {
+
+  const arr =
+    universeHistory.get(
+      symbol
+    ) ||
+    [];
+
+  arr.push({
+
+    time:
+      Date.now(),
+
+    netFlow,
+
+    buyRatio
+  });
+
+  while (
+    arr.length >
+    6
+  ) {
+
+    arr.shift();
+  }
+
+  universeHistory.set(
+    symbol,
+    arr
+  );
+
+  if (
+    arr.length <
+    2
+  ) {
+
+    return 50;
+  }
+
+  const positive =
+    arr.filter(
+      x =>
+        x.netFlow >
+        0 &&
+        x.buyRatio >=
+        50
+    )
+      .length;
+
+  return (
+    positive /
+    arr.length
+  ) *
+  100;
+}
+
+
+async function analyzeUniverseSymbol(
+  ticker
+) {
+
+  const symbol =
+    ticker.symbol;
+
+  const [
+    flowResult,
+    klineResult
+  ] =
+    await Promise.allSettled([
+
+      getFlowForSymbol(
+        symbol
+      ),
+
+      cached(
+
+        `universe-klines:${symbol}`,
+
+        15000,
+
+        () =>
+          fetchJson(
+
+            "https://data-api.binance.vision/api/v3/klines?symbol=" +
+
+            encodeURIComponent(
+              symbol
+            ) +
+
+            "&interval=5m&limit=72"
+          )
+      )
+    ]);
+
+
+  if (
+    flowResult.status !==
+    "fulfilled" ||
+    klineResult.status !==
+    "fulfilled"
+  ) {
+
+    throw new Error(
+      "Universe analysis unavailable"
+    );
+  }
+
+
+  const flow =
+    flowResult.value;
+
+  const klines =
+    klineResult.value ||
+    [];
+
+
+  const closes =
+    klines
+      .map(
+        r =>
+          num(
+            r[4]
+          )
+      )
+      .filter(
+        x =>
+          x >
+          0
+      );
+
+
+  const quoteVolumes =
+    klines
+      .map(
+        r =>
+          num(
+            r[7]
+          )
+      )
+      .filter(
+        x =>
+          x >=
+          0
+      );
+
+
+  const last =
+    closes.at(-1) ||
+    num(
+      ticker.lastPrice
+    );
+
+
+  const e9 =
+    ema(
+      closes.slice(
+        -60
+      ),
+      9
+    ) ||
+    last;
+
+
+  const e21 =
+    ema(
+      closes.slice(
+        -60
+      ),
+      21
+    ) ||
+    last;
+
+
+  const rsi14 =
+    rsi(
+      closes,
+      14
+    );
+
+
+  const ret5m =
+    returnPct(
+      closes,
+      1
+    );
+
+
+  const ret15m =
+    returnPct(
+      closes,
+      3
+    );
+
+
+  const ret1h =
+    returnPct(
+      closes,
+      12
+    );
+
+
+  const atr =
+    atrFromKlines(
+      klines,
+      14
+    ) ||
+    last *
+    0.0045;
+
+
+  const atrPct =
+    last
+      ? (
+          atr /
+          last
+        ) *
+        100
+      : 0;
+
+
+  const recentVolume =
+    quoteVolumes.at(-1) ||
+    0;
+
+
+  const previousVolumes =
+    quoteVolumes.slice(
+      -21,
+      -1
+    );
+
+
+  const avgVolume20 =
+    previousVolumes.length
+
+      ? previousVolumes
+          .reduce(
+            (a, b) =>
+              a + b,
+            0
+          ) /
+          previousVolumes.length
+
+      : recentVolume ||
+        1;
+
+
+  const volumeRatio =
+    avgVolume20
+
+      ? recentVolume /
+        avgVolume20
+
+      : 1;
+
+
+  const emaDiffPct =
+    e21
+      ? (
+          (
+            e9 -
+            e21
+          ) /
+          e21
+        ) *
+        100
+      : 0;
+
+
+  const trendScore =
+    clamp(
+      50 +
+      emaDiffPct *
+      28,
+      0,
+      100
+    );
+
+
+  const momentumScore =
+    clamp(
+
+      50 +
+
+      ret15m *
+      10 +
+
+      ret1h *
+      4,
+
+      0,
+      100
+    );
+
+
+  let rsiScore =
+    50;
+
+
+  if (
+    rsi14 >=
+    50 &&
+    rsi14 <=
+    68
+  ) {
+
+    rsiScore =
+      65 +
+      (
+        rsi14 -
+        50
+      ) *
+      1.3;
+
+  } else if (
+    rsi14 >
+    68 &&
+    rsi14 <=
+    76
+  ) {
+
+    rsiScore =
+      88 -
+      (
+        rsi14 -
+        68
+      ) *
+      4;
+
+  } else if (
+    rsi14 >
+    76
+  ) {
+
+    rsiScore =
+      clamp(
+        55 -
+        (
+          rsi14 -
+          76
+        ) *
+        3,
+        15,
+        55
+      );
+
+  } else {
+
+    rsiScore =
+      clamp(
+
+        50 -
+
+        (
+          50 -
+          rsi14
+        ) *
+        1.1,
+
+        10,
+        50
+      );
+  }
+
+
+  const volumeScore =
+    clamp(
+
+      45 +
+
+      (
+        volumeRatio -
+        1
+      ) *
+      30,
+
+      0,
+      100
+    );
+
+
+  const technicalScore =
+    clamp(
+
+      trendScore *
+      0.32 +
+
+      momentumScore *
+      0.28 +
+
+      rsiScore *
+      0.22 +
+
+      volumeScore *
+      0.18,
+
+      0,
+      100
+    );
+
+
+  const persistenceScore =
+    updateUniverseHistory(
+
+      symbol,
+
+      flow.netFlow,
+
+      flow.buyRatio
+    );
+
+
+  const inflowScore =
+    clamp(
+
+      flow.flowScore *
+      0.55 +
+
+      persistenceScore *
+      0.25 +
+
+      volumeScore *
+      0.20,
+
+      0,
+      100
+    );
+
+
+  const technicalState =
+
+    e9 >
+    e21 &&
+    rsi14 >=
+    50
+
+      ? "BULLISH"
+
+      : e9 <
+        e21 &&
+        rsi14 <=
+        50
+
+      ? "BEARISH"
+
+      : "MIXED";
+
+
+  return {
+
+    symbol,
+
+    lastPrice:
+      num(
+        ticker.lastPrice
+      ),
+
+    priceChangePercent24h:
+      num(
+        ticker.priceChangePercent
+      ),
+
+    quoteVolume24h:
+      num(
+        ticker.quoteVolume
+      ),
+
+    ...flow,
+
+    ema9:
+      e9,
+
+    ema21:
+      e21,
+
+    emaDiffPct,
+
+    rsi14,
+
+    ret5m,
+
+    ret15m,
+
+    ret1h,
+
+    atr,
+
+    atrPct,
+
+    volumeRatio,
+
+    trendScore,
+
+    momentumScore,
+
+    rsiScore,
+
+    volumeScore,
+
+    technicalScore,
+
+    technicalState,
+
+    persistenceScore,
+
+    inflowScore
+  };
+}
+
+
+/* ======================================================
+   TOP 20 UNIVERSE API
+====================================================== */
+
+app.get(
+  "/api/universe",
+  async (req, res) => {
+
+    const limit =
+      clamp(
+        num(
+          req.query.limit,
+          20
+        ),
+        5,
+        20
+      );
+
+    const scan =
+      clamp(
+        num(
+          req.query.scan,
+          60
+        ),
+        25,
+        60
+      );
+
+
+    try {
+
+      const tickers =
+        await cached(
+
+          "universe:tickers",
+
+          5000,
+
+          () =>
+            fetchJson(
+              "https://data-api.binance.vision/api/v3/ticker/24hr"
+            )
+        );
+
+
+      const candidates =
+        (
+          Array.isArray(
+            tickers
+          )
+            ? tickers
+            : []
+        )
+
+          .filter(
+            x =>
+              isEligibleUSDT(
+                x.symbol
+              )
+          )
+
+          .filter(
+            x =>
+              num(
+                x.quoteVolume
+              ) >
+              0
+          )
+
+          .sort(
+            (a, b) =>
+              num(
+                b.quoteVolume
+              ) -
+              num(
+                a.quoteVolume
+              )
+          )
+
+          .slice(
+            0,
+            scan
+          );
+
+
+      const analyzed =
+        await mapLimit(
+
+          candidates,
+
+          5,
+
+          async ticker => {
+
+            try {
+
+              return await analyzeUniverseSymbol(
+                ticker
+              );
+
+            } catch {
+
+              return null;
+            }
+          }
+        );
+
+
+      const valid =
+        analyzed.filter(
+          Boolean
+        );
+
+
+      const volumes =
+        valid
+          .map(
+            x =>
+              x.quoteVolume24h
+          )
+          .filter(
+            x =>
+              x >
+              0
+          );
+
+
+      const maxLog =
+        Math.max(
+
+          1,
+
+          ...volumes.map(
+            v =>
+              Math.log10(
+                v +
+                1
+              )
+          )
+        );
+
+
+      const minLog =
+        Math.min(
+
+          ...volumes.map(
+            v =>
+              Math.log10(
+                v +
+                1
+              )
+          ),
+
+          maxLog
+        );
+
+
+      for (
+        const x
+        of valid
+      ) {
+
+        const lv =
+          Math.log10(
+            x.quoteVolume24h +
+            1
+          );
+
+
+        x.liquidityScore =
+          maxLog ===
+          minLog
+
+            ? 70
+
+            : clamp(
+
+                (
+                  (
+                    lv -
+                    minLog
+                  ) /
+                  (
+                    maxLog -
+                    minLog
+                  )
+                ) *
+                100,
+
+                0,
+                100
+              );
+
+
+        /*
+          Selection:
+          48% inflow
+          32% technical
+          10% persistence
+          10% liquidity
+        */
+
+        x.selectionScore =
+          clamp(
+
+            x.inflowScore *
+            0.48 +
+
+            x.technicalScore *
+            0.32 +
+
+            x.persistenceScore *
+            0.10 +
+
+            x.liquidityScore *
+            0.10,
+
+            0,
+            100
+          );
+
+
+        /*
+          Don't chase a pump.
+        */
+
+        if (
+          x.rsi14 >
+          78
+        ) {
+
+          x.selectionScore -=
+            10;
+        }
+
+
+        if (
+          x.ret15m >
+          4
+        ) {
+
+          x.selectionScore -=
+            7;
+        }
+
+
+        x.selectionScore =
+          clamp(
+            x.selectionScore,
+            0,
+            100
+          );
+      }
+
+
+      /*
+        فقط ارزهایی که
+        Net Flow مثبت دارند.
+      */
+
+      const positive =
+        valid
+
+          .filter(
+            x =>
+              x.netFlow >
+              0 &&
+              x.buyRatio >=
+              50
+          )
+
+          .sort(
+            (a, b) =>
+              b.selectionScore -
+              a.selectionScore
+          );
+
+
+      const selected =
+        positive.slice(
+          0,
+          limit
+        );
+
+
+      res.json({
+
+        generatedAt:
+          Date.now(),
+
+        scanCount:
+          candidates.length,
+
+        selectedCount:
+          selected.length,
+
+        methodology:
+          "Dynamic inflow + technical ranking",
+
+        assets:
+          selected
+      });
+
+
+    } catch (e) {
+
+      res
+        .status(502)
+        .json({
+          error:
+            String(e)
+        });
+    }
+  }
+);
+
+
+/* ======================================================
    HYPERLIQUID WALLET
-========================================================= */
+====================================================== */
 
 function portfolioWindow(
   portfolio,
@@ -659,6 +1800,7 @@ function portfolioWindow(
     return null;
   }
 
+
   for (
     const name
     of names
@@ -668,8 +1810,10 @@ function portfolioWindow(
       portfolio.find(
         x =>
           Array.isArray(x) &&
-          x[0] === name
+          x[0] ===
+          name
       );
+
 
     if (
       !row?.[1]
@@ -677,8 +1821,10 @@ function portfolioWindow(
       continue;
     }
 
+
     const d =
       row[1];
+
 
     const av =
       Array.isArray(
@@ -687,12 +1833,14 @@ function portfolioWindow(
         ? d.accountValueHistory
         : [];
 
+
     const pnlHistory =
       Array.isArray(
         d.pnlHistory
       )
         ? d.pnlHistory
         : [];
+
 
     const first =
       av.length
@@ -701,6 +1849,7 @@ function portfolioWindow(
           )
         : 0;
 
+
     const last =
       av.length
         ? num(
@@ -708,8 +1857,10 @@ function portfolioWindow(
           )
         : 0;
 
+
     const pnl =
       pnlHistory.length
+
         ? num(
             pnlHistory
               .at(-1)?.[1]
@@ -717,7 +1868,9 @@ function portfolioWindow(
           num(
             pnlHistory[0]?.[1]
           )
+
         : 0;
+
 
     const roi =
       first
@@ -733,11 +1886,10 @@ function portfolioWindow(
           100
         : null;
 
-    let peak =
-      0;
 
-    let maxDD =
-      0;
+    let peak = 0;
+    let maxDD = 0;
+
 
     for (
       const point
@@ -750,6 +1902,7 @@ function portfolioWindow(
           NaN
         );
 
+
       if (
         !Number.isFinite(
           value
@@ -758,11 +1911,13 @@ function portfolioWindow(
         continue;
       }
 
+
       peak =
         Math.max(
           peak,
           value
         );
+
 
       if (
         peak >
@@ -771,7 +1926,9 @@ function portfolioWindow(
 
         maxDD =
           Math.min(
+
             maxDD,
+
             (
               (
                 value -
@@ -783,6 +1940,7 @@ function portfolioWindow(
           );
       }
     }
+
 
     return {
 
@@ -800,6 +1958,7 @@ function portfolioWindow(
     };
   }
 
+
   return null;
 }
 
@@ -813,6 +1972,7 @@ function fillStats(
     Date.now() -
     days *
     86400000;
+
 
   const rows =
     (
@@ -830,14 +1990,11 @@ function fillStats(
           cutoff
       );
 
-  let closed =
-    0;
 
-  let wins =
-    0;
+  let closed = 0;
+  let wins = 0;
+  let pnl = 0;
 
-  let pnl =
-    0;
 
   for (
     const f
@@ -849,6 +2006,7 @@ function fillStats(
         f.closedPnl
       );
 
+
     if (
       Math.abs(x) >
       1e-12
@@ -856,8 +2014,8 @@ function fillStats(
 
       closed++;
 
-      pnl +=
-        x;
+      pnl += x;
+
 
       if (
         x >
@@ -867,6 +2025,7 @@ function fillStats(
       }
     }
   }
+
 
   return {
 
@@ -899,17 +2058,21 @@ function walletScore(
   stats
 ) {
 
-  let score =
-    50;
+  let score = 50;
+
 
   const pnls = [
+
     day?.pnl,
+
     week?.pnl,
+
     month?.pnl
-  ]
-    .filter(
-      Number.isFinite
-    );
+
+  ].filter(
+    Number.isFinite
+  );
+
 
   if (
     pnls.length
@@ -924,16 +2087,16 @@ function walletScore(
         )
         .length;
 
+
     score +=
       (
-        (
-          positives /
-          pnls.length
-        ) -
+        positives /
+        pnls.length -
         0.5
       ) *
       24;
   }
+
 
   if (
     Number.isFinite(
@@ -949,6 +2112,7 @@ function walletScore(
       ) *
       0.55;
   }
+
 
   if (
     Number.isFinite(
@@ -966,6 +2130,7 @@ function walletScore(
       0.5;
   }
 
+
   if (
     Number.isFinite(
       month
@@ -975,18 +2140,22 @@ function walletScore(
 
     score +=
       clamp(
+
         12 -
         Math.abs(
           month
             .maxDrawdownPct
         ),
+
         -12,
         12
       ) *
       0.65;
   }
 
+
   return Math.round(
+
     clamp(
       score,
       0,
@@ -1000,258 +2169,309 @@ async function walletSummary(
   user
 ) {
 
-  return cached(
+  const key =
+    user.toLowerCase();
 
-    "wallet:" +
-    user.toLowerCase(),
 
-    10000,
+  try {
 
-    async () => {
+    const summary =
+      await cached(
 
-      const [
-        stateR,
-        portfolioR,
-        fillsR
-      ] =
-        await Promise
-          .allSettled([
+        `wallet:${key}`,
 
-            hyper({
-              type:
-                "clearinghouseState",
-              user
-            }),
+        12000,
 
-            hyper({
-              type:
-                "portfolio",
-              user
-            }),
+        async () => {
 
-            hyper({
-              type:
-                "userFills",
-              user,
-              aggregateByTime:
-                true
-            })
-          ]);
+          const [
+            stateResult,
+            portfolioResult,
+            fillsResult
+          ] =
+            await Promise
+              .allSettled([
 
-      if (
-        stateR.status !==
-        "fulfilled" ||
-        !stateR.value ||
-        !stateR.value.marginSummary
-      ) {
+                hyper({
+                  type:
+                    "clearinghouseState",
 
-        throw new Error(
-          "Hyperliquid state unavailable"
-        );
-      }
+                  user
+                }),
 
-      const state =
-        stateR.value;
+                hyper({
+                  type:
+                    "portfolio",
 
-      const portfolio =
-        portfolioR.status ===
-        "fulfilled"
-          ? portfolioR.value
-          : [];
+                  user
+                }),
 
-      const fills =
-        fillsR.status ===
-        "fulfilled"
-          ? fillsR.value
-          : [];
+                hyper({
+                  type:
+                    "userFills",
 
-      const day =
-        portfolioWindow(
-          portfolio,
-          [
-            "perpDay",
-            "day"
-          ]
-        );
+                  user,
 
-      const week =
-        portfolioWindow(
-          portfolio,
-          [
-            "perpWeek",
-            "week"
-          ]
-        );
+                  aggregateByTime:
+                    true
+                })
+              ]);
 
-      const month =
-        portfolioWindow(
-          portfolio,
-          [
-            "perpMonth",
-            "month"
-          ]
-        );
 
-      const allTime =
-        portfolioWindow(
-          portfolio,
-          [
-            "perpAllTime",
-            "allTime"
-          ]
-        );
+          if (
+            stateResult.status !==
+            "fulfilled" ||
+            !stateResult.value
+              ?.marginSummary
+          ) {
 
-      const stats30 =
-        fillStats(
-          fills,
-          30
-        );
+            throw new Error(
+              "Hyperliquid state unavailable"
+            );
+          }
 
-      const positions =
-        (
-          state.assetPositions ||
-          []
-        )
 
-          .map(
-            x =>
-              x.position ||
-              x
-          )
+          const state =
+            stateResult.value;
 
-          .filter(
-            p =>
-              Math.abs(
-                num(
-                  p.szi
-                )
-              ) >
-              0
-          )
 
-          .map(
-            p => ({
+          const portfolio =
+            portfolioResult.status ===
+            "fulfilled"
 
-              coin:
-                String(
-                  p.coin ||
-                  ""
-                )
-                  .toUpperCase(),
+              ? portfolioResult.value
 
-              side:
-                num(
-                  p.szi
-                ) >=
-                0
-                  ? "LONG"
-                  : "SHORT",
+              : [];
 
-              size:
-                num(
-                  p.szi
-                ),
 
-              positionValue:
-                Math.abs(
-                  num(
-                    p.positionValue
-                  )
-                ),
+          const fills =
+            fillsResult.status ===
+            "fulfilled"
 
-              entryPx:
-                num(
-                  p.entryPx
-                ),
+              ? fillsResult.value
 
-              unrealizedPnl:
-                num(
-                  p.unrealizedPnl
-                ),
+              : [];
 
-              leverage:
-                p.leverage?.value !=
-                null
-                  ? num(
-                      p.leverage.value
+
+          const day =
+            portfolioWindow(
+              portfolio,
+              [
+                "perpDay",
+                "day"
+              ]
+            );
+
+
+          const week =
+            portfolioWindow(
+              portfolio,
+              [
+                "perpWeek",
+                "week"
+              ]
+            );
+
+
+          const month =
+            portfolioWindow(
+              portfolio,
+              [
+                "perpMonth",
+                "month"
+              ]
+            );
+
+
+          const allTime =
+            portfolioWindow(
+              portfolio,
+              [
+                "perpAllTime",
+                "allTime"
+              ]
+            );
+
+
+          const stats30 =
+            fillStats(
+              fills,
+              30
+            );
+
+
+          const positions =
+            (
+              state.assetPositions ||
+              []
+            )
+
+              .map(
+                x =>
+                  x.position ||
+                  x
+              )
+
+              .filter(
+                p =>
+                  Math.abs(
+                    num(
+                      p.szi
                     )
-                  : null
-            })
-          );
+                  ) >
+                  0
+              )
 
-      const score =
-        walletScore(
-          day,
-          week,
-          month,
-          stats30
-        );
+              .map(
+                p => ({
 
-      const summary = {
+                  coin:
+                    String(
+                      p.coin ||
+                      ""
+                    )
+                      .toUpperCase(),
 
-        user,
+                  side:
+                    num(
+                      p.szi
+                    ) >=
+                    0
+                      ? "LONG"
+                      : "SHORT",
 
-        equity:
-          num(
-            state
-              .marginSummary
-              ?.accountValue
-          ),
+                  size:
+                    num(
+                      p.szi
+                    ),
 
-        positions,
+                  positionValue:
+                    Math.abs(
+                      num(
+                        p.positionValue
+                      )
+                    ),
 
-        pnl: {
-          day,
-          week,
-          month,
-          allTime
-        },
+                  entryPx:
+                    num(
+                      p.entryPx
+                    ),
 
-        stats30,
+                  unrealizedPnl:
+                    num(
+                      p.unrealizedPnl
+                    ),
 
-        smartScore:
-          score,
+                  leverage:
+                    p.leverage?.value !=
+                    null
+                      ? num(
+                          p.leverage.value
+                        )
+                      : null
+                })
+              );
 
-        tier:
-          score >=
-          80
-            ? "A+"
-            : score >=
-              70
-            ? "A"
-            : score >=
-              60
-            ? "B"
-            : score >=
-              50
-            ? "C"
-            : "D",
 
-        recentFills:
-          (
-            fills ||
-            []
-          )
-            .slice(
-              0,
-              20
-            ),
+          const score =
+            walletScore(
 
-        stale:
-          false,
+              day,
 
-        updatedAt:
-          Date.now()
-      };
+              week,
 
-      lastGoodWallet.set(
-        user.toLowerCase(),
-        summary
+              month,
+
+              stats30
+            );
+
+
+          return {
+
+            user,
+
+            equity:
+              num(
+                state
+                  .marginSummary
+                  .accountValue
+              ),
+
+            positions,
+
+            pnl: {
+              day,
+              week,
+              month,
+              allTime
+            },
+
+            stats30,
+
+            smartScore:
+              score,
+
+            tier:
+              score >=
+              80
+                ? "A+"
+                : score >=
+                  70
+                ? "A"
+                : score >=
+                  60
+                ? "B"
+                : score >=
+                  50
+                ? "C"
+                : "D",
+
+            stale:
+              false,
+
+            updatedAt:
+              Date.now()
+          };
+        }
       );
 
-      return summary;
+
+    lastGoodWallet.set(
+      key,
+      summary
+    );
+
+
+    return summary;
+
+
+  } catch (e) {
+
+    const old =
+      lastGoodWallet.get(
+        key
+      );
+
+
+    if (
+      old
+    ) {
+
+      return {
+
+        ...old,
+
+        stale:
+          true,
+
+        staleReason:
+          String(e)
+      };
     }
-  );
+
+
+    throw e;
+  }
 }
 
 
@@ -1264,6 +2484,7 @@ app.get(
         req.query.user ||
         ""
       );
+
 
     if (
       !/^0x[a-fA-F0-9]{40}$/.test(
@@ -1279,6 +2500,7 @@ app.get(
         });
     }
 
+
     try {
 
       res.json(
@@ -1288,28 +2510,6 @@ app.get(
       );
 
     } catch (e) {
-
-      const old =
-        lastGoodWallet
-          .get(
-            user.toLowerCase()
-          );
-
-      if (
-        old
-      ) {
-
-        return res.json({
-
-          ...old,
-
-          stale:
-            true,
-
-          staleReason:
-            String(e)
-        });
-      }
 
       res
         .status(502)
@@ -1322,16 +2522,16 @@ app.get(
 );
 
 
-/* =========================================================
+/* ======================================================
    TRADER DISCOVERY
-========================================================= */
+====================================================== */
 
 function perfMap(
   row
 ) {
 
-  const output =
-    {};
+  const output = {};
+
 
   for (
     const item
@@ -1349,10 +2549,12 @@ function perfMap(
       continue;
     }
 
+
     let key =
       String(
         item[0]
       );
+
 
     if (
       key ===
@@ -1362,6 +2564,7 @@ function perfMap(
         "day";
     }
 
+
     if (
       key ===
       "perpWeek"
@@ -1369,6 +2572,7 @@ function perfMap(
       key =
         "week";
     }
+
 
     if (
       key ===
@@ -1378,6 +2582,7 @@ function perfMap(
         "month";
     }
 
+
     if (
       key ===
       "perpAllTime"
@@ -1385,6 +2590,7 @@ function perfMap(
       key =
         "allTime";
     }
+
 
     output[key] = {
 
@@ -1406,6 +2612,7 @@ function perfMap(
     };
   }
 
+
   return output;
 }
 
@@ -1414,11 +2621,11 @@ function traderScore(
   t
 ) {
 
-  let s =
-    35;
+  let s = 35;
 
   const p =
     t.performance;
+
 
   if (
     (
@@ -1430,6 +2637,7 @@ function traderScore(
     s += 12;
   }
 
+
   if (
     (
       p.month?.pnl ||
@@ -1439,6 +2647,7 @@ function traderScore(
   ) {
     s += 15;
   }
+
 
   if (
     (
@@ -1450,31 +2659,32 @@ function traderScore(
     s += 12;
   }
 
+
   s +=
     clamp(
-      p.month
-        ?.roiPct ||
+      p.month?.roiPct ||
       0,
       -30,
       30
     ) *
     0.5;
 
+
   if (
     t.turnover30d <
     500
   ) {
-    s +=
-      7;
+    s += 7;
   }
+
 
   if (
     t.equity >
     100000
   ) {
-    s +=
-      5;
+    s += 5;
   }
+
 
   return Math.round(
     clamp(
@@ -1508,6 +2718,7 @@ app.get(
                 "https://stats-data.hyperliquid.xyz/Mainnet/leaderboard"
               );
 
+
             return (
               d.leaderboardRows ||
               []
@@ -1520,13 +2731,16 @@ app.get(
                       row
                     );
 
+
                   const equity =
                     num(
                       row.accountValue
                     );
 
+
                   const turnover30d =
                     equity
+
                       ? (
                           performance
                             .month
@@ -1534,7 +2748,9 @@ app.get(
                           0
                         ) /
                         equity
+
                       : Infinity;
+
 
                   const t = {
 
@@ -1554,20 +2770,26 @@ app.get(
                     style:
                       turnover30d <
                       20
+
                         ? "Position"
+
                         : turnover30d <
                           150
+
                         ? "Swing"
+
                         : turnover30d <
                           1000
+
                         ? "Active"
+
                         : "HFT-like"
                   };
 
+
                   t.discoveryScore =
-                    traderScore(
-                      t
-                    );
+                    traderScore(t);
+
 
                   return t;
                 }
@@ -1575,11 +2797,13 @@ app.get(
           }
         );
 
+
       const minEquity =
         num(
           req.query.minEquity,
           50000
         );
+
 
       const minPnl =
         num(
@@ -1587,11 +2811,13 @@ app.get(
           0
         );
 
+
       const maxTurnover =
         num(
           req.query.maxTurnover,
           5000
         );
+
 
       const limit =
         clamp(
@@ -1602,6 +2828,7 @@ app.get(
           10,
           100
         );
+
 
       const filtered =
         rows
@@ -1631,7 +2858,7 @@ app.get(
           )
 
           .sort(
-            (a,b) =>
+            (a, b) =>
               b.discoveryScore -
               a.discoveryScore
           )
@@ -1641,10 +2868,12 @@ app.get(
             limit
           );
 
+
       res.json({
         traders:
           filtered
       });
+
 
     } catch (e) {
 
@@ -1659,42 +2888,43 @@ app.get(
 );
 
 
-/* =========================================================
-   MONEY ROTATION
-========================================================= */
+/* ======================================================
+   SMART WALLET ROTATION
+====================================================== */
 
 function exposureSnapshot(
   summaries
 ) {
 
-  const exposure =
-    {};
+  const exposure = {};
 
-  let gross =
-    0;
+  let gross = 0;
+
 
   for (
-    const w
+    const wallet
     of summaries
   ) {
 
     if (
-      !w ||
-      w.error
+      !wallet ||
+      wallet.error
     ) {
       continue;
     }
 
+
     const weight =
       num(
-        w.smartScore,
+        wallet.smartScore,
         50
       ) /
       100;
 
+
     for (
       const p
-      of w.positions ||
+      of wallet.positions ||
       []
     ) {
 
@@ -1708,6 +2938,7 @@ function exposureSnapshot(
         p.positionValue *
         weight;
 
+
       exposure[
         p.coin
       ] =
@@ -1719,12 +2950,14 @@ function exposureSnapshot(
         ) +
         signed;
 
+
       gross +=
         Math.abs(
           signed
         );
     }
   }
+
 
   return {
 
@@ -1735,20 +2968,6 @@ function exposureSnapshot(
 
     gross
   };
-}
-
-
-function historyKey(
-  users
-) {
-
-  return users
-    .map(
-      x =>
-        x.toLowerCase()
-    )
-    .sort()
-    .join("|");
 }
 
 
@@ -1773,8 +2992,10 @@ function rotationCalc(
       ])
     );
 
+
   const net =
     allCoins
+
       .map(
         coin => {
 
@@ -1786,6 +3007,7 @@ function rotationCalc(
                 ]
             );
 
+
           const b =
             num(
               after
@@ -1793,6 +3015,7 @@ function rotationCalc(
                   coin
                 ]
             );
+
 
           return {
 
@@ -1812,7 +3035,7 @@ function rotationCalc(
       )
 
       .sort(
-        (a,b) =>
+        (a, b) =>
           Math.abs(
             b.delta
           ) -
@@ -1820,6 +3043,7 @@ function rotationCalc(
             a.delta
           )
       );
+
 
   const inflows =
     net
@@ -1842,10 +3066,11 @@ function rotationCalc(
       )
 
       .sort(
-        (a,b) =>
+        (a, b) =>
           b.value -
           a.value
       );
+
 
   const outflows =
     net
@@ -1870,37 +3095,38 @@ function rotationCalc(
       )
 
       .sort(
-        (a,b) =>
+        (a, b) =>
           b.value -
           a.value
       );
 
+
   const source =
-    outflows
-      .map(
-        x => ({
+    outflows.map(
+      x => ({
 
-          ...x,
+        ...x,
 
-          remaining:
-            x.value
-        })
-      );
+        remaining:
+          x.value
+      })
+    );
+
 
   const target =
-    inflows
-      .map(
-        x => ({
+    inflows.map(
+      x => ({
 
-          ...x,
+        ...x,
 
-          remaining:
-            x.value
-        })
-      );
+        remaining:
+          x.value
+      })
+    );
 
-  const paths =
-    [];
+
+  const paths = [];
+
 
   for (
     const s
@@ -1919,6 +3145,7 @@ function rotationCalc(
         break;
       }
 
+
       if (
         t.remaining <=
         0
@@ -1926,11 +3153,13 @@ function rotationCalc(
         continue;
       }
 
+
       const value =
         Math.min(
           s.remaining,
           t.remaining
         );
+
 
       if (
         value <=
@@ -1938,6 +3167,7 @@ function rotationCalc(
       ) {
         continue;
       }
+
 
       paths.push({
 
@@ -1950,19 +3180,24 @@ function rotationCalc(
         value
       });
 
+
       s.remaining -=
         value;
+
 
       t.remaining -=
         value;
     }
   }
 
+
   return {
 
     windowSeconds:
       Math.max(
+
         1,
+
         Math.round(
           (
             after.time -
@@ -1974,7 +3209,7 @@ function rotationCalc(
 
     totalIn:
       inflows.reduce(
-        (s,x) =>
+        (s, x) =>
           s +
           x.value,
         0
@@ -1982,7 +3217,7 @@ function rotationCalc(
 
     totalOut:
       outflows.reduce(
-        (s,x) =>
+        (s, x) =>
           s +
           x.value,
         0
@@ -1996,11 +3231,13 @@ function rotationCalc(
 
     paths:
       paths
+
         .sort(
-          (a,b) =>
+          (a, b) =>
             b.value -
             a.value
         )
+
         .slice(
           0,
           30
@@ -2013,142 +3250,122 @@ app.get(
   "/api/rotation",
   async (req, res) => {
 
+    const users =
+      String(
+        req.query.users ||
+        ""
+      )
+        .split(",")
+        .map(
+          x =>
+            x.trim()
+        )
+        .filter(
+          x =>
+            /^0x[a-fA-F0-9]{40}$/.test(
+              x
+            )
+        )
+        .slice(
+          0,
+          25
+        );
+
+
+    if (
+      !users.length
+    ) {
+
+      return res
+        .status(400)
+        .json({
+          error:
+            "No wallets"
+        });
+    }
+
+
     try {
 
-      const users =
-        String(
-          req.query.users ||
-          ""
-        )
-          .split(",")
-          .map(
-            x =>
-              x.trim()
-          )
-          .filter(
-            x =>
-              /^0x[a-fA-F0-9]{40}$/.test(
-                x
-              )
-          )
-          .slice(
-            0,
-            25
-          );
-
-      if (
-        !users.length
-      ) {
-
-        return res
-          .status(400)
-          .json({
-            error:
-              "No wallets"
-          });
-      }
-
       const summaries =
-        [];
+        await mapLimit(
 
-      for (
-        let i =
-          0;
+          users,
 
-        i <
-        users.length;
+          3,
 
-        i +=
-          3
-      ) {
+          async user => {
 
-        const batch =
-          users.slice(
-            i,
-            i +
-            3
-          );
+            try {
 
-        const data =
-          await Promise.all(
+              return await walletSummary(
+                user
+              );
 
-            batch.map(
-              async user => {
+            } catch (e) {
 
-                try {
+              return {
 
-                  return await walletSummary(
-                    user
-                  );
+                user,
 
-                } catch (e) {
-
-                  return {
-
-                    user,
-
-                    error:
-                      String(e)
-                  };
-                }
-              }
-            )
-          );
-
-        summaries.push(
-          ...data
+                error:
+                  String(e)
+              };
+            }
+          }
         );
 
-        await sleep(
-          250
-        );
-      }
 
-      const snap =
+      const snapshot =
         exposureSnapshot(
           summaries
         );
 
+
       const key =
-        historyKey(
-          users
-        );
+        users
+          .map(
+            x =>
+              x.toLowerCase()
+          )
+          .sort()
+          .join("|");
 
-      if (
-        !walletHistory.has(
-          key
-        )
-      ) {
 
-        walletHistory.set(
-          key,
-          []
-        );
-      }
-
-      const hist =
+      const history =
         walletHistory.get(
           key
-        );
+        ) ||
+        [];
 
-      hist.push(
-        snap
+
+      history.push(
+        snapshot
       );
 
+
       while (
-        hist.length >
-        MAX_HISTORY
+        history.length >
+        MAX_ROTATION_SNAPSHOTS
       ) {
 
-        hist.shift();
+        history.shift();
       }
+
+
+      walletHistory.set(
+        key,
+        history
+      );
+
 
       let previous =
         null;
 
+
       for (
         let i =
-          hist.length -
+          history.length -
           2;
 
         i >=
@@ -2158,10 +3375,11 @@ app.get(
       ) {
 
         previous =
-          hist[i];
+          history[i];
+
 
         if (
-          snap.time -
+          snapshot.time -
           previous.time >=
           60000
         ) {
@@ -2169,6 +3387,7 @@ app.get(
           break;
         }
       }
+
 
       if (
         !previous
@@ -2184,6 +3403,7 @@ app.get(
         });
       }
 
+
       res.json({
 
         warmup:
@@ -2195,9 +3415,10 @@ app.get(
         rotation:
           rotationCalc(
             previous,
-            snap
+            snapshot
           )
       });
+
 
     } catch (e) {
 
@@ -2212,9 +3433,9 @@ app.get(
 );
 
 
-/* =========================================================
-   GLOBAL MACRO
-========================================================= */
+/* ======================================================
+   MACRO
+====================================================== */
 
 const MACRO = [
 
@@ -2226,10 +3447,7 @@ const MACRO = [
       "XAUUSD",
 
     stooq:
-      "xauusd",
-
-    group:
-      "Gold"
+      "xauusd"
   },
 
   {
@@ -2240,10 +3458,7 @@ const MACRO = [
       "CL.F",
 
     stooq:
-      "cl.f",
-
-    group:
-      "Oil"
+      "cl.f"
   },
 
   {
@@ -2254,10 +3469,7 @@ const MACRO = [
       "CB.F",
 
     stooq:
-      "cb.f",
-
-    group:
-      "Oil"
+      "cb.f"
   },
 
   {
@@ -2268,10 +3480,7 @@ const MACRO = [
       "DX.F",
 
     stooq:
-      "dx.f",
-
-    group:
-      "FX"
+      "dx.f"
   },
 
   {
@@ -2282,10 +3491,7 @@ const MACRO = [
       "EURUSD",
 
     stooq:
-      "eurusd",
-
-    group:
-      "FX"
+      "eurusd"
   }
 ];
 
@@ -2302,6 +3508,7 @@ function parseCSV(
       )
       .filter(Boolean);
 
+
   if (
     lines.length <
     2
@@ -2312,6 +3519,7 @@ function parseCSV(
     );
   }
 
+
   const header =
     lines[0]
       .split(",")
@@ -2319,6 +3527,7 @@ function parseCSV(
         x =>
           x.trim()
       );
+
 
   const values =
     lines[1]
@@ -2328,17 +3537,18 @@ function parseCSV(
           x.trim()
       );
 
-  const row =
-    {};
 
-  header
-    .forEach(
-      (h,i) => {
+  const row = {};
 
-        row[h] =
-          values[i];
-      }
-    );
+
+  header.forEach(
+    (h, i) => {
+
+      row[h] =
+        values[i];
+    }
+  );
+
 
   return row;
 }
@@ -2360,10 +3570,12 @@ async function macroQuote(
       "&f=sd2t2ohlcv&h&e=csv"
     );
 
+
   const row =
     parseCSV(
       text
     );
+
 
   const open =
     num(
@@ -2371,11 +3583,13 @@ async function macroQuote(
       NaN
     );
 
+
   const close =
     num(
       row.Close,
       NaN
     );
+
 
   if (
     !Number.isFinite(
@@ -2387,6 +3601,7 @@ async function macroQuote(
       "No quote"
     );
   }
+
 
   return {
 
@@ -2400,6 +3615,7 @@ async function macroQuote(
         open
       ) &&
       open
+
         ? (
             (
               close -
@@ -2408,6 +3624,7 @@ async function macroQuote(
             open
           ) *
           100
+
         : null,
 
     time:
@@ -2415,9 +3632,7 @@ async function macroQuote(
         row.Date,
         row.Time
       ]
-        .filter(
-          Boolean
-        )
+        .filter(Boolean)
         .join(" ")
   };
 }
@@ -2427,8 +3642,8 @@ app.get(
   "/api/macro",
   async (req, res) => {
 
-    const out =
-      [];
+    const out = [];
+
 
     for (
       const asset
@@ -2440,8 +3655,7 @@ app.get(
         const q =
           await cached(
 
-            "macro:" +
-            asset.symbol,
+            `macro:${asset.symbol}`,
 
             30000,
 
@@ -2451,62 +3665,52 @@ app.get(
               )
           );
 
+
         lastGood.set(
-
-          "macro:" +
-          asset.symbol,
-
+          `macro:${asset.symbol}`,
           q
         );
 
-        out.push(
-          q
-        );
+
+        out.push(q);
+
 
       } catch (e) {
 
         const previous =
           lastGood.get(
-
-            "macro:" +
-            asset.symbol
+            `macro:${asset.symbol}`
           );
 
-        if (
+
+        out.push(
+
           previous
-        ) {
 
-          out.push({
+            ? {
+                ...previous,
+                stale:
+                  true
+              }
 
-            ...previous,
-
-            stale:
-              true
-          });
-
-        } else {
-
-          out.push({
-
-            ...asset,
-
-            error:
-              String(e)
-          });
-        }
+            : {
+                ...asset,
+                error:
+                  String(e)
+              }
+        );
       }
     }
 
-    res.json(
-      out
-    );
+
+    res.json(out);
   }
 );
 
 
-/* =========================================================
-   IRAN
-========================================================= */
+/* ======================================================
+   IRAN MARKET
+====================================================== */
 
 const IRAN_ITEMS = [
 
@@ -2548,33 +3752,33 @@ function cleanNumber(
   str
 ) {
 
-  if (
-    !str
-  ) {
+  if (!str) {
     return null;
   }
 
+
   const x =
-    String(
-      str
-    )
+    String(str)
+
       .replace(
         /<[^>]+>/g,
         ""
       )
+
       .replace(
         /,/g,
         ""
       )
+
       .replace(
         /[^0-9.\-]/g,
         ""
       );
 
+
   const value =
-    Number(
-      x
-    );
+    Number(x);
+
 
   return Number.isFinite(
     value
@@ -2595,6 +3799,7 @@ function extractTGJU(
       "\\$&"
     );
 
+
   const patterns = [
 
     new RegExp(
@@ -2613,6 +3818,7 @@ function extractTGJU(
     )
   ];
 
+
   for (
     const regex
     of patterns
@@ -2623,10 +3829,12 @@ function extractTGJU(
         regex
       );
 
+
     const value =
       cleanNumber(
         m?.[1]
       );
+
 
     if (
       Number.isFinite(
@@ -2639,6 +3847,7 @@ function extractTGJU(
       return value;
     }
   }
+
 
   return null;
 }
@@ -2663,8 +3872,9 @@ app.get(
             )
         );
 
-      const data =
-        [];
+
+      const data = [];
+
 
       for (
         const item
@@ -2677,9 +3887,10 @@ app.get(
             item.key
           );
 
+
         const cacheKey =
-          "iran:" +
-          item.key;
+          `iran:${item.key}`;
+
 
         if (
           Number.isFinite(
@@ -2700,14 +3911,15 @@ app.get(
               Date.now()
           };
 
+
           lastGood.set(
             cacheKey,
             row
           );
 
-          data.push(
-            row
-          );
+
+          data.push(row);
+
 
         } else {
 
@@ -2716,37 +3928,31 @@ app.get(
               cacheKey
             );
 
-          if (
+
+          data.push(
+
             old
-          ) {
 
-            data.push({
+              ? {
+                  ...old,
+                  stale:
+                    true
+                }
 
-              ...old,
-
-              stale:
-                true
-            });
-
-          } else {
-
-            data.push({
-
-              ...item,
-
-              value:
-                null,
-
-              error:
-                "TGJU parse unavailable"
-            });
-          }
+              : {
+                  ...item,
+                  value:
+                    null,
+                  error:
+                    "TGJU parse unavailable"
+                }
+          );
         }
       }
 
-      res.json(
-        data
-      );
+
+      res.json(data);
+
 
     } catch (e) {
 
@@ -2757,17 +3963,18 @@ app.get(
 
             const old =
               lastGood.get(
-
-                "iran:" +
-                item.key
+                `iran:${item.key}`
               );
 
+
             return old
+
               ? {
                   ...old,
                   stale:
                     true
                 }
+
               : {
                   ...item,
                   value:
@@ -2783,135 +3990,12 @@ app.get(
 );
 
 
-/* =========================================================
-   FAMOUS
-========================================================= */
-
-app.get(
-  "/api/famous",
-  (req, res) => {
-
-    res.json({
-
-      crypto: [
-
-        {
-          name:
-            "Arthur Hayes",
-
-          specialty:
-            "Crypto / Macro",
-
-          liveWallet:
-            false
-        },
-
-        {
-          name:
-            "Andrew Kang",
-
-          specialty:
-            "Crypto / Macro",
-
-          liveWallet:
-            false
-        },
-
-        {
-          name:
-            "GCR",
-
-          specialty:
-            "Crypto Trading",
-
-          liveWallet:
-            false
-        },
-
-        {
-          name:
-            "Hsaka",
-
-          specialty:
-            "Crypto Trading",
-
-          liveWallet:
-            false
-        },
-
-        {
-          name:
-            "James Wynn",
-
-          specialty:
-            "High-risk Crypto Trading",
-
-          liveWallet:
-            false
-        }
-      ],
-
-      forexMacro: [
-
-        {
-          name:
-            "George Soros",
-
-          specialty:
-            "FX / Global Macro"
-        },
-
-        {
-          name:
-            "Stanley Druckenmiller",
-
-          specialty:
-            "Global Macro / FX / Rates"
-        },
-
-        {
-          name:
-            "Paul Tudor Jones",
-
-          specialty:
-            "Macro / Futures / Commodities"
-        },
-
-        {
-          name:
-            "Bill Lipschutz",
-
-          specialty:
-            "FX Trading"
-        },
-
-        {
-          name:
-            "Kathy Lien",
-
-          specialty:
-            "FX / Macro"
-        }
-      ],
-
-      note:
-        "Profiles are informational. No live position is claimed unless a verified wallet is explicitly added by the user."
-    });
-  }
-);
-
-
-/* =========================================================
-   START
-========================================================= */
-
 app.listen(
   PORT,
   () => {
 
     console.log(
-      "ALI Flow Radar v4.7 running on " +
-      PORT
+      `ALI Flow Radar v5.2 running on ${PORT}`
     );
   }
 );
