@@ -3,268 +3,10064 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ALI Flow Radar v5.2</title>
+<meta name="theme-color" content="#f4f6f8">
+<title>ALI Flow Radar Terminal v5.3</title>
+
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+
 <style>
-:root{--bg:#f4f6f8;--p:#fff;--p2:#fafbfd;--l:#dfe5eb;--t:#17212b;--m:#7b8794;--g:#169b62;--r:#d84b4b;--w:#d99a24;--b:#2779bd;--bs:#eaf4fb;--gs:#ebf8f1;--rs:#fff0ef;--ys:#fff7e8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font-family:Tahoma,"Segoe UI",sans-serif}header{position:sticky;top:0;z-index:50;background:#fffffff5;border-bottom:1px solid var(--l)}.head{max-width:1650px;margin:auto;padding:10px 16px}.top,.brand,.live,.ct,.actions{display:flex;align-items:center}.top{justify-content:space-between}.brand{gap:10px}.logo{width:34px;height:34px;border:2px solid var(--l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}h1{font-size:18px;margin:0}.small{font-size:11px;color:var(--m)}.tiny{font-size:9px;color:var(--m)}.live{gap:6px;font-size:11px}.dot{width:8px;height:8px;border-radius:50%;background:var(--w)}.dot.on{background:var(--g);box-shadow:0 0 8px #169b6299}nav{display:flex;gap:6px;margin-top:9px;overflow:auto}button,input,select{font:inherit}button{border:1px solid var(--l);background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}button.active{background:var(--bs);color:#126092;font-weight:700}button.primary{background:#1e72a8;color:#fff;border-color:#1e72a8}button.goodbtn{background:var(--g);color:#fff;border-color:var(--g)}button.armbtn{background:var(--ys);color:#946200;border-color:#e9ce92}button.danger{color:var(--r);border-color:#efcccc}button:disabled{opacity:.45}main{max-width:1650px;margin:auto;padding:14px}.tab{display:none}.tab.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}.card{background:var(--p);border:1px solid var(--l);border-radius:14px;padding:13px}.ct{justify-content:space-between;margin-bottom:9px}.ct h2{font-size:14px;margin:0}.metric{font-size:28px;font-weight:800}.medium{font-size:21px}.label{font-size:9px;color:var(--m)}.good{color:var(--g)}.bad{color:var(--r)}.warn{color:var(--w)}.pill{display:inline-block;border:1px solid var(--l);border-radius:999px;padding:2px 7px;font-size:9px}.pill.good{background:var(--gs);color:var(--g)}.pill.bad{background:var(--rs);color:var(--r)}.pill.blue{background:var(--bs);color:#176b9d}.signal{padding:8px;border:1px solid var(--l);border-radius:9px;margin-top:6px;background:var(--p2)}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:8px;border-bottom:1px solid var(--l);text-align:right;white-space:nowrap}th{font-size:9px;color:var(--m)}.chart{height:300px;width:100%}.large{height:420px}.xlarge{height:500px}.assetgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.asset,.kpi,.profile,.iran{border:1px solid var(--l);border-radius:10px;padding:10px;background:#fbfcfd}.asset .price{font-size:18px;font-weight:800}.kpis{display:grid;grid-template-columns:repeat(10,1fr);gap:8px}.kpi .v{font-size:18px;font-weight:800}.settings{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1.5fr auto auto;gap:8px}.filters{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:8px}.form4{display:grid;grid-template-columns:1fr 2fr 1fr auto;gap:8px}.profiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.irangrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.actions{gap:4px;flex-wrap:wrap}.flowrow{display:grid;grid-template-columns:70px 1fr 110px;gap:8px;align-items:center;border-bottom:1px solid var(--l);padding:7px}.track{height:7px;background:#eee;border-radius:20px;overflow:hidden}.track i{display:block;height:100%}.track .in{background:var(--g)}.track .out{background:var(--r)}input,select{width:100%;border:1px solid var(--l);border-radius:8px;padding:9px;background:#fff}.side{font-weight:800}.long{color:var(--g)}.short{color:var(--r)}.grade{display:inline-block;padding:4px 7px;border-radius:7px;font-weight:800}.ga{background:var(--gs);color:var(--g)}.gw{background:var(--ys);color:#946200}.footer{text-align:center;color:var(--m);font-size:9px;padding:22px}
-@media(max-width:1100px){.s3,.s4,.s5,.s6,.s7,.s8{grid-column:span 12}.assetgrid{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(4,1fr)}.settings,.filters,.form4,.profiles,.irangrid{grid-template-columns:1fr 1fr}}
-@media(max-width:650px){.assetgrid,.kpis,.settings,.filters,.form4,.profiles,.irangrid{grid-template-columns:1fr}}
+:root{
+  --bg:#f4f6f8;
+  --panel:#fff;
+  --panel2:#fafbfd;
+  --line:#dfe5eb;
+  --text:#17212b;
+  --muted:#7b8794;
+  --good:#169b62;
+  --bad:#d84b4b;
+  --warn:#d99a24;
+  --accent:#2779bd;
+  --blue:#eaf4fb;
+  --red:#fff0ef;
+  --green:#ebf8f1;
+  --yellow:#fff7e8;
+  --shadow:0 2px 9px rgba(30,50,70,.05)
+}
+
+*{
+  box-sizing:border-box
+}
+
+html,
+body{
+  margin:0;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Tahoma,"Segoe UI",sans-serif
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(255,255,255,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(14px)
+}
+
+.header-inner{
+  max-width:1650px;
+  margin:auto;
+  padding:10px 16px
+}
+
+.topline,
+.brandline,
+.livebox,
+.card-title,
+.actions{
+  display:flex;
+  align-items:center
+}
+
+.topline{
+  justify-content:space-between;
+  gap:15px
+}
+
+.brandline{
+  gap:11px
+}
+
+.logo{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  border:2px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  background:#fff
+}
+
+h1{
+  margin:0;
+  font-size:18px
+}
+
+.small{
+  font-size:11px;
+  color:var(--muted)
+}
+
+.tiny{
+  font-size:9px;
+  color:var(--muted)
+}
+
+.livebox{
+  gap:6px;
+  font-size:11px;
+  color:var(--muted)
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--warn)
+}
+
+.dot.live{
+  background:var(--good);
+  box-shadow:0 0 8px rgba(22,155,98,.6)
+}
+
+nav{
+  display:flex;
+  gap:7px;
+  margin-top:9px;
+  overflow:auto;
+  padding-bottom:2px
+}
+
+button,
+input,
+select{
+  font:inherit
+}
+
+button{
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--text);
+  border-radius:8px;
+  padding:8px 11px;
+  cursor:pointer
+}
+
+button.active{
+  background:var(--blue);
+  border-color:#a8cce3;
+  color:#126092;
+  font-weight:700
+}
+
+button.primary{
+  background:#1e72a8;
+  color:#fff;
+  border-color:#1e72a8
+}
+
+button.goodbtn{
+  background:#169b62;
+  color:#fff;
+  border-color:#169b62
+}
+
+button.armbtn{
+  background:var(--yellow);
+  color:#9a650a;
+  border-color:#e9ce92
+}
+
+button.danger{
+  color:var(--bad);
+  border-color:#efcccc
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+
+main{
+  max-width:1650px;
+  margin:auto;
+  padding:14px
+}
+
+.tab{
+  display:none
+}
+
+.tab.active{
+  display:block
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:12px
+}
+
+.s3{grid-column:span 3}
+.s4{grid-column:span 4}
+.s5{grid-column:span 5}
+.s6{grid-column:span 6}
+.s7{grid-column:span 7}
+.s8{grid-column:span 8}
+.s12{grid-column:span 12}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:15px;
+  box-shadow:var(--shadow);
+  padding:13px
+}
+
+.card-title{
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px
+}
+
+.card-title h2{
+  margin:0;
+  font-size:14px
+}
+
+.card-title small{
+  font-size:10px;
+  color:var(--muted)
+}
+
+.metric{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-1px
+}
+
+.metric.medium{
+  font-size:21px
+}
+
+.label{
+  color:var(--muted);
+  font-size:9px;
+  text-transform:uppercase
+}
+
+.good{
+  color:var(--good)
+}
+
+.bad{
+  color:var(--bad)
+}
+
+.warn{
+  color:var(--warn)
+}
+
+.pill{
+  display:inline-block;
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:2px 7px;
+  font-size:9px;
+  background:#fff
+}
+
+.pill.good{
+  color:var(--good);
+  background:var(--green);
+  border-color:#bce7d3
+}
+
+.pill.bad{
+  color:var(--bad);
+  background:var(--red);
+  border-color:#f0c5c5
+}
+
+.pill.blue{
+  color:#176b9d;
+  background:var(--blue);
+  border-color:#bcd9e9
+}
+
+.pill.warn{
+  color:#9a650a;
+  background:var(--yellow);
+  border-color:#ead2a0
+}
+
+.sep{
+  height:1px;
+  background:var(--line);
+  margin:10px 0
+}
+
+.signal{
+  padding:9px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  margin-top:7px;
+  background:var(--panel2)
+}
+
+.scroll{
+  overflow:auto
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px
+}
+
+th,
+td{
+  padding:8px 9px;
+  border-bottom:1px solid var(--line);
+  text-align:right;
+  white-space:nowrap
+}
+
+th{
+  color:var(--muted);
+  font-size:9px;
+  font-weight:600
+}
+
+.chart{
+  width:100%;
+  height:300px
+}
+
+.chart.large{
+  height:420px
+}
+
+.chart.xlarge{
+  height:500px
+}
+
+.prob-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px
+}
+
+.prob-box{
+  padding:9px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  text-align:center
+}
+
+.prob-box.up{
+  background:var(--green);
+  color:var(--good)
+}
+
+.prob-box.down{
+  background:var(--red);
+  color:var(--bad)
+}
+
+.prob-num{
+  font-size:24px;
+  font-weight:800
+}
+
+.filters{
+  display:grid;
+  grid-template-columns:repeat(4,1fr) auto;
+  gap:8px
+}
+
+.form4{
+  display:grid;
+  grid-template-columns:1fr 2fr 1fr auto;
+  gap:8px
+}
+
+.demo-settings{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr 1.5fr auto auto;
+  gap:8px
+}
+
+.demo-kpis{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:8px
+}
+
+.demo-kpi,
+.asset-card,
+.profile-card,
+.iran-price{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  background:#fbfcfd
+}
+
+.demo-kpi .v{
+  font-size:18px;
+  font-weight:800;
+  margin-top:4px
+}
+
+.asset-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px
+}
+
+.asset-card .p{
+  font-size:18px;
+  font-weight:800
+}
+
+.asset-card .sym{
+  font-size:10px;
+  font-weight:700
+}
+
+.profile-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px
+}
+
+.iran-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px
+}
+
+input,
+select{
+  width:100%;
+  background:#fff;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:9px
+}
+
+.flow-row{
+  display:grid;
+  grid-template-columns:70px 1fr 110px;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid var(--line)
+}
+
+.track{
+  height:7px;
+  background:#eef1f4;
+  border-radius:50px;
+  overflow:hidden
+}
+
+.track i{
+  display:block;
+  height:100%
+}
+
+.track .in{
+  background:var(--good)
+}
+
+.track .out{
+  background:var(--bad)
+}
+
+.trade-side{
+  font-weight:800
+}
+
+.trade-side.long{
+  color:var(--good)
+}
+
+.trade-side.short{
+  color:var(--bad)
+}
+
+.trade-side.wait{
+  color:var(--warn)
+}
+
+.trade-grade{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:34px;
+  height:24px;
+  border-radius:7px;
+  font-weight:800;
+  border:1px solid var(--line)
+}
+
+.trade-grade.aplus{
+  background:#e5f7ee;
+  color:#087847;
+  border-color:#a9dfc5
+}
+
+.trade-grade.a{
+  background:#eef7fd;
+  color:#176b9d;
+  border-color:#bcd9e9
+}
+
+.trade-grade.watch{
+  background:var(--yellow);
+  color:#a56d0c;
+  border-color:#ead2a0
+}
+
+.trade-ready{
+  color:var(--good);
+  font-weight:800
+}
+
+.trade-wait{
+  color:var(--warn);
+  font-weight:800
+}
+
+.trade-armed{
+  color:#176b9d;
+  font-weight:800
+}
+
+.trade-off{
+  color:var(--muted);
+  font-weight:700
+}
+
+.reason-list{
+  max-width:370px;
+  white-space:normal;
+  line-height:1.5
+}
+
+.actions{
+  gap:4px;
+  flex-wrap:wrap;
+  min-width:220px
+}
+
+.demo-note{
+  padding:10px;
+  border:1px dashed #b9c8d3;
+  border-radius:10px;
+  background:#f8fbfd;
+  color:#586875;
+  font-size:10px
+}
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:9px;
+  padding:22px
+}
+
+@media(max-width:1100px){
+
+  .s3,
+  .s4,
+  .s5,
+  .s6,
+  .s7,
+  .s8{
+    grid-column:span 12
+  }
+
+  .asset-grid{
+    grid-template-columns:repeat(3,1fr)
+  }
+
+  .demo-kpis{
+    grid-template-columns:repeat(4,1fr)
+  }
+
+  .demo-settings,
+  .filters,
+  .form4,
+  .profile-grid,
+  .iran-grid{
+    grid-template-columns:1fr 1fr
+  }
+}
+
+@media(max-width:650px){
+
+  main{
+    padding:8px
+  }
+
+  .asset-grid,
+  .demo-kpis,
+  .demo-settings,
+  .filters,
+  .form4,
+  .profile-grid,
+  .iran-grid,
+  .prob-grid{
+    grid-template-columns:1fr
+  }
+
+  .card{
+    padding:10px
+  }
+
+  .metric{
+    font-size:23px
+  }
+}
 </style>
 </head>
+
 <body>
-<header><div class="head"><div class="top"><div class="brand"><div class="logo">A</div><div><h1>ALI FLOW RADAR <span class="pill blue">v5.2 FLOW SCAN</span></h1><div class="small">Dynamic Top 20 Inflow • Technical Scan • Smart Money • Multi Futures Demo</div></div></div><div class="live"><span id="dot" class="dot"></span><span id="status">CONNECTING</span></div></div><nav>
-<button class="tabbtn active" data-tab="terminal">Terminal</button>
-<button class="tabbtn" data-tab="discover">Trader Discovery</button>
-<button class="tabbtn" data-tab="wallets">Smart Wallets</button>
-<button class="tabbtn" data-tab="famous">Famous Traders</button>
-<button class="tabbtn" data-tab="moneyflow">Money Flow</button>
-<button class="tabbtn" data-tab="demo">Demo Trading</button>
-<button class="tabbtn" data-tab="iranGlobal">Iran / Global</button>
-<button class="tabbtn" data-tab="macro">Macro</button>
-<button class="tabbtn" data-tab="system">System</button>
-</nav></div></header>
+
+<header>
+
+<div class="header-inner">
+
+<div class="topline">
+
+<div class="brandline">
+
+<div class="logo">
+A
+</div>
+
+<div>
+
+<h1>
+ALI FLOW RADAR
+<span class="pill blue">
+v5.3 FLOW SCAN
+</span>
+</h1>
+
+<div class="small">
+Dynamic Top 20 Inflow • Technical Scan • Smart Money • Multi Futures Demo
+</div>
+
+</div>
+
+</div>
+
+<div class="livebox">
+
+<span
+  id="dot"
+  class="dot">
+</span>
+
+<span id="status">
+CONNECTING
+</span>
+
+</div>
+
+</div>
+
+
+<nav>
+
+<button
+  class="tabbtn active"
+  data-tab="terminal">
+Terminal
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="discover">
+Trader Discovery
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="wallets">
+Smart Wallets
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="famous">
+Famous Traders
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="moneyflow">
+Money Flow
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="demo">
+Demo Trading
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="iranGlobal">
+Iran / Global
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="macro">
+Macro
+</button>
+
+<button
+  class="tabbtn"
+  data-tab="system">
+System
+</button>
+
+</nav>
+
+</div>
+
+</header>
+
 
 <main>
 
-<section id="terminal" class="tab active"><div class="grid">
-<div class="card s4"><div class="ct"><h2>Market Intelligence</h2><small>DYNAMIC</small></div><div class="label">BTC Confidence</div><div id="globalConfidence" class="metric">--</div><div class="signal">BTC <b id="btcPrice">--</b> • ETH <b id="ethPrice">--</b></div><div class="signal">Wallets <b id="walletCount">0</b> • Rotation <b id="rotationMini">WARMUP</b> • Socket <b id="socketState">--</b></div></div>
-<div class="card s4"><div class="ct"><h2>BTC Probability</h2><small>HEURISTIC</small></div><div class="signal">UP <b id="probUp" class="good">--</b> • DOWN <b id="probDown" class="bad">--</b></div><div class="signal">Flow <b id="probFlow">--</b> • Momentum <b id="probMomentum">--</b> • Wallet <b id="probWallet">--</b></div></div>
-<div class="card s4"><div class="ct"><h2>Smart Money</h2></div><div id="topConsensus" class="metric medium">NO SIGNAL</div><div id="consensusList"></div></div>
-<div class="card s12"><div class="ct"><h2>Dynamic Top 20 Inflow + Technical Watch</h2><small>REBUILT EVERY 60s</small></div><div class="small">این لیست ثابت نیست. بازار اسکن می‌شود و ارزهای دارای ورود پول و شرایط تکنیکال بهتر انتخاب می‌شوند.</div><div id="assetGrid" class="assetgrid" style="margin-top:10px"></div></div>
-<div class="card s5"><div class="ct"><h2>Probability Lattice</h2></div><div id="probChart" class="chart large"></div></div>
-<div class="card s7"><div class="ct"><h2>Smart Wallet Network</h2></div><div id="walletGraph" class="chart large"></div></div>
-<div class="card s12"><div class="ct"><h2>BTC Live Pulse</h2></div><div id="btcPulseChart" class="chart"></div></div>
-<div class="card s12"><div class="ct"><h2>Early Money Radar</h2></div><div id="earlyMoney"></div></div>
-</div></section>
 
-<section id="discover" class="tab"><div class="grid"><div class="card s12"><div class="ct"><h2>Trader Discovery</h2></div><div class="filters"><input id="minEquity" type="number" value="50000"><input id="minMonthPnl" type="number" value="0"><input id="maxTurnover" type="number" value="5000"><input id="discoverLimit" type="number" value="50"><button id="discoverBtn" class="primary">Scan</button></div></div><div class="card s12 scroll"><table><thead><tr><th>#</th><th>Trader</th><th>Score</th><th>Equity</th><th>Week PnL</th><th>Month PnL</th><th>ROI</th><th>Style</th><th>Action</th></tr></thead><tbody id="discoverRows"></tbody></table></div></div></section>
+<section
+  id="terminal"
+  class="tab active">
 
-<section id="wallets" class="tab"><div class="grid"><div class="card s12"><div class="ct"><h2>Smart Wallets</h2><small>PERMANENT</small></div><div class="form4"><input id="walletName" placeholder="Trader name"><input id="walletAddress" placeholder="0x..."><select id="walletTag"><option>Manual</option><option>Discovery</option><option>Verified</option></select><button id="addWallet" class="primary">Add Wallet</button></div></div><div class="card s12 scroll"><table><thead><tr><th>Trader</th><th>Tier</th><th>Score</th><th>Equity</th><th>Week</th><th>Month</th><th>Win Rate</th><th>Positions</th><th>Status</th><th>Action</th></tr></thead><tbody id="walletRows"></tbody></table></div></div></section>
+<div class="grid">
 
-<section id="famous" class="tab"><div class="grid"><div class="card s6"><div class="ct"><h2>Crypto</h2></div><div id="famousCrypto" class="profiles"></div></div><div class="card s6"><div class="ct"><h2>Forex / Macro</h2></div><div id="famousMacro" class="profiles"></div></div></div></section>
 
-<section id="moneyflow" class="tab"><div class="grid">
-<div class="card s3"><div class="label">Status</div><div id="mfStatus" class="metric medium">WARMUP</div></div>
-<div class="card s3"><div class="label">Wallets</div><div id="mfWalletCount" class="metric medium">0</div></div>
-<div class="card s3"><div class="label">Inflow</div><div id="mfTotalIn" class="metric medium good">--</div></div>
-<div class="card s3"><div class="label">Outflow</div><div id="mfTotalOut" class="metric medium bad">--</div></div>
-<div class="card s8"><div class="ct"><h2>Smart Money Path</h2></div><div id="moneyFlowSankey" class="chart xlarge"></div></div>
-<div class="card s4"><div class="ct"><h2>Top Paths</h2></div><div id="moneyPathList"></div></div>
-<div class="card s6"><div class="ct"><h2>Inflow</h2></div><div id="moneyInflows"></div></div>
-<div class="card s6"><div class="ct"><h2>Outflow</h2></div><div id="moneyOutflows"></div></div>
-<div class="card s12"><div id="moneyRotationBar" class="chart"></div></div>
-</div></section>
+<div class="card s4">
 
-<section id="demo" class="tab"><div class="grid">
-<div class="card s12"><div class="ct"><h2>Flow Trade Engine — Futures Demo</h2><small>LIVE</small></div><div class="small">ورود دمو بر اساس Flow + Technical + Wallet Consensus + Rotation انجام می‌شود. چند معامله همزمان ممکن است.</div></div>
-<div class="card s12"><div class="kpis">
-<div class="kpi"><div class="label">Balance</div><div id="demoBalance" class="v">$10,000</div></div>
-<div class="kpi"><div class="label">Equity</div><div id="demoEquity" class="v">$10,000</div></div>
-<div class="kpi"><div class="label">Open PnL</div><div id="demoOpenPnl" class="v">$0</div></div>
-<div class="kpi"><div class="label">Closed PnL</div><div id="demoClosedPnl" class="v">$0</div></div>
-<div class="kpi"><div class="label">Used Margin</div><div id="demoUsedMargin" class="v">$0</div></div>
-<div class="kpi"><div class="label">Free Margin</div><div id="demoFreeMargin" class="v">$10,000</div></div>
-<div class="kpi"><div class="label">Open</div><div id="demoOpenCount" class="v">0</div></div>
-<div class="kpi"><div class="label">Max</div><div id="demoMaxOpenView" class="v">10</div></div>
-<div class="kpi"><div class="label">Win Rate</div><div id="demoWinRate" class="v">--</div></div>
-<div class="kpi"><div class="label">Profit Factor</div><div id="demoProfitFactor" class="v">--</div></div>
-</div></div>
-<div class="card s12"><div class="settings">
-<input id="demoStartBalance" type="number" value="10000">
-<input id="demoRiskPct" type="number" value="1" step=".1">
-<select id="demoLeverage"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select>
-<select id="demoMaxOpen"><option value="1">Max 1</option><option value="3">Max 3</option><option value="5">Max 5</option><option value="10">Max 10</option><option value="15">Max 15</option><option value="20">Max 20</option></select>
-<div class="signal" style="margin:0">Risk <b id="riskPreview">1%</b> • Lev <b id="leveragePreview">5x</b> • Max <b id="maxOpenPreview">10</b></div>
-<button id="saveDemoSettings" class="primary">Save</button>
-<button id="resetDemo" class="danger">Reset</button>
-</div></div>
-<div class="card s12 scroll"><table><thead><tr><th>Asset</th><th>Signal</th><th>Grade</th><th>Score</th><th>Price</th><th>Entry</th><th>Stop</th><th>TP1</th><th>TP2</th><th>TP3</th><th>State</th><th>Why</th><th>Action</th></tr></thead><tbody id="tradeSignalRows"></tbody></table></div>
-<div class="card s12 scroll"><div class="ct"><h2>Armed Entries</h2></div><table><thead><tr><th>Asset</th><th>Side</th><th>Zone</th><th>Price</th><th>Lev</th><th>Action</th></tr></thead><tbody id="armedRows"></tbody></table></div>
-<div class="card s12 scroll"><div class="ct"><h2>Open Positions</h2></div><table><thead><tr><th>Asset</th><th>Side</th><th>Type</th><th>Lev</th><th>Entry</th><th>Price</th><th>Position</th><th>Margin</th><th>Stop</th><th>TP1</th><th>TP2</th><th>TP3</th><th>Liq</th><th>PnL</th><th>ROM</th><th>Action</th></tr></thead><tbody id="demoOpenRows"></tbody></table></div>
-<div class="card s12 scroll"><div class="ct"><h2>Closed Trades</h2></div><table><thead><tr><th>Asset</th><th>Side</th><th>Type</th><th>Lev</th><th>Entry</th><th>Exit</th><th>PnL</th><th>Reason</th></tr></thead><tbody id="demoClosedRows"></tbody></table></div>
-</div></section>
+<div class="card-title">
 
-<section id="iranGlobal" class="tab"><div class="grid"><div class="card s12"><div id="iranPrices" class="irangrid"></div></div><div class="card s3"><div class="label">Gold</div><div id="igGold" class="metric medium">--</div><div id="igGoldMove"></div></div><div class="card s3"><div class="label">Brent</div><div id="igBrent" class="metric medium">--</div><div id="igBrentMove"></div></div><div class="card s3"><div class="label">WTI</div><div id="igWti" class="metric medium">--</div><div id="igWtiMove"></div></div><div class="card s3"><div class="label">DXY</div><div id="igDxy" class="metric medium">--</div><div id="igDxyMove"></div></div><div class="card s12"><div id="iranGlobalChart" class="chart xlarge"></div></div></div></section>
+<h2>
+Market Intelligence
+</h2>
 
-<section id="macro" class="tab"><div class="grid"><div class="card s7"><div id="macroChart" class="chart large"></div></div><div class="card s5 scroll"><table><thead><tr><th>Market</th><th>Price</th><th>Move</th><th>Status</th></tr></thead><tbody id="macroRows"></tbody></table></div></div></section>
+<small>
+DYNAMIC UNIVERSE
+</small>
 
-<section id="system" class="tab"><div class="grid"><div class="card s3"><div class="label">Backend</div><div id="backendState" class="metric medium">--</div></div><div class="card s3"><div class="label">Socket</div><div id="socketSystem" class="metric medium">--</div></div><div class="card s3"><div class="label">Iran</div><div id="iranState" class="metric medium">--</div></div><div class="card s3"><div class="label">Version</div><div class="metric medium">5.2</div></div></div></section>
+</div>
+
+<div class="label">
+BTC Confidence
+</div>
+
+<div
+  id="globalConfidence"
+  class="metric">
+--
+</div>
+
+<div class="sep"></div>
+
+<div class="signal">
+
+BTC:
+<b id="btcPrice">
+--
+</b>
+
+&nbsp;
+
+ETH:
+<b id="ethPrice">
+--
+</b>
+
+</div>
+
+<div class="signal">
+
+Wallets:
+<b id="walletCount">
+0
+</b>
+
+&nbsp;
+
+Rotation:
+<b id="rotationMini">
+WARMUP
+</b>
+
+&nbsp;
+
+Socket:
+<b id="socketState">
+--
+</b>
+
+</div>
+
+</div>
+
+
+<div class="card s4">
+
+<div class="card-title">
+
+<h2>
+BTC Probability Engine
+</h2>
+
+<small>
+HEURISTIC
+</small>
+
+</div>
+
+<div class="prob-grid">
+
+<div class="prob-box up">
+
+<div class="label">
+P(UP)
+</div>
+
+<div
+  id="probUp"
+  class="prob-num">
+--
+</div>
+
+</div>
+
+
+<div class="prob-box down">
+
+<div class="label">
+P(DOWN)
+</div>
+
+<div
+  id="probDown"
+  class="prob-num">
+--
+</div>
+
+</div>
+
+</div>
+
+<div class="sep"></div>
+
+<div class="small">
+
+Flow
+<b id="probFlow">
+--
+</b>
+
+•
+
+Momentum
+<b id="probMomentum">
+--
+</b>
+
+•
+
+Wallet
+<b id="probWallet">
+--
+</b>
+
+</div>
+
+</div>
+
+
+<div class="card s4">
+
+<div class="card-title">
+
+<h2>
+Top Smart Money Signal
+</h2>
+
+<small>
+CONSENSUS
+</small>
+
+</div>
+
+<div
+  id="topConsensus"
+  class="metric medium">
+NO SIGNAL
+</div>
+
+<div id="consensusList"></div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Dynamic Top 20 Inflow + Technical Watch
+</h2>
+
+<small>
+FLOW SCANNER + LIVE WEBSOCKET
+</small>
+
+</div>
+
+<div class="small">
+این ۲۰ ارز ثابت نیستند؛ هر دقیقه از بین جفت‌های نقدشونده USDT دوباره انتخاب می‌شوند.
+</div>
+
+<div
+  id="assetGrid"
+  class="asset-grid"
+  style="margin-top:10px">
+</div>
+
+</div>
+
+
+<div class="card s5">
+
+<div class="card-title">
+
+<h2>
+Probability Lattice
+</h2>
+
+<small>
+DYNAMIC 20
+</small>
+
+</div>
+
+<div
+  id="probChart"
+  class="chart large">
+</div>
+
+</div>
+
+
+<div class="card s7">
+
+<div class="card-title">
+
+<h2>
+Smart Wallet Relationship Graph
+</h2>
+
+<small>
+POSITION NETWORK
+</small>
+
+</div>
+
+<div
+  id="walletGraph"
+  class="chart large">
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+BTC Live Pulse
+</h2>
+
+<small>
+LIVE TICK
+</small>
+
+</div>
+
+<div
+  id="btcPulseChart"
+  class="chart">
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Early Money Radar
+</h2>
+
+<small>
+DYNAMIC 20
+</small>
+
+</div>
+
+<div id="earlyMoney"></div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<section
+  id="discover"
+  class="tab">
+
+<div class="grid">
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Trader Discovery
+</h2>
+
+<small>
+HYPERLIQUID
+</small>
+
+</div>
+
+<div class="filters">
+
+<input
+  id="minEquity"
+  type="number"
+  value="50000">
+
+<input
+  id="minMonthPnl"
+  type="number"
+  value="0">
+
+<input
+  id="maxTurnover"
+  type="number"
+  value="5000">
+
+<input
+  id="discoverLimit"
+  type="number"
+  value="50">
+
+<button
+  id="discoverBtn"
+  class="primary">
+Scan Traders
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<table>
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>Trader</th>
+<th>Score</th>
+<th>Equity</th>
+<th>Week PnL</th>
+<th>Month PnL</th>
+<th>ROI</th>
+<th>Style</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="discoverRows"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section
+  id="wallets"
+  class="tab">
+
+<div class="grid">
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Smart Wallet Watchlist
+</h2>
+
+<small>
+PERMANENT
+</small>
+
+</div>
+
+<div class="form4">
+
+<input
+  id="walletName"
+  placeholder="Trader name">
+
+<input
+  id="walletAddress"
+  placeholder="0x...">
+
+<select id="walletTag">
+
+<option>
+Manual
+</option>
+
+<option>
+Discovery
+</option>
+
+<option>
+Verified
+</option>
+
+<option>
+Review
+</option>
+
+</select>
+
+<button
+  id="addWallet"
+  class="primary">
+Add Wallet
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Trader</th>
+<th>Tier</th>
+<th>Score</th>
+<th>Equity</th>
+<th>Week PnL</th>
+<th>Month PnL</th>
+<th>Win Rate</th>
+<th>Positions</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="walletRows"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section
+  id="famous"
+  class="tab">
+
+<div class="grid">
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Famous Crypto / Forex / Macro Traders
+</h2>
+
+<small>
+DIRECTORY
+</small>
+
+</div>
+
+<div class="small">
+پروفایل آموزشی؛ بدون Wallet عمومی معتبر، پوزیشن زنده به فرد نسبت داده نمی‌شود.
+</div>
+
+</div>
+
+
+<div class="card s6">
+
+<div class="card-title">
+<h2>Crypto</h2>
+</div>
+
+<div
+  id="famousCrypto"
+  class="profile-grid">
+</div>
+
+</div>
+
+
+<div class="card s6">
+
+<div class="card-title">
+<h2>Forex / Macro</h2>
+</div>
+
+<div
+  id="famousMacro"
+  class="profile-grid">
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section
+  id="moneyflow"
+  class="tab">
+
+<div class="grid">
+
+
+<div class="card s3">
+
+<div class="label">
+Rotation Status
+</div>
+
+<div
+  id="mfStatus"
+  class="metric medium">
+WARMUP
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Saved Wallets
+</div>
+
+<div
+  id="mfWalletCount"
+  class="metric medium">
+0
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Total Inflow
+</div>
+
+<div
+  id="mfTotalIn"
+  class="metric medium good">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Total Outflow
+</div>
+
+<div
+  id="mfTotalOut"
+  class="metric medium bad">
+--
+</div>
+
+</div>
+
+
+<div class="card s8">
+
+<div class="card-title">
+
+<h2>
+Smart Money Path
+</h2>
+
+<small>
+INFERRED ROTATION
+</small>
+
+</div>
+
+<div
+  id="moneyFlowSankey"
+  class="chart xlarge">
+</div>
+
+</div>
+
+
+<div class="card s4">
+
+<div class="card-title">
+<h2>Top Paths</h2>
+</div>
+
+<div id="moneyPathList">
+Waiting...
+</div>
+
+</div>
+
+
+<div class="card s6">
+
+<div class="card-title">
+<h2>Inflow</h2>
+</div>
+
+<div id="moneyInflows">
+--
+</div>
+
+</div>
+
+
+<div class="card s6">
+
+<div class="card-title">
+<h2>Outflow</h2>
+</div>
+
+<div id="moneyOutflows">
+--
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+<h2>Net Capital Rotation</h2>
+</div>
+
+<div
+  id="moneyRotationBar"
+  class="chart">
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<section
+  id="demo"
+  class="tab">
+
+<div class="grid">
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Flow Trade Engine — Futures Demo
+</h2>
+
+<small>
+DYNAMIC TOP 20 • LIVE PRICE • TECHNICAL
+</small>
+
+</div>
+
+<div class="demo-note">
+۲۰ ارز از روی ورود جریان پول انتخاب می‌شوند، بعد فیلتر تکنیکال EMA9/EMA21، RSI14، مومنتوم 5m/15m/1h، ATR و رشد حجم روی آن‌ها اعمال می‌شود. ARM ENTRY منتظر Entry Zone می‌ماند؛ MARKET ورود دمو با قیمت لحظه‌ای است. چند معامله می‌توانند همزمان باز باشند.
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="demo-kpis">
+
+
+<div class="demo-kpi">
+<div class="label">Balance</div>
+<div id="demoBalance" class="v">$10,000</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Equity</div>
+<div id="demoEquity" class="v">$10,000</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Open PnL</div>
+<div id="demoOpenPnl" class="v">$0</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Closed PnL</div>
+<div id="demoClosedPnl" class="v">$0</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Used Margin</div>
+<div id="demoUsedMargin" class="v">$0</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Free Margin</div>
+<div id="demoFreeMargin" class="v">$10,000</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Open Positions</div>
+<div id="demoOpenCount" class="v">0</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Max Open</div>
+<div id="demoMaxOpenView" class="v">10</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Win Rate</div>
+<div id="demoWinRate" class="v">--</div>
+</div>
+
+
+<div class="demo-kpi">
+<div class="label">Profit Factor</div>
+<div id="demoProfitFactor" class="v">--</div>
+</div>
+
+
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Demo Futures Settings
+</h2>
+
+<small>
+RISK BASED • MULTI POSITION
+</small>
+
+</div>
+
+<div class="demo-settings">
+
+<input
+  id="demoStartBalance"
+  type="number"
+  value="10000"
+  min="100">
+
+<input
+  id="demoRiskPct"
+  type="number"
+  value="1"
+  step="0.1"
+  min="0.1"
+  max="5">
+
+<select id="demoLeverage">
+
+<option value="1">1x</option>
+<option value="2">2x</option>
+<option value="3">3x</option>
+<option value="5">5x</option>
+<option value="10">10x</option>
+
+</select>
+
+
+<select id="demoMaxOpen">
+
+<option value="1">Max 1</option>
+<option value="3">Max 3</option>
+<option value="5">Max 5</option>
+<option value="10">Max 10</option>
+<option value="15">Max 15</option>
+<option value="20">Max 20</option>
+
+</select>
+
+
+<div
+  class="signal"
+  style="margin:0">
+
+Risk
+<b id="riskPreview">
+1%
+</b>
+
+•
+
+Leverage
+<b id="leveragePreview">
+5x
+</b>
+
+•
+
+Max
+<b id="maxOpenPreview">
+10
+</b>
+
+</div>
+
+
+<button
+  id="saveDemoSettings"
+  class="primary">
+Save Settings
+</button>
+
+
+<button
+  id="resetDemo"
+  class="danger">
+Reset Demo
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+LONG / SHORT Entry & Exit Board
+</h2>
+
+<small>
+DYNAMIC 20
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Asset</th>
+<th>Signal</th>
+<th>Grade</th>
+<th>Score</th>
+<th>Live Price</th>
+<th>Entry Zone</th>
+<th>Stop</th>
+<th>TP1</th>
+<th>TP2</th>
+<th>TP3</th>
+<th>State</th>
+<th>Why</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="tradeSignalRows"></tbody>
+
+</table>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+Armed Entries
+</h2>
+
+<small>
+AUTO ENTRY
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Asset</th>
+<th>Side</th>
+<th>Target Zone</th>
+<th>Current</th>
+<th>Leverage</th>
+<th>Armed</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="armedRows"></tbody>
+
+</table>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+Open Demo Positions
+</h2>
+
+<small>
+LIVE PNL
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Asset</th>
+<th>Side</th>
+<th>Entry Type</th>
+<th>Lev</th>
+<th>Entry</th>
+<th>Current</th>
+<th>Position</th>
+<th>Margin</th>
+<th>Stop</th>
+<th>TP1</th>
+<th>TP2</th>
+<th>TP3</th>
+<th>Liq.</th>
+<th>PnL</th>
+<th>Return/Margin</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="demoOpenRows"></tbody>
+
+</table>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+Closed Demo Trades
+</h2>
+
+<small>
+JOURNAL
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Asset</th>
+<th>Side</th>
+<th>Type</th>
+<th>Lev</th>
+<th>Entry</th>
+<th>Exit</th>
+<th>PnL</th>
+<th>Reason</th>
+<th>Closed</th>
+</tr>
+
+</thead>
+
+<tbody id="demoClosedRows"></tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<section
+  id="iranGlobal"
+  class="tab">
+
+<div class="grid">
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Iran / Global Market
+</h2>
+
+<small>
+GOLD • OIL • FX
+</small>
+
+</div>
+
+<div
+  id="iranPrices"
+  class="iran-grid">
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Global Gold
+</div>
+
+<div
+  id="igGold"
+  class="metric medium">
+--
+</div>
+
+<div id="igGoldMove">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Brent
+</div>
+
+<div
+  id="igBrent"
+  class="metric medium">
+--
+</div>
+
+<div id="igBrentMove">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+WTI
+</div>
+
+<div
+  id="igWti"
+  class="metric medium">
+--
+</div>
+
+<div id="igWtiMove">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+DXY
+</div>
+
+<div
+  id="igDxy"
+  class="metric medium">
+--
+</div>
+
+<div id="igDxyMove">
+--
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+<h2>Global → Iran Influence Map</h2>
+</div>
+
+<div
+  id="iranGlobalChart"
+  class="chart xlarge">
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<section
+  id="macro"
+  class="tab">
+
+<div class="grid">
+
+
+<div class="card s7">
+
+<div class="card-title">
+<h2>Macro Cross-Asset Map</h2>
+</div>
+
+<div
+  id="macroChart"
+  class="chart large">
+</div>
+
+</div>
+
+
+<div class="card s5 scroll">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Market</th>
+<th>Price</th>
+<th>Move</th>
+<th>Status</th>
+</tr>
+
+</thead>
+
+<tbody id="macroRows"></tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<section
+  id="system"
+  class="tab">
+
+<div class="grid">
+
+
+<div class="card s3">
+
+<div class="label">
+Backend
+</div>
+
+<div
+  id="backendState"
+  class="metric medium">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Price Socket
+</div>
+
+<div
+  id="socketSystem"
+  class="metric medium">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Iran Market
+</div>
+
+<div
+  id="iranState"
+  class="metric medium">
+--
+</div>
+
+</div>
+
+
+<div class="card s3">
+
+<div class="label">
+Version
+</div>
+
+<div class="metric medium">
+5.3
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="signal">
+Dynamic top-20 universe is rebuilt every 60 seconds from liquid USDT pairs using recent taker inflow + technical analysis + volume acceleration + liquidity.
+</div>
+
+<div class="signal">
+Price is live via Binance WebSocket. Flow is based on the latest 500 aggregate trades per symbol and is a sample, not total exchange capital flow.
+</div>
+
+<div class="signal">
+Wallet storage key:
+<b>
+ALI_FLOW_RADAR_WALLETS_V1
+</b>
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
 
 </main>
 
-<div class="footer">ALI Flow Radar — Demo / Research. Flow sample and technical scores are not guarantees.</div>
+
+<div class="footer">
+ALI Flow Radar — Demo / research tool. Flow, technical scores and inferred wallet rotation are not guarantees of future returns.
+</div>
+
 
 <script>
-const UKEY="ALI_FLOW_RADAR_DYNAMIC_UNIVERSE_V1",WKEY="ALI_FLOW_RADAR_WALLETS_V1",WCACHE="ALI_FLOW_RADAR_WALLET_CACHE_V1",DKEY="ALI_FLOW_RADAR_DEMO_V2";
-const $=x=>document.getElementById(x),num=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-const money=v=>{v=num(v);let a=Math.abs(v);return a>=1e9?(v/1e9).toFixed(2)+"B":a>=1e6?(v/1e6).toFixed(2)+"M":a>=1e3?(v/1e3).toFixed(1)+"K":v.toFixed(0)};
-const fmt=v=>{v=Number(v);return !Number.isFinite(v)?"--":v<1?v.toFixed(5):v<100?v.toFixed(3):v.toFixed(2)};
-const pct=v=>Number.isFinite(Number(v))?(num(v)>=0?"+":"")+num(v).toFixed(2)+"%":"--";
-const short=a=>a?a.slice(0,6)+"…"+a.slice(-4):"--";
-async function json(url){let r=await fetch(url,{cache:"no-store"}),t=await r.text(),d;try{d=JSON.parse(t)}catch{throw Error("Bad response")}if(!r.ok)throw Error(d.error||r.status);return d}
-function load(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
-let symbols=load(UKEY,[]).slice(0,20),wallets=load(WKEY,[]),walletData=load(WCACHE,{}),demo=load(DKEY,{initialBalance:10000,riskPct:1,leverage:5,maxOpenPositions:10,closedPnl:0,open:[],closed:[],armed:[]});
-let market={},flow={},universe={},rotation=null,macro=[],iran=[],discovered=[],btcHistory=[],socket=null,socketKey="",retry=1000;
-const saveWallet=()=>localStorage.setItem(WKEY,JSON.stringify(wallets)),saveWC=()=>localStorage.setItem(WCACHE,JSON.stringify(walletData)),saveDemo=()=>localStorage.setItem(DKEY,JSON.stringify(demo));
-document.querySelectorAll(".tabbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabbtn,.tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");$(b.dataset.tab).classList.add("active");setTimeout(resize,100)});
-const chart=id=>window.echarts?echarts.init($(id)):null;
-const probChart=chart("probChart"),pulseChart=chart("btcPulseChart"),walletGraph=chart("walletGraph"),sankey=chart("moneyFlowSankey"),rotBar=chart("moneyRotationBar"),macroChart=chart("macroChart"),iranChart=chart("iranGlobalChart");
-function resize(){[probChart,pulseChart,walletGraph,sankey,rotBar,macroChart,iranChart].forEach(x=>x&&x.resize())}window.addEventListener("resize",resize);
-function activeSymbols(){return [...new Set([...symbols,"BTCUSDT","ETHUSDT",...demo.open.map(x=>x.symbol),...demo.armed.map(x=>x.symbol)])].slice(0,40)}
+
+const UNIVERSE_CACHE_KEY =
+  "ALI_FLOW_RADAR_DYNAMIC_UNIVERSE_V1";
+
+const WALLET_STORAGE_KEY =
+  "ALI_FLOW_RADAR_WALLETS_V1";
+
+const WALLET_CACHE_KEY =
+  "ALI_FLOW_RADAR_WALLET_CACHE_V1";
+
+const WALLET_MIGRATION_KEY =
+  "ALI_FLOW_RADAR_WALLET_MIGRATED_V1";
+
+const DEMO_STORAGE_KEY =
+  "ALI_FLOW_RADAR_DEMO_V2";
+
+
+const FAMOUS_CRYPTO = [
+
+  [
+    "Arthur Hayes",
+    "Crypto / Macro"
+  ],
+
+  [
+    "Andrew Kang",
+    "Crypto / Macro"
+  ],
+
+  [
+    "GCR",
+    "Crypto Trading"
+  ],
+
+  [
+    "Hsaka",
+    "Crypto Trading"
+  ],
+
+  [
+    "James Wynn",
+    "High-risk Crypto Trading"
+  ]
+];
+
+
+const FAMOUS_MACRO = [
+
+  [
+    "George Soros",
+    "FX / Macro"
+  ],
+
+  [
+    "Stanley Druckenmiller",
+    "Global Macro"
+  ],
+
+  [
+    "Paul Tudor Jones",
+    "Macro / Futures"
+  ],
+
+  [
+    "Bill Lipschutz",
+    "FX"
+  ],
+
+  [
+    "Kathy Lien",
+    "FX / Macro"
+  ]
+];
+
+
+const $ =
+  id =>
+    document.getElementById(
+      id
+    );
+
+
+const num =
+  (
+    v,
+    f = 0
+  ) =>
+    Number.isFinite(
+      Number(v)
+    )
+      ? Number(v)
+      : f;
+
+
+const clamp =
+  (
+    v,
+    a,
+    b
+  ) =>
+    Math.max(
+      a,
+      Math.min(
+        b,
+        v
+      )
+    );
+
+
+const signClass =
+  v =>
+    num(v) >=
+    0
+      ? "good"
+      : "bad";
+
+
+function money(v){
+
+  v =
+    num(v);
+
+  const a =
+    Math.abs(v);
+
+  if (
+    a >=
+    1e9
+  ) {
+
+    return (
+      v /
+      1e9
+    ).toFixed(
+      2
+    ) +
+    "B";
+  }
+
+  if (
+    a >=
+    1e6
+  ) {
+
+    return (
+      v /
+      1e6
+    ).toFixed(
+      2
+    ) +
+    "M";
+  }
+
+  if (
+    a >=
+    1e3
+  ) {
+
+    return (
+      v /
+      1e3
+    ).toFixed(
+      1
+    ) +
+    "K";
+  }
+
+  return v.toFixed(
+    0
+  );
+}
+
+
+function price(v){
+
+  v =
+    Number(v);
+
+  if (
+    !Number.isFinite(
+      v
+    )
+  ) {
+
+    return "--";
+  }
+
+  if (
+    Math.abs(v) <
+    1
+  ) {
+
+    return v.toFixed(
+      5
+    );
+  }
+
+  if (
+    Math.abs(v) <
+    100
+  ) {
+
+    return v.toFixed(
+      3
+    );
+  }
+
+  return v.toLocaleString(
+
+    undefined,
+
+    {
+      maximumFractionDigits:
+        2
+    }
+  );
+}
+
+
+function pct(v){
+
+  v =
+    Number(v);
+
+  return Number.isFinite(
+    v
+  )
+    ? (
+        v >=
+        0
+          ? "+"
+          : ""
+      ) +
+      v.toFixed(
+        2
+      ) +
+      "%"
+    : "--";
+}
+
+
+function fmt(v){
+
+  v =
+    Number(v);
+
+  if (
+    !Number.isFinite(
+      v
+    )
+  ) {
+
+    return "--";
+  }
+
+  return v <
+    1
+      ? v.toFixed(
+          5
+        )
+      : v <
+        100
+      ? v.toFixed(
+          3
+        )
+      : v.toFixed(
+          2
+        );
+}
+
+
+function shortAddress(a){
+
+  return a
+    ? a.slice(
+        0,
+        6
+      ) +
+      "…" +
+      a.slice(
+        -4
+      )
+    : "--";
+}
+
+
+function toman(v){
+
+  v =
+    Number(v);
+
+  return Number.isFinite(
+    v
+  )
+    ? Math.round(
+        v /
+        10
+      )
+        .toLocaleString(
+          "fa-IR"
+        )
+    : "--";
+}
+
+
+async function getJson(url){
+
+  const r =
+    await fetch(
+      url,
+      {
+        cache:
+          "no-store"
+      }
+    );
+
+  const t =
+    await r.text();
+
+  let d;
+
+  try {
+
+    d =
+      JSON.parse(t);
+
+  } catch {
+
+    throw new Error(
+      "Invalid server response"
+    );
+  }
+
+  if (
+    !r.ok
+  ) {
+
+    throw new Error(
+      d.error ||
+      "HTTP " +
+      r.status
+    );
+  }
+
+  return d;
+}
+
+
+function validWallet(w){
+
+  return (
+    w &&
+    /^0x[a-fA-F0-9]{40}$/.test(
+      String(
+        w.address ||
+        ""
+      )
+        .trim()
+    )
+  );
+}
+
+
+function dedupeWallets(rows){
+
+  const m =
+    new Map();
+
+  for (
+    const w
+    of rows ||
+    []
+  ) {
+
+    if (
+      !validWallet(w)
+    ) {
+      continue;
+    }
+
+    const a =
+      String(
+        w.address
+      )
+        .trim();
+
+    const k =
+      a.toLowerCase();
+
+    m.set(
+      k,
+      {
+        ...(
+          m.get(k) ||
+          {}
+        ),
+
+        ...w,
+
+        address:
+          a
+      }
+    );
+  }
+
+  return [
+    ...m.values()
+  ];
+}
+
+
+function migrateWalletsOnce(){
+
+  if (
+    localStorage.getItem(
+      WALLET_MIGRATION_KEY
+    ) ===
+    "1"
+  ) {
+    return;
+  }
+
+  const keys = [
+
+    "ali_wallets",
+    "afr4_wallets",
+    "afr41_wallets",
+    "afr42_wallets",
+    "afr451_wallets",
+    "afr_wallets",
+    "wallets"
+  ];
+
+  let all =
+    [];
+
+  try {
+
+    all.push(
+
+      ...JSON.parse(
+        localStorage.getItem(
+          WALLET_STORAGE_KEY
+        ) ||
+        "[]"
+      )
+    );
+
+  } catch {}
+
+
+  for (
+    const k
+    of keys
+  ) {
+
+    try {
+
+      const r =
+        JSON.parse(
+          localStorage.getItem(
+            k
+          ) ||
+          "[]"
+        );
+
+      if (
+        Array.isArray(r)
+      ) {
+
+        all.push(
+          ...r
+        );
+      }
+
+    } catch {}
+  }
+
+
+  localStorage.setItem(
+
+    WALLET_STORAGE_KEY,
+
+    JSON.stringify(
+      dedupeWallets(
+        all
+      )
+    )
+  );
+
+
+  localStorage.setItem(
+    WALLET_MIGRATION_KEY,
+    "1"
+  );
+}
+
+
+function loadWallets(){
+
+  migrateWalletsOnce();
+
+  try {
+
+    return dedupeWallets(
+
+      JSON.parse(
+        localStorage.getItem(
+          WALLET_STORAGE_KEY
+        ) ||
+        "[]"
+      )
+    );
+
+  } catch {
+
+    return [];
+  }
+}
+
+
+function loadDemo(){
+
+  const fresh = {
+
+    initialBalance:
+      10000,
+
+    riskPct:
+      1,
+
+    leverage:
+      5,
+
+    maxOpenPositions:
+      10,
+
+    closedPnl:
+      0,
+
+    open:
+      [],
+
+    closed:
+      [],
+
+    armed:
+      []
+  };
+
+
+  try {
+
+    const d =
+      JSON.parse(
+
+        localStorage.getItem(
+          DEMO_STORAGE_KEY
+        ) ||
+
+        "null"
+      );
+
+
+    return d
+
+      ? {
+
+          ...fresh,
+
+          ...d,
+
+          maxOpenPositions:
+            clamp(
+              num(
+                d.maxOpenPositions,
+                10
+              ),
+              1,
+              20
+            ),
+
+          open:
+            Array.isArray(
+              d.open
+            )
+              ? d.open
+              : [],
+
+          closed:
+            Array.isArray(
+              d.closed
+            )
+              ? d.closed
+              : [],
+
+          armed:
+            Array.isArray(
+              d.armed
+            )
+              ? d.armed
+              : []
+        }
+
+      : fresh;
+
+  } catch {
+
+    return fresh;
+  }
+}
+
+
+let symbols =
+  (() => {
+
+    try {
+
+      const x =
+        JSON.parse(
+
+          localStorage.getItem(
+            UNIVERSE_CACHE_KEY
+          ) ||
+
+          "[]"
+        );
+
+      return Array.isArray(x)
+        ? x.slice(
+            0,
+            20
+          )
+        : [];
+
+    } catch {
+
+      return [];
+    }
+  })();
+
+
+let wallets =
+  loadWallets();
+
+
+let walletData =
+  (() => {
+
+    try {
+
+      return JSON.parse(
+
+        localStorage.getItem(
+          WALLET_CACHE_KEY
+        ) ||
+
+        "{}"
+      );
+
+    } catch {
+
+      return {};
+    }
+  })();
+
+
+let market =
+  {};
+
+let flow =
+  {};
+
+let macroData =
+  [];
+
+let iranData =
+  [];
+
+let discovered =
+  [];
+
+let moneyRotation =
+  null;
+
+let btcHistory =
+  [];
+
+let klinesData =
+  {};
+
+let universeData =
+  {};
+
+let universeMeta =
+  {};
+
+let demoState =
+  loadDemo();
+
+let socket =
+  null;
+
+let socketRetry =
+  1000;
+
+let currentSocketKey =
+  "";
+
+let renderQueued =
+  false;
+
+let walletRefreshBusy =
+  false;
+
+let universeBusy =
+  false;
+
+let discoveryBusy =
+  false;
+
+let lastPulseDraw =
+  0;
+
+
+function saveWallets(){
+
+  wallets =
+    dedupeWallets(
+      wallets
+    );
+
+  localStorage.setItem(
+
+    WALLET_STORAGE_KEY,
+
+    JSON.stringify(
+      wallets
+    )
+  );
+}
+
+
+function saveWalletCache(){
+
+  localStorage.setItem(
+
+    WALLET_CACHE_KEY,
+
+    JSON.stringify(
+      walletData
+    )
+  );
+}
+
+
+function saveDemo(){
+
+  localStorage.setItem(
+
+    DEMO_STORAGE_KEY,
+
+    JSON.stringify(
+      demoState
+    )
+  );
+}
+
+
+/* ======================================================
+   TABS
+====================================================== */
+
+document
+  .querySelectorAll(
+    ".tabbtn"
+  )
+  .forEach(
+    btn => {
+
+      btn.onclick =
+        () => {
+
+          document
+            .querySelectorAll(
+              ".tabbtn,.tab"
+            )
+            .forEach(
+              x =>
+                x.classList
+                  .remove(
+                    "active"
+                  )
+            );
+
+          btn.classList
+            .add(
+              "active"
+            );
+
+          $(
+            btn.dataset.tab
+          )
+            .classList
+            .add(
+              "active"
+            );
+
+          setTimeout(
+            resizeCharts,
+            100
+          );
+        };
+    }
+  );
+
+
+/* ======================================================
+   CHARTS
+====================================================== */
+
+function mkChart(id){
+
+  try {
+
+    return window.echarts
+
+      ? echarts.init(
+          $(
+            id
+          )
+        )
+
+      : null;
+
+  } catch {
+
+    return null;
+  }
+}
+
+
+const pulseChart =
+  mkChart(
+    "btcPulseChart"
+  );
+
+const probChart =
+  mkChart(
+    "probChart"
+  );
+
+const walletGraph =
+  mkChart(
+    "walletGraph"
+  );
+
+const moneyFlowSankey =
+  mkChart(
+    "moneyFlowSankey"
+  );
+
+const moneyRotationBar =
+  mkChart(
+    "moneyRotationBar"
+  );
+
+const iranGlobalChart =
+  mkChart(
+    "iranGlobalChart"
+  );
+
+const macroChart =
+  mkChart(
+    "macroChart"
+  );
+
+
+function resizeCharts(){
+
+  [
+    pulseChart,
+    probChart,
+    walletGraph,
+    moneyFlowSankey,
+    moneyRotationBar,
+    iranGlobalChart,
+    macroChart
+  ]
+    .forEach(
+      c =>
+        c &&
+        c.resize()
+    );
+}
+
+
+window.addEventListener(
+  "resize",
+  resizeCharts
+);
+
+
+/* ======================================================
+   PROFILES
+====================================================== */
+
+function renderProfiles(){
+
+  const html =
+    x => `
+
+    <div class="profile-card">
+
+    <b>
+    ${x[0]}
+    </b>
+
+    <div class="small">
+    ${x[1]}
+    </div>
+
+    <div style="margin-top:7px">
+
+    <span class="pill blue">
+    PROFILE
+    </span>
+
+    </div>
+
+    </div>
+    `;
+
+
+  $("famousCrypto")
+    .innerHTML =
+      FAMOUS_CRYPTO
+        .map(
+          html
+        )
+        .join("");
+
+
+  $("famousMacro")
+    .innerHTML =
+      FAMOUS_MACRO
+        .map(
+          html
+        )
+        .join("");
+}
+
+
+/* ======================================================
+   ACTIVE SYMBOLS
+====================================================== */
+
+function getActiveSymbols(){
+
+  return [
+
+    ...new Set([
+
+      ...symbols,
+
+      "BTCUSDT",
+
+      "ETHUSDT",
+
+      ...demoState.open
+        .map(
+          x =>
+            x.symbol
+        ),
+
+      ...demoState.armed
+        .map(
+          x =>
+            x.symbol
+        )
+    ])
+  ]
+    .slice(
+      0,
+      40
+    );
+}
+
+
+function tabActive(id){
+
+  return $(
+    id
+  )
+    ?.classList
+    .contains(
+      "active"
+    );
+}
+
+
+/* ======================================================
+   FAST LIVE UPDATE
+====================================================== */
+
+function renderLivePrices(){
+
+  const b =
+    market.BTCUSDT ||
+    {};
+
+  const e =
+    market.ETHUSDT ||
+    {};
+
+
+  $("btcPrice")
+    .textContent =
+      price(
+        b.lastPrice
+      );
+
+
+  $("ethPrice")
+    .textContent =
+      price(
+        e.lastPrice
+      );
+
+
+  renderAssetGrid();
+
+  processArmedEntries();
+
+  updateDemoPositions(
+    false
+  );
+
+
+  if (
+    tabActive(
+      "demo"
+    )
+  ) {
+
+    renderDemoTrading();
+  }
+
+
+  if (
+    Date.now() -
+    lastPulseDraw >
+    2000
+  ) {
+
+    lastPulseDraw =
+      Date.now();
+
+    renderPulseChart();
+  }
+}
+
+
+function queueLiveRender(){
+
+  if (
+    renderQueued
+  ) {
+    return;
+  }
+
+
+  renderQueued =
+    true;
+
+
+  setTimeout(
+    () => {
+
+      renderQueued =
+        false;
+
+      renderLivePrices();
+
+    },
+    700
+  );
+}
+
+
+/* ======================================================
+   DYNAMIC UNIVERSE
+====================================================== */
 
 async function refreshUniverse(){
- try{
-  let d=await json("/api/universe?limit=20&scan=60"),a=Array.isArray(d.assets)?d.assets:[];
-  if(!a.length)return;
-  a.forEach(x=>{universe[x.symbol]=x;market[x.symbol]={...(market[x.symbol]||{}),symbol:x.symbol,lastPrice:num(x.lastPrice),priceChangePercent:num(x.priceChangePercent24h),quoteVolume:num(x.quoteVolume24h)};flow[x.symbol]=x});
-  let n=a.map(x=>x.symbol).slice(0,20),changed=n.join(",")!==symbols.join(",");
-  symbols=n;localStorage.setItem(UKEY,JSON.stringify(symbols));
-  if(changed)startSocket(true);
-  renderAll();
- }catch(e){console.log(e)}
+
+  if (
+    universeBusy
+  ) {
+    return;
+  }
+
+
+  universeBusy =
+    true;
+
+
+  try {
+
+    const d =
+      await getJson(
+        "/api/universe?limit=20&scan=40"
+      );
+
+
+    const assets =
+      Array.isArray(
+        d.assets
+      )
+        ? d.assets
+        : [];
+
+
+    if (
+      !assets.length
+    ) {
+      return;
+    }
+
+
+    universeMeta =
+      d;
+
+
+    for (
+      const x
+      of assets
+    ) {
+
+      universeData[
+        x.symbol
+      ] =
+        x;
+
+
+      market[
+        x.symbol
+      ] = {
+
+        ...(
+          market[
+            x.symbol
+          ] ||
+          {}
+        ),
+
+        symbol:
+          x.symbol,
+
+        lastPrice:
+          num(
+            x.lastPrice,
+            market[
+              x.symbol
+            ]?.lastPrice
+          ),
+
+        quoteVolume:
+          num(
+            x.quoteVolume24h
+          ),
+
+        priceChangePercent:
+          num(
+            x.priceChangePercent24h
+          )
+      };
+
+
+      flow[
+        x.symbol
+      ] = {
+
+        symbol:
+          x.symbol,
+
+        takerBuy:
+          num(
+            x.takerBuy
+          ),
+
+        takerSell:
+          num(
+            x.takerSell
+          ),
+
+        netFlow:
+          num(
+            x.netFlow
+          ),
+
+        buyRatio:
+          num(
+            x.buyRatio,
+            50
+          ),
+
+        flowScore:
+          num(
+            x.flowScore,
+            50
+          ),
+
+        flowIntensityPct:
+          num(
+            x.flowIntensityPct
+          )
+      };
+    }
+
+
+    const next =
+      assets
+        .map(
+          x =>
+            x.symbol
+        )
+        .slice(
+          0,
+          20
+        );
+
+
+    const changed =
+      next.join(",") !==
+      symbols.join(",");
+
+
+    symbols =
+      next;
+
+
+    localStorage.setItem(
+
+      UNIVERSE_CACHE_KEY,
+
+      JSON.stringify(
+        symbols
+      )
+    );
+
+
+    if (
+      changed
+    ) {
+
+      currentSocketKey =
+        "";
+
+      startPriceSocket();
+
+      refreshKlines();
+    }
+
+
+    renderAssetGrid();
+
+    renderTerminal();
+
+    renderDemoTrading();
+
+
+  } catch (e) {
+
+    console.warn(
+      "Universe scan failed",
+      e
+    );
+
+  } finally {
+
+    universeBusy =
+      false;
+  }
 }
 
-function startSocket(force=false){
- let act=activeSymbols(),key=act.join(",");
- if(!force&&socket&&socketKey===key&&socket.readyState===1)return;
- socketKey=key;
- if(socket){try{socket.onclose=null;socket.close()}catch{}}
- if(!act.length)return;
- socket=new WebSocket("wss://stream.binance.com:9443/stream?streams="+act.map(s=>s.toLowerCase()+"@miniTicker").join("/"));
- $("socketState").textContent="CONNECTING";$("socketSystem").textContent="CONNECTING";
- socket.onopen=()=>{$("dot").classList.add("on");$("status").textContent="LIVE TICK";$("socketState").textContent="LIVE";$("socketSystem").textContent="LIVE";retry=1000};
- socket.onmessage=e=>{try{let d=(JSON.parse(e.data).data||JSON.parse(e.data)),s=d.s,c=num(d.c),o=num(d.o,c);market[s]={...(market[s]||{}),lastPrice:c,priceChangePercent:o?(c-o)/o*100:0,quoteVolume:num(d.q)};if(s==="BTCUSDT"){btcHistory.push({t:new Date().toLocaleTimeString("fa-IR"),p:c});if(btcHistory.length>150)btcHistory.shift()}processArmed();updatePositions(false);renderTerminal();renderAssets()}catch{}};
- socket.onclose=()=>{$("dot").classList.remove("on");$("status").textContent="RECONNECTING";setTimeout(()=>startSocket(true),retry);retry=Math.min(15000,retry*1.7)}
+
+/* ======================================================
+   LIVE BINANCE SOCKET
+====================================================== */
+
+function startPriceSocket(){
+
+  const active =
+    getActiveSymbols();
+
+
+  const key =
+    active.join(",");
+
+
+  if (
+    !active.length
+  ) {
+    return;
+  }
+
+
+  if (
+    socket &&
+    currentSocketKey ===
+    key &&
+    socket.readyState ===
+    WebSocket.OPEN
+  ) {
+    return;
+  }
+
+
+  currentSocketKey =
+    key;
+
+
+  if (
+    socket
+  ) {
+
+    try {
+
+      socket.onclose =
+        null;
+
+      socket.close();
+
+    } catch {}
+  }
+
+
+  const streams =
+    active
+      .map(
+        s =>
+          s.toLowerCase() +
+          "@miniTicker"
+      )
+      .join("/");
+
+
+  socket =
+    new WebSocket(
+
+      "wss://stream.binance.com:9443/stream?streams=" +
+      streams
+    );
+
+
+  $("socketState")
+    .textContent =
+      "CONNECTING";
+
+
+  $("socketSystem")
+    .textContent =
+      "CONNECTING";
+
+
+  socket.onopen =
+    () => {
+
+      socketRetry =
+        1000;
+
+
+      $("dot")
+        .classList
+        .add(
+          "live"
+        );
+
+
+      $("status")
+        .textContent =
+          "LIVE TICK";
+
+
+      $("socketState")
+        .textContent =
+          "LIVE";
+
+
+      $("socketSystem")
+        .textContent =
+          "LIVE";
+
+
+      $("socketSystem")
+        .className =
+          "metric medium good";
+    };
+
+
+  socket.onmessage =
+    e => {
+
+      try {
+
+        const m =
+          JSON.parse(
+            e.data
+          );
+
+
+        const d =
+          m.data ||
+          m;
+
+
+        const s =
+          d.s;
+
+
+        if (
+          !active.includes(
+            s
+          )
+        ) {
+          return;
+        }
+
+
+        const c =
+          num(
+            d.c
+          );
+
+
+        const o =
+          num(
+            d.o,
+            c
+          );
+
+
+        market[s] = {
+
+          ...(
+            market[s] ||
+            {}
+          ),
+
+          symbol:
+            s,
+
+          lastPrice:
+            c,
+
+          openPrice:
+            o,
+
+          highPrice:
+            num(
+              d.h
+            ),
+
+          lowPrice:
+            num(
+              d.l
+            ),
+
+          quoteVolume:
+            num(
+              d.q
+            ),
+
+          priceChangePercent:
+            o
+              ? (
+                  (
+                    c -
+                    o
+                  ) /
+                  o
+                ) *
+                100
+              : 0,
+
+          liveAt:
+            Date.now()
+        };
+
+
+        if (
+          s ===
+          "BTCUSDT"
+        ) {
+
+          btcHistory.push({
+
+            t:
+              new Date()
+                .toLocaleTimeString(
+                  "fa-IR",
+                  {
+                    hour:
+                      "2-digit",
+
+                    minute:
+                      "2-digit",
+
+                    second:
+                      "2-digit"
+                  }
+                ),
+
+            p:
+              c
+          });
+
+
+          if (
+            btcHistory.length >
+            180
+          ) {
+
+            btcHistory.shift();
+          }
+        }
+
+
+        queueLiveRender();
+
+      } catch {}
+    };
+
+
+  socket.onerror =
+    () => {
+
+      try {
+
+        socket.close();
+
+      } catch {}
+    };
+
+
+  socket.onclose =
+    () => {
+
+      $("dot")
+        .classList
+        .remove(
+          "live"
+        );
+
+
+      $("status")
+        .textContent =
+          "RECONNECTING";
+
+
+      $("socketState")
+        .textContent =
+          "RETRY";
+
+
+      $("socketSystem")
+        .textContent =
+          "RETRY";
+
+
+      $("socketSystem")
+        .className =
+          "metric medium warn";
+
+
+      setTimeout(
+        () => {
+
+          currentSocketKey =
+            "";
+
+          startPriceSocket();
+
+        },
+        socketRetry
+      );
+
+
+      socketRetry =
+        Math.min(
+          15000,
+          socketRetry *
+          1.7
+        );
+    };
 }
 
-async function health(){try{let d=await json("/api/health");$("backendState").textContent=d.ok?"LIVE":"ERROR"}catch{$("backendState").textContent="OFFLINE"}}
-async function refreshMarket(){try{let d=await json("/api/binance?symbols="+encodeURIComponent(activeSymbols().join(",")));d.forEach(x=>market[x.symbol]={...(market[x.symbol]||{}),...x});renderAll()}catch{}}
-async function refreshFlow(){try{let d=await json("/api/flow?symbols="+encodeURIComponent(activeSymbols().join(",")));d.forEach(x=>{if(!x.error)flow[x.symbol]=x});renderAll()}catch{}}
 
-function consensus(){
- let c={};
- wallets.forEach(w=>{let d=walletData[w.address?.toLowerCase()];if(!d)return;let wt=num(d.smartScore,50)/100;(d.positions||[]).forEach(p=>{c[p.coin]??={coin:p.coin,long:0,short:0,lv:0,sv:0};if(p.side==="LONG"){c[p.coin].long++;c[p.coin].lv+=num(p.positionValue)*wt}else{c[p.coin].short++;c[p.coin].sv+=num(p.positionValue)*wt}})});
- return Object.values(c).map(x=>({...x,net:x.lv-x.sv,bias:(x.lv+x.sv)?(x.lv-x.sv)/(x.lv+x.sv):0})).sort((a,b)=>Math.abs(b.net)-Math.abs(a.net))
+/* ======================================================
+   BACKEND
+====================================================== */
+
+async function refreshHealth(){
+
+  try {
+
+    const d =
+      await getJson(
+        "/api/health"
+      );
+
+
+    $("backendState")
+      .textContent =
+        d.ok
+          ? "LIVE"
+          : "ERROR";
+
+
+    $("backendState")
+      .className =
+        "metric medium " +
+        (
+          d.ok
+            ? "good"
+            : "bad"
+        );
+
+  } catch {
+
+    $("backendState")
+      .textContent =
+        "OFFLINE";
+
+
+    $("backendState")
+      .className =
+        "metric medium bad";
+  }
 }
 
-function probability(s){
- let m=market[s]||{},f=flow[s]||{},fs=num(f.flowScore,50),mom=clamp(50+num(m.priceChangePercent)*4,0,100),coin=s.replace("USDT",""),c=consensus().find(x=>x.coin===coin),ws=c?clamp(50+c.bias*45,0,100):50;
- return {p:clamp(fs*.48+mom*.22+ws*.30,0,100),fs,mom,ws}
+
+async function refreshMarket(){
+
+  try {
+
+    const d =
+      await getJson(
+
+        "/api/binance?symbols=" +
+
+        encodeURIComponent(
+          getActiveSymbols()
+            .join(",")
+        )
+      );
+
+
+    d.forEach(
+      x =>
+        market[
+          x.symbol
+        ] = {
+
+          ...(
+            market[
+              x.symbol
+            ] ||
+            {}
+          ),
+
+          ...x
+        }
+    );
+
+
+    renderLivePrices();
+
+    renderTerminal();
+
+  } catch {}
 }
 
-function renderAssets(){
- if(!symbols.length){$("assetGrid").innerHTML='<div class="small">در حال اسکن بازار برای پیدا کردن ارزهای دارای ورود پول...</div>';return}
- $("assetGrid").innerHTML=symbols.map((s,i)=>{let u=universe[s]||{},m=market[s]||{};return `<div class="asset"><b>#${i+1} ${s.replace("USDT","")}/USDT</b><div class="price">${fmt(m.lastPrice)}</div><div class="${num(m.priceChangePercent)>=0?"good":"bad"}">${pct(m.priceChangePercent)}</div><div class="tiny">FLOW <b>${num(u.flowScore,50).toFixed(0)}</b> • TECH <b>${num(u.technicalScore,50).toFixed(0)}</b> • RSI ${num(u.rsi14,50).toFixed(0)}</div><div class="tiny">NET <span class="good">+$${money(u.netFlow)}</span> • SCORE ${num(u.selectionScore).toFixed(0)}</div><div class="tiny">${u.technicalState||"--"} • Persist ${num(u.persistenceScore,50).toFixed(0)} • Vol×${num(u.volumeRatio,1).toFixed(1)}</div></div>`}).join("")
+
+async function refreshFlow(){
+
+  try {
+
+    const d =
+      await getJson(
+
+        "/api/flow?symbols=" +
+
+        encodeURIComponent(
+          getActiveSymbols()
+            .join(",")
+        )
+      );
+
+
+    d.forEach(
+      x => {
+
+        if (
+          !x.error
+        ) {
+
+          flow[
+            x.symbol
+          ] =
+            x;
+        }
+      }
+    );
+
+
+    renderTerminal();
+
+    renderDemoTrading();
+
+  } catch {}
 }
+
+
+/* ======================================================
+   ASSET GRID
+====================================================== */
+
+function renderAssetGrid(){
+
+  if (
+    !symbols.length
+  ) {
+
+    $("assetGrid")
+      .innerHTML =
+        `
+        <div class="small">
+        در حال اسکن بازار برای پیدا کردن ۲۰ ارز دارای ورود پول...
+        </div>
+        `;
+
+    return;
+  }
+
+
+  $("assetGrid")
+    .innerHTML =
+      symbols
+        .map(
+          (
+            sym,
+            i
+          ) => {
+
+            const m =
+              market[
+                sym
+              ] ||
+              {};
+
+
+            const u =
+              universeData[
+                sym
+              ] ||
+              {};
+
+
+            const c =
+              num(
+                m.priceChangePercent
+              );
+
+
+            const f =
+              num(
+                u.flowScore,
+                flow[
+                  sym
+                ]?.flowScore ||
+                50
+              );
+
+
+            const t =
+              num(
+                u.technicalScore,
+                50
+              );
+
+
+            const r =
+              num(
+                u.rsi14,
+                50
+              );
+
+
+            const sel =
+              num(
+                u.selectionScore,
+                0
+              );
+
+
+            return `
+
+            <div class="asset-card">
+
+            <div class="sym">
+
+            #${i+1}
+            ${sym.replace(
+              "USDT",
+              ""
+            )}/USDT
+
+            </div>
+
+            <div class="p">
+
+            ${price(
+              m.lastPrice
+            )}
+
+            </div>
+
+            <div class="${
+              c >=
+              0
+                ? "good"
+                : "bad"
+            }">
+
+            ${pct(
+              c
+            )}
+
+            </div>
+
+            <div class="tiny">
+
+            FLOW
+            <b>
+            ${f.toFixed(0)}
+            </b>
+
+            •
+
+            TECH
+            <b>
+            ${t.toFixed(0)}
+            </b>
+
+            •
+
+            RSI
+            ${r.toFixed(0)}
+
+            </div>
+
+            <div class="tiny">
+
+            NET
+
+            <span class="${
+              num(
+                u.netFlow
+              ) >=
+              0
+                ? "good"
+                : "bad"
+            }">
+
+            ${
+              num(
+                u.netFlow
+              ) >=
+              0
+                ? "+"
+                : ""
+            }
+
+            $${money(
+              u.netFlow
+            )}
+
+            </span>
+
+            •
+
+            SCORE
+            ${sel.toFixed(0)}
+
+            </div>
+
+            <div class="tiny">
+
+            ${
+              u.technicalState ||
+              "--"
+            }
+
+            •
+
+            Persist
+            ${num(
+              u.persistenceScore,
+              50
+            )
+              .toFixed(
+                0
+              )}
+
+            •
+
+            Vol×
+            ${num(
+              u.volumeRatio,
+              1
+            )
+              .toFixed(
+                1
+              )}
+
+            </div>
+
+            </div>
+            `;
+          }
+        )
+        .join("");
+}
+
+
+/* ======================================================
+   SMART WALLET CONSENSUS
+====================================================== */
+
+function getConsensus(){
+
+  const coins =
+    {};
+
+
+  for (
+    const w
+    of wallets
+  ) {
+
+    const d =
+      walletData[
+        w.address
+          .toLowerCase()
+      ];
+
+
+    if (
+      !d ||
+      d.error
+    ) {
+      continue;
+    }
+
+
+    const wt =
+      num(
+        d.smartScore,
+        50
+      ) /
+      100;
+
+
+    for (
+      const p
+      of d.positions ||
+      []
+    ) {
+
+      if (
+        !coins[
+          p.coin
+        ]
+      ) {
+
+        coins[
+          p.coin
+        ] = {
+
+          coin:
+            p.coin,
+
+          longCount:
+            0,
+
+          shortCount:
+            0,
+
+          longValue:
+            0,
+
+          shortValue:
+            0
+        };
+      }
+
+
+      if (
+        p.side ===
+        "LONG"
+      ) {
+
+        coins[
+          p.coin
+        ]
+          .longCount++;
+
+
+        coins[
+          p.coin
+        ]
+          .longValue +=
+            num(
+              p.positionValue
+            ) *
+            wt;
+
+      } else {
+
+        coins[
+          p.coin
+        ]
+          .shortCount++;
+
+
+        coins[
+          p.coin
+        ]
+          .shortValue +=
+            num(
+              p.positionValue
+            ) *
+            wt;
+      }
+    }
+  }
+
+
+  return Object
+    .values(
+      coins
+    )
+    .map(
+      x => {
+
+        const total =
+          x.longValue +
+          x.shortValue;
+
+
+        const net =
+          x.longValue -
+          x.shortValue;
+
+
+        return {
+
+          ...x,
+
+          total,
+
+          net,
+
+          bias:
+            total
+              ? net /
+                total
+              : 0
+        };
+      }
+    )
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        Math.abs(
+          b.net
+        ) -
+        Math.abs(
+          a.net
+        )
+    );
+}
+
+
+/* ======================================================
+   PROBABILITY
+====================================================== */
+
+function assetProbability(symbol){
+
+  const m =
+    market[
+      symbol
+    ] ||
+    {};
+
+
+  const f =
+    flow[
+      symbol
+    ] ||
+    {};
+
+
+  const fs =
+    num(
+      f.flowScore,
+      50
+    );
+
+
+  const momentum =
+    clamp(
+      50 +
+      num(
+        m.priceChangePercent
+      ) *
+      4,
+      0,
+      100
+    );
+
+
+  const coin =
+    symbol.replace(
+      "USDT",
+      ""
+    );
+
+
+  const c =
+    getConsensus()
+      .find(
+        x =>
+          x.coin ===
+          coin
+      );
+
+
+  const ws =
+    c
+      ? clamp(
+          50 +
+          c.bias *
+          45,
+          0,
+          100
+        )
+      : 50;
+
+
+  return {
+
+    probability:
+      clamp(
+        fs *
+        .48 +
+        momentum *
+        .22 +
+        ws *
+        .30,
+        0,
+        100
+      ),
+
+    flowScore:
+      fs,
+
+    momentum,
+
+    walletScore:
+      ws
+  };
+}
+
+
+/* ======================================================
+   TERMINAL RENDER
+====================================================== */
 
 function renderTerminal(){
- let b=market.BTCUSDT||{},e=market.ETHUSDT||{},p=probability("BTCUSDT");
- $("btcPrice").textContent=fmt(b.lastPrice);$("ethPrice").textContent=fmt(e.lastPrice);$("walletCount").textContent=wallets.length;
- $("probUp").textContent=p.p.toFixed(0)+"%";$("probDown").textContent=(100-p.p).toFixed(0)+"%";$("probFlow").textContent=p.fs.toFixed(0);$("probMomentum").textContent=p.mom.toFixed(0);$("probWallet").textContent=p.ws.toFixed(0);$("globalConfidence").textContent=p.p.toFixed(0)+"/100";
- let cc=consensus();$("topConsensus").textContent=cc.length?cc[0].coin+" "+(cc[0].net>=0?"LONG":"SHORT"):"NO SIGNAL";$("consensusList").innerHTML=cc.slice(0,4).map(x=>`<div class="signal"><b>${x.coin}</b> ${x.long}L/${x.short}S • $${money(Math.abs(x.net))}</div>`).join("");
- if(probChart)probChart.setOption({grid:{left:35,right:10,bottom:60},xAxis:{type:"category",axisLabel:{rotate:50,fontSize:8},data:symbols.map(x=>x.replace("USDT",""))},yAxis:{min:0,max:100},series:[{type:"bar",data:symbols.map(x=>probability(x).p)}]});
- if(pulseChart)pulseChart.setOption({animation:false,xAxis:{type:"category",data:btcHistory.map(x=>x.t)},yAxis:{type:"value",scale:true},series:[{type:"line",showSymbol:false,data:btcHistory.map(x=>x.p)}]});
- $("earlyMoney").innerHTML=symbols.slice(0,10).map(s=>{let u=universe[s]||{};return `<div class="signal"><b>${s}</b> • Flow ${num(u.flowScore,50).toFixed(0)} • Tech ${num(u.technicalScore,50).toFixed(0)} • RSI ${num(u.rsi14,50).toFixed(0)} • Net +$${money(u.netFlow)} • 15m ${pct(u.ret15m)}</div>`}).join("");
- renderWalletGraph()
+
+  const b =
+    market.BTCUSDT ||
+    {};
+
+
+  const e =
+    market.ETHUSDT ||
+    {};
+
+
+  const p =
+    assetProbability(
+      "BTCUSDT"
+    );
+
+
+  $("btcPrice")
+    .textContent =
+      price(
+        b.lastPrice
+      );
+
+
+  $("ethPrice")
+    .textContent =
+      price(
+        e.lastPrice
+      );
+
+
+  $("walletCount")
+    .textContent =
+      wallets.length;
+
+
+  $("probUp")
+    .textContent =
+      p.probability
+        .toFixed(
+          0
+        ) +
+      "%";
+
+
+  $("probDown")
+    .textContent =
+      (
+        100 -
+        p.probability
+      )
+        .toFixed(
+          0
+        ) +
+      "%";
+
+
+  $("probFlow")
+    .textContent =
+      p.flowScore
+        .toFixed(
+          0
+        );
+
+
+  $("probMomentum")
+    .textContent =
+      p.momentum
+        .toFixed(
+          0
+        );
+
+
+  $("probWallet")
+    .textContent =
+      p.walletScore
+        .toFixed(
+          0
+        );
+
+
+  $("globalConfidence")
+    .textContent =
+      p.probability
+        .toFixed(
+          0
+        ) +
+      "/100";
+
+
+  $("globalConfidence")
+    .className =
+      "metric " +
+      (
+        p.probability >=
+        55
+          ? "good"
+          : p.probability <=
+            45
+          ? "bad"
+          : "warn"
+      );
+
+
+  renderProbabilityChart();
+
+  renderPulseChart();
+
+  renderConsensus();
+
+  renderEarlyMoney();
 }
+
+
+function renderProbabilityChart(){
+
+  if (
+    !probChart
+  ) {
+    return;
+  }
+
+
+  const data =
+    symbols.map(
+      s => ({
+
+        name:
+          s.replace(
+            "USDT",
+            ""
+          ),
+
+        value:
+          +assetProbability(
+            s
+          )
+            .probability
+            .toFixed(
+              1
+            )
+      })
+    );
+
+
+  probChart.setOption({
+
+    grid:{
+      left:
+        40,
+
+      right:
+        10,
+
+      top:
+        10,
+
+      bottom:
+        60
+    },
+
+    xAxis:{
+      type:
+        "category",
+
+      axisLabel:{
+        rotate:
+          50,
+
+        fontSize:
+          8
+      },
+
+      data:
+        data.map(
+          x =>
+            x.name
+        )
+    },
+
+    yAxis:{
+      min:
+        0,
+
+      max:
+        100
+    },
+
+    series:[{
+
+      type:
+        "bar",
+
+      data:
+        data.map(
+          x => ({
+
+            value:
+              x.value,
+
+            itemStyle:{
+              color:
+                x.value >=
+                60
+                  ? "#3bb47c"
+                  : x.value <=
+                    40
+                  ? "#dc6565"
+                  : "#6ba6ca"
+            }
+          })
+        ),
+
+      barMaxWidth:
+        20
+    }]
+  });
+}
+
+
+function renderPulseChart(){
+
+  if (
+    !pulseChart
+  ) {
+    return;
+  }
+
+
+  pulseChart.setOption({
+
+    animation:
+      false,
+
+    grid:{
+      left:
+        50,
+
+      right:
+        15,
+
+      top:
+        10,
+
+      bottom:
+        35
+    },
+
+    xAxis:{
+      type:
+        "category",
+
+      boundaryGap:
+        false,
+
+      data:
+        btcHistory.map(
+          x =>
+            x.t
+        )
+    },
+
+    yAxis:{
+      type:
+        "value",
+
+      scale:
+        true
+    },
+
+    series:[{
+
+      type:
+        "line",
+
+      showSymbol:
+        false,
+
+      smooth:
+        true,
+
+      data:
+        btcHistory.map(
+          x =>
+            x.p
+        ),
+
+      lineStyle:{
+        width:
+          2,
+
+        color:
+          "#2779bd"
+      },
+
+      areaStyle:{
+        color:
+          "rgba(39,121,189,.08)"
+      }
+    }]
+  });
+}
+
+
+function renderEarlyMoney(){
+
+  const rows =
+    symbols
+      .map(
+        s => ({
+
+          s,
+
+          m:
+            market[s],
+
+          f:
+            flow[s],
+
+          u:
+            universeData[s]
+        })
+      )
+      .filter(
+        x =>
+          x.m &&
+          x.f &&
+          !x.f.error
+      )
+      .sort(
+        (
+          a,
+          b
+        ) =>
+          num(
+            b.u
+              ?.selectionScore
+          ) -
+          num(
+            a.u
+              ?.selectionScore
+          )
+      )
+      .slice(
+        0,
+        10
+      );
+
+
+  $("earlyMoney")
+    .innerHTML =
+      rows
+        .map(
+          x => `
+
+          <div class="signal">
+
+          <b>
+          ${x.s}
+          </b>
+
+          <span class="${
+            num(
+              x.f.flowScore
+            ) >=
+            50
+              ? "good"
+              : "bad"
+          }">
+
+          ${
+            num(
+              x.f.flowScore
+            ) >=
+            50
+              ? "INFLOW"
+              : "OUTFLOW"
+          }
+
+          </span>
+
+          <span class="small">
+
+          • Flow
+          ${num(
+            x.f.flowScore
+          )
+            .toFixed(
+              0
+            )}
+
+          • Tech
+          ${num(
+            x.u
+              ?.technicalScore,
+            50
+          )
+            .toFixed(
+              0
+            )}
+
+          • RSI
+          ${num(
+            x.u
+              ?.rsi14,
+            50
+          )
+            .toFixed(
+              0
+            )}
+
+          • Net
+          $${money(
+            x.f.netFlow
+          )}
+
+          • 15m
+          ${pct(
+            x.u
+              ?.ret15m
+          )}
+
+          </span>
+
+          </div>
+          `
+        )
+        .join("")
+
+      ||
+
+      `
+      <div class="small">
+      Waiting for flow...
+      </div>
+      `;
+}
+
+
+function renderConsensus(){
+
+  const rows =
+    getConsensus();
+
+
+  if (
+    !rows.length
+  ) {
+
+    $("topConsensus")
+      .textContent =
+        "NO SIGNAL";
+
+
+    $("consensusList")
+      .innerHTML =
+        `
+        <div class="small">
+        Follow smart wallets first.
+        </div>
+        `;
+
+    return;
+  }
+
+
+  const t =
+    rows[0];
+
+
+  $("topConsensus")
+    .textContent =
+      `${t.coin} ${
+        t.net >=
+        0
+          ? "LONG"
+          : "SHORT"
+      }`;
+
+
+  $("topConsensus")
+    .className =
+      "metric medium " +
+      (
+        t.net >=
+        0
+          ? "good"
+          : "bad"
+      );
+
+
+  $("consensusList")
+    .innerHTML =
+      rows
+        .slice(
+          0,
+          5
+        )
+        .map(
+          x => `
+
+          <div class="signal">
+
+          <b>
+          ${x.coin}
+          </b>
+
+          <span class="${
+            x.net >=
+            0
+              ? "good"
+              : "bad"
+          }">
+
+          ${
+            x.net >=
+            0
+              ? "LONG"
+              : "SHORT"
+          }
+
+          </span>
+
+          <div class="small">
+
+          ${x.longCount}L
+          /
+          ${x.shortCount}S
+
+          •
+
+          $${money(
+            Math.abs(
+              x.net
+            )
+          )}
+
+          </div>
+
+          </div>
+          `
+        )
+        .join("");
+}
+
+
+/* ======================================================
+   WALLET GRAPH
+====================================================== */
 
 function renderWalletGraph(){
- if(!walletGraph)return;let nodes=[],links=[],seen=new Set;
- wallets.forEach((w,i)=>{let wi="w"+i;nodes.push({name:wi,label:w.name,symbolSize:28});let d=walletData[w.address?.toLowerCase()];(d?.positions||[]).forEach(p=>{let ci="c_"+p.coin;if(!seen.has(ci)){seen.add(ci);nodes.push({name:ci,label:p.coin,symbolSize:22})}links.push({source:wi,target:ci,lineStyle:{color:p.side==="LONG"?"#169b62":"#d84b4b"}})})});
- walletGraph.setOption({series:[{type:"graph",layout:"force",roam:true,data:nodes,links,label:{show:true,formatter:p=>p.data.label},force:{repulsion:150}}]})
+
+  if (
+    !walletGraph
+  ) {
+    return;
+  }
+
+
+  const nodes =
+    [];
+
+  const links =
+    [];
+
+  const seen =
+    new Set();
+
+
+  wallets
+    .forEach(
+      (
+        w,
+        i
+      ) => {
+
+        const wid =
+          "w" +
+          i;
+
+
+        nodes.push({
+
+          name:
+            wid,
+
+          label:
+            w.name,
+
+          symbolSize:
+            28,
+
+          itemStyle:{
+            color:
+              "#34495a"
+          }
+        });
+
+
+        const d =
+          walletData[
+            w.address
+              .toLowerCase()
+          ];
+
+
+        for (
+          const p
+          of d?.positions ||
+          []
+        ) {
+
+          const cid =
+            "c_" +
+            p.coin;
+
+
+          if (
+            !seen.has(
+              cid
+            )
+          ) {
+
+            seen.add(
+              cid
+            );
+
+
+            nodes.push({
+
+              name:
+                cid,
+
+              label:
+                p.coin,
+
+              symbolSize:
+                22,
+
+              itemStyle:{
+                color:
+                  "#2484bd"
+              }
+            });
+          }
+
+
+          links.push({
+
+            source:
+              wid,
+
+            target:
+              cid,
+
+            value:
+              p.positionValue,
+
+            lineStyle:{
+              color:
+                p.side ===
+                "LONG"
+                  ? "#169b62"
+                  : "#d84b4b"
+            }
+          });
+        }
+      }
+    );
+
+
+  walletGraph.setOption({
+
+    series:[{
+
+      type:
+        "graph",
+
+      layout:
+        "force",
+
+      roam:
+        true,
+
+      force:{
+        repulsion:
+          170,
+
+        edgeLength:
+          90
+      },
+
+      label:{
+        show:
+          true,
+
+        formatter:
+          p =>
+            p.data.label,
+
+        fontSize:
+          9
+      },
+
+      data:
+        nodes,
+
+      links,
+
+      lineStyle:{
+        opacity:
+          .6
+      }
+    }]
+  });
 }
 
-async function scanTraders(){
- try{let q=new URLSearchParams({minEquity:$("minEquity").value,minMonthPnl:$("minMonthPnl").value,maxTurnover:$("maxTurnover").value,limit:$("discoverLimit").value}),d=await json("/api/traders?"+q);discovered=d.traders||[];renderTraders()}catch(e){$("discoverRows").innerHTML='<tr><td colspan="9">ERROR</td></tr>'}
+
+/* ======================================================
+   TRADER DISCOVERY
+====================================================== */
+
+async function discoverTraders(){
+
+  if (
+    discoveryBusy
+  ) {
+    return;
+  }
+
+
+  discoveryBusy =
+    true;
+
+
+  const btn =
+    $("discoverBtn");
+
+
+  const oldText =
+    btn.textContent;
+
+
+  btn.disabled =
+    true;
+
+
+  btn.textContent =
+    "Scanning...";
+
+
+  $("discoverRows")
+    .innerHTML =
+      `
+      <tr>
+      <td colspan="9">
+      Scanning leaderboard...
+      </td>
+      </tr>
+      `;
+
+
+  try {
+
+    const q =
+      new URLSearchParams({
+
+        minEquity:
+          $("minEquity")
+            .value ||
+          50000,
+
+        minMonthPnl:
+          $("minMonthPnl")
+            .value ||
+          0,
+
+        maxTurnover:
+          $("maxTurnover")
+            .value ||
+          5000,
+
+        limit:
+          $("discoverLimit")
+            .value ||
+          50
+      });
+
+
+    const d =
+      await getJson(
+        "/api/traders?" +
+        q
+      );
+
+
+    discovered =
+      d.traders ||
+      [];
+
+
+    renderDiscovered();
+
+
+  } catch (e) {
+
+    $("discoverRows")
+      .innerHTML =
+        `
+        <tr>
+
+        <td
+          colspan="9"
+          class="bad">
+
+        ${e.message}
+
+        </td>
+
+        </tr>
+        `;
+
+  } finally {
+
+    discoveryBusy =
+      false;
+
+
+    btn.disabled =
+      false;
+
+
+    btn.textContent =
+      oldText;
+  }
 }
-function renderTraders(){$("discoverRows").innerHTML=discovered.map((t,i)=>`<tr><td>${i+1}</td><td><b>${t.name}</b><div class="tiny">${short(t.address)}</div></td><td>${t.discoveryScore}</td><td>$${money(t.equity)}</td><td>$${money(t.performance?.week?.pnl)}</td><td>$${money(t.performance?.month?.pnl)}</td><td>${pct(t.performance?.month?.roiPct)}</td><td>${t.style}</td><td><button onclick="follow(${i})">Follow</button></td></tr>`).join("")}
-$("discoverBtn").onclick=scanTraders;
-window.follow=i=>{let t=discovered[i];if(!t||wallets.some(w=>w.address?.toLowerCase()===t.address?.toLowerCase()))return;wallets.push({name:t.name,address:t.address,tag:"Discovery"});saveWallet();renderWallets();refreshWallets()};
+
+
+function renderDiscovered(){
+
+  $("discoverRows")
+    .innerHTML =
+      discovered
+        .map(
+          (
+            t,
+            i
+          ) => {
+
+            const p =
+              t.performance ||
+              {};
+
+
+            const address =
+              String(
+                t.address ||
+                ""
+              );
+
+
+            const followed =
+              wallets.some(
+                w =>
+                  String(
+                    w.address ||
+                    ""
+                  )
+                    .toLowerCase() ===
+                  address
+                    .toLowerCase()
+              );
+
+
+            return `
+
+            <tr>
+
+            <td>
+            ${i+1}
+            </td>
+
+            <td>
+
+            <b>
+            ${
+              t.name ||
+              "Anonymous"
+            }
+            </b>
+
+            <div class="tiny">
+            ${shortAddress(
+              address
+            )}
+            </div>
+
+            </td>
+
+            <td>
+            ${t.discoveryScore}
+            </td>
+
+            <td>
+            $${money(
+              t.equity
+            )}
+            </td>
+
+            <td class="${signClass(
+              p.week
+                ?.pnl
+            )}">
+
+            $${money(
+              p.week
+                ?.pnl
+            )}
+
+            </td>
+
+            <td class="${signClass(
+              p.month
+                ?.pnl
+            )}">
+
+            $${money(
+              p.month
+                ?.pnl
+            )}
+
+            </td>
+
+            <td>
+            ${pct(
+              p.month
+                ?.roiPct
+            )}
+            </td>
+
+            <td>
+            ${t.style}
+            </td>
+
+            <td>
+
+            <button
+              ${
+                followed
+                  ? "disabled"
+                  : ""
+              }
+              onclick="followTrader(${i})">
+
+            ${
+              followed
+                ? "Following"
+                : "Follow"
+            }
+
+            </button>
+
+            </td>
+
+            </tr>
+            `;
+          }
+        )
+        .join("")
+
+      ||
+
+      `
+      <tr>
+      <td colspan="9">
+      No traders.
+      </td>
+      </tr>
+      `;
+}
+
+
+window.followTrader =
+  async i => {
+
+    const t =
+      discovered[i];
+
+
+    const address =
+      String(
+        t?.address ||
+        ""
+      );
+
+
+    if (
+      !t ||
+      !/^0x[a-fA-F0-9]{40}$/.test(
+        address
+      )
+    ) {
+
+      return alert(
+        "Trader wallet unavailable"
+      );
+    }
+
+
+    if (
+      wallets.some(
+        w =>
+          String(
+            w.address ||
+            ""
+          )
+            .toLowerCase() ===
+          address
+            .toLowerCase()
+      )
+    ) {
+
+      return;
+    }
+
+
+    const w = {
+
+      name:
+        t.name ||
+        "Trader",
+
+      address,
+
+      tag:
+        "Discovery"
+    };
+
+
+    /*
+      فوری ذخیره می‌کنیم.
+      دیگر منتظر API نمی‌مانیم.
+    */
+
+    wallets.push(
+      w
+    );
+
+
+    walletData[
+      address.toLowerCase()
+    ] = {
+
+      pending:
+        true
+    };
+
+
+    saveWallets();
+
+    saveWalletCache();
+
+
+    /*
+      دکمه همان لحظه Following می‌شود.
+    */
+
+    renderDiscovered();
+
+    renderWallets();
+
+
+    /*
+      فقط همان Wallet جدید خوانده می‌شود.
+      نه همه Walletها.
+    */
+
+    try {
+
+      await refreshOneWallet(
+        w
+      );
+
+    } finally {
+
+      renderWallets();
+
+      renderTerminal();
+
+      renderWalletGraph();
+
+
+      setTimeout(
+        refreshMoneyFlow,
+        250
+      );
+    }
+  };
+
+
+$("discoverBtn")
+  .onclick =
+    discoverTraders;
+
+
+/* ======================================================
+   WALLET REFRESH
+====================================================== */
+
+async function refreshOneWallet(w){
+
+  const key =
+    String(
+      w.address ||
+      ""
+    )
+      .toLowerCase();
+
+
+  if (
+    !key
+  ) {
+    return;
+  }
+
+
+  walletData[
+    key
+  ] = {
+
+    ...(
+      walletData[
+        key
+      ] ||
+      {}
+    ),
+
+    pending:
+      true
+  };
+
+
+  try {
+
+    const d =
+      await getJson(
+
+        "/api/hyperliquid/summary?user=" +
+
+        encodeURIComponent(
+          w.address
+        )
+      );
+
+
+    walletData[
+      key
+    ] = {
+
+      ...d,
+
+      pending:
+        false
+    };
+
+
+    saveWalletCache();
+
+
+  } catch (e) {
+
+    const old =
+      walletData[
+        key
+      ] ||
+      {};
+
+
+    walletData[
+      key
+    ] = {
+
+      ...old,
+
+      pending:
+        false,
+
+      stale:
+        true,
+
+      errorMessage:
+        String(e)
+    };
+
+
+    saveWalletCache();
+  }
+}
+
 
 async function refreshWallets(){
- for(let i=0;i<wallets.length;i+=3){await Promise.all(wallets.slice(i,i+3).map(async w=>{try{walletData[w.address.toLowerCase()]=await json("/api/hyperliquid/summary?user="+w.address)}catch{if(walletData[w.address.toLowerCase()])walletData[w.address.toLowerCase()].stale=true}}));saveWC();renderWallets()}
+
+  if (
+    walletRefreshBusy
+  ) {
+    return;
+  }
+
+
+  walletRefreshBusy =
+    true;
+
+
+  try {
+
+    /*
+      فقط دو Wallet همزمان،
+      تا Hyperliquid و UI سنگین نشوند.
+    */
+
+    for (
+      let i =
+        0;
+
+      i <
+      wallets.length;
+
+      i +=
+        2
+    ) {
+
+      await Promise.all(
+
+        wallets
+          .slice(
+            i,
+            i +
+            2
+          )
+          .map(
+            refreshOneWallet
+          )
+      );
+    }
+
+
+    /*
+      فقط یک بار در انتها Render می‌کنیم.
+    */
+
+    renderWallets();
+
+    renderTerminal();
+
+    renderWalletGraph();
+
+    renderDemoTrading();
+
+
+  } finally {
+
+    walletRefreshBusy =
+      false;
+  }
 }
+
+
 function renderWallets(){
- $("mfWalletCount").textContent=wallets.length;
- $("walletRows").innerHTML=wallets.map((w,i)=>{let d=walletData[w.address?.toLowerCase()]||{};return `<tr><td><b>${w.name}</b><div class="tiny">${short(w.address)}</div></td><td>${d.tier||"--"}</td><td>${d.smartScore??"--"}</td><td>${d.equity==null?"--":"$"+money(d.equity)}</td><td>${d.pnl?.week?.pnl==null?"--":"$"+money(d.pnl.week.pnl)}</td><td>${d.pnl?.month?.pnl==null?"--":"$"+money(d.pnl.month.pnl)}</td><td>${d.stats30?.winRate==null?"--":num(d.stats30.winRate).toFixed(1)+"%"}</td><td>${d.positions?.length||0}</td><td>${d.stale?"CACHED":"LIVE"}</td><td><button class="danger" onclick="removeWallet(${i})">Remove</button></td></tr>`}).join("")
+
+  $("mfWalletCount")
+    .textContent =
+      wallets.length;
+
+
+  $("walletRows")
+    .innerHTML =
+      wallets
+        .map(
+          (
+            w,
+            i
+          ) => {
+
+            const d =
+              walletData[
+                String(
+                  w.address ||
+                  ""
+                )
+                  .toLowerCase()
+              ] ||
+              {};
+
+
+            const pending =
+              !!d.pending;
+
+
+            const hasData =
+              d.smartScore !=
+              null ||
+              d.equity !=
+              null;
+
+
+            const status =
+              pending
+
+                ? "LOADING"
+
+                : hasData
+
+                ? (
+                    d.stale
+                      ? "CACHED"
+                      : "LIVE"
+                  )
+
+                : "WAIT";
+
+
+            const klass =
+              pending ||
+              !hasData
+
+                ? "warn"
+
+                : d.stale
+
+                ? "warn"
+
+                : "good";
+
+
+            return `
+
+            <tr>
+
+            <td>
+
+            <b>
+            ${w.name}
+            </b>
+
+            <div class="tiny">
+
+            ${shortAddress(
+              w.address
+            )}
+
+            •
+
+            ${
+              w.tag ||
+              "Manual"
+            }
+
+            </div>
+
+            </td>
+
+            <td>
+            ${
+              d.tier ||
+              "--"
+            }
+            </td>
+
+            <td>
+            ${
+              d.smartScore ??
+              "--"
+            }
+            </td>
+
+            <td>
+
+            ${
+              d.equity ==
+              null
+                ? "--"
+                : "$" +
+                  money(
+                    d.equity
+                  )
+            }
+
+            </td>
+
+            <td>
+
+            ${
+              d.pnl
+                ?.week
+                ?.pnl ==
+              null
+                ? "--"
+                : "$" +
+                  money(
+                    d.pnl
+                      .week
+                      .pnl
+                  )
+            }
+
+            </td>
+
+            <td>
+
+            ${
+              d.pnl
+                ?.month
+                ?.pnl ==
+              null
+                ? "--"
+                : "$" +
+                  money(
+                    d.pnl
+                      .month
+                      .pnl
+                  )
+            }
+
+            </td>
+
+            <td>
+
+            ${
+              d.stats30
+                ?.winRate ==
+              null
+                ? "--"
+                : num(
+                    d.stats30
+                      .winRate
+                  )
+                    .toFixed(
+                      1
+                    ) +
+                  "%"
+            }
+
+            </td>
+
+            <td>
+            ${
+              d.positions
+                ?.length ||
+              0
+            }
+            </td>
+
+            <td>
+
+            <span class="pill ${klass}">
+            ${status}
+            </span>
+
+            </td>
+
+            <td>
+
+            <button
+              class="danger"
+              onclick="removeWallet(${i})">
+
+            Remove
+
+            </button>
+
+            </td>
+
+            </tr>
+            `;
+          }
+        )
+        .join("")
+
+      ||
+
+      `
+      <tr>
+      <td colspan="10">
+      No wallets.
+      </td>
+      </tr>
+      `;
 }
-$("addWallet").onclick=()=>{let a=$("walletAddress").value.trim();if(!/^0x[a-fA-F0-9]{40}$/.test(a))return alert("Invalid wallet");wallets.push({name:$("walletName").value||"Trader",address:a,tag:$("walletTag").value});saveWallet();renderWallets();refreshWallets()};
-window.removeWallet=i=>{wallets.splice(i,1);saveWallet();renderWallets()};
 
-async function refreshRotation(){
- if(!wallets.length)return;
- try{let d=await json("/api/rotation?users="+encodeURIComponent(wallets.map(w=>w.address).join(",")));if(d.warmup){$("mfStatus").textContent="WARMUP";return}rotation=d.rotation;$("mfStatus").textContent="LIVE";$("rotationMini").textContent="LIVE";$("mfTotalIn").textContent="$"+money(rotation.totalIn);$("mfTotalOut").textContent="$"+money(rotation.totalOut);renderRotation()}catch{$("mfStatus").textContent="CACHED"}
+
+/* ======================================================
+   ADD WALLET MANUALLY
+====================================================== */
+
+$("addWallet")
+  .onclick =
+    async () => {
+
+      const address =
+        $("walletAddress")
+          .value
+          .trim();
+
+
+      if (
+        !/^0x[a-fA-F0-9]{40}$/.test(
+          address
+        )
+      ) {
+
+        return alert(
+          "Invalid wallet"
+        );
+      }
+
+
+      if (
+        wallets.some(
+          w =>
+            String(
+              w.address ||
+              ""
+            )
+              .toLowerCase() ===
+            address
+              .toLowerCase()
+        )
+      ) {
+
+        return alert(
+          "Wallet exists"
+        );
+      }
+
+
+      const w = {
+
+        name:
+          $("walletName")
+            .value
+            .trim() ||
+          "Trader-" +
+          (
+            wallets.length +
+            1
+          ),
+
+        address,
+
+        tag:
+          $("walletTag")
+            .value
+      };
+
+
+      wallets.push(
+        w
+      );
+
+
+      walletData[
+        address.toLowerCase()
+      ] = {
+
+        pending:
+          true
+      };
+
+
+      saveWallets();
+
+      saveWalletCache();
+
+
+      $("walletName")
+        .value =
+          "";
+
+
+      $("walletAddress")
+        .value =
+          "";
+
+
+      renderWallets();
+
+
+      await refreshOneWallet(
+        w
+      );
+
+
+      renderWallets();
+
+      renderTerminal();
+
+      renderWalletGraph();
+
+
+      setTimeout(
+        refreshMoneyFlow,
+        250
+      );
+    };
+
+
+window.removeWallet =
+  i => {
+
+    wallets.splice(
+      i,
+      1
+    );
+
+
+    saveWallets();
+
+    renderWallets();
+
+    renderDiscovered();
+
+    renderWalletGraph();
+
+
+    setTimeout(
+      refreshMoneyFlow,
+      250
+    );
+  };
+
+
+/* ======================================================
+   MONEY FLOW
+====================================================== */
+
+async function refreshMoneyFlow(){
+
+  if (
+    !wallets.length
+  ) {
+
+    $("mfStatus")
+      .textContent =
+        "NO WALLETS";
+
+
+    $("rotationMini")
+      .textContent =
+        "NO WALLETS";
+
+    return;
+  }
+
+
+  try {
+
+    const d =
+      await getJson(
+
+        "/api/rotation?users=" +
+
+        encodeURIComponent(
+
+          wallets
+            .map(
+              w =>
+                w.address
+            )
+            .join(",")
+        )
+      );
+
+
+    if (
+      d.warmup
+    ) {
+
+      $("mfStatus")
+        .textContent =
+          "WARMUP";
+
+
+      $("rotationMini")
+        .textContent =
+          "WARMUP";
+
+      return;
+    }
+
+
+    moneyRotation =
+      d.rotation;
+
+
+    $("mfStatus")
+      .textContent =
+        "LIVE";
+
+
+    $("mfStatus")
+      .className =
+        "metric medium good";
+
+
+    $("rotationMini")
+      .textContent =
+        "LIVE";
+
+
+    $("mfTotalIn")
+      .textContent =
+        "$" +
+        money(
+          moneyRotation
+            .totalIn
+        );
+
+
+    $("mfTotalOut")
+      .textContent =
+        "$" +
+        money(
+          moneyRotation
+            .totalOut
+        );
+
+
+    renderMoneyFlow();
+
+    renderDemoTrading();
+
+
+  } catch {
+
+    $("mfStatus")
+      .textContent =
+        "CACHED";
+
+
+    $("mfStatus")
+      .className =
+        "metric medium warn";
+
+
+    $("rotationMini")
+      .textContent =
+        "CACHED";
+  }
 }
-function renderRotation(){
- let paths=rotation?.paths||[],ins=rotation?.inflows||[],outs=rotation?.outflows||[];
- if(sankey){let n=new Set;paths.forEach(p=>{n.add("OUT "+p.from);n.add("IN "+p.to)});sankey.setOption({series:[{type:"sankey",data:[...n].map(name=>({name})),links:paths.map(p=>({source:"OUT "+p.from,target:"IN "+p.to,value:p.value}))}]})}
- if(rotBar){let r=(rotation?.net||[]).slice(0,12).reverse();rotBar.setOption({xAxis:{type:"value"},yAxis:{type:"category",data:r.map(x=>x.coin)},series:[{type:"bar",data:r.map(x=>x.delta)}]})}
- $("moneyInflows").innerHTML=ins.slice(0,10).map(x=>`<div class="flowrow"><b>${x.coin}</b><div class="track"><i class="in" style="width:100%"></i></div><span class="good">+$${money(x.value)}</span></div>`).join("");
- $("moneyOutflows").innerHTML=outs.slice(0,10).map(x=>`<div class="flowrow"><b>${x.coin}</b><div class="track"><i class="out" style="width:100%"></i></div><span class="bad">-$${money(x.value)}</span></div>`).join("");
- $("moneyPathList").innerHTML=paths.slice(0,10).map(p=>`<div class="signal">${p.from} → ${p.to} • $${money(p.value)}</div>`).join("")
+
+
+function renderMoneyFlow(){
+
+  if (
+    !moneyRotation
+  ) {
+    return;
+  }
+
+
+  const paths =
+    moneyRotation.paths ||
+    [];
+
+
+  if (
+    moneyFlowSankey
+  ) {
+
+    const ns =
+      new Set();
+
+
+    paths
+      .forEach(
+        p => {
+
+          ns.add(
+            "OUT " +
+            p.from
+          );
+
+          ns.add(
+            "IN " +
+            p.to
+          );
+        }
+      );
+
+
+    moneyFlowSankey
+      .setOption({
+
+        series:[{
+
+          type:
+            "sankey",
+
+          data:
+            [
+              ...ns
+            ]
+              .map(
+                name => ({
+                  name
+                })
+              ),
+
+          links:
+            paths
+              .map(
+                p => ({
+
+                  source:
+                    "OUT " +
+                    p.from,
+
+                  target:
+                    "IN " +
+                    p.to,
+
+                  value:
+                    p.value
+                })
+              ),
+
+          lineStyle:{
+            color:
+              "gradient",
+
+            opacity:
+              .55
+          },
+
+          label:{
+            fontSize:
+              10
+          }
+        }]
+      });
+  }
+
+
+  const rows =
+    (
+      moneyRotation.net ||
+      []
+    )
+      .slice(
+        0,
+        12
+      )
+      .reverse();
+
+
+  if (
+    moneyRotationBar
+  ) {
+
+    moneyRotationBar
+      .setOption({
+
+        grid:{
+          left:
+            70,
+
+          right:
+            20
+        },
+
+        xAxis:{
+          type:
+            "value"
+        },
+
+        yAxis:{
+          type:
+            "category",
+
+          data:
+            rows.map(
+              x =>
+                x.coin
+            )
+        },
+
+        series:[{
+
+          type:
+            "bar",
+
+          data:
+            rows.map(
+              x => ({
+
+                value:
+                  x.delta,
+
+                itemStyle:{
+                  color:
+                    x.delta >=
+                    0
+                      ? "#169b62"
+                      : "#d84b4b"
+                }
+              })
+            )
+        }]
+      });
+  }
+
+
+  const ins =
+    moneyRotation.inflows ||
+    [];
+
+
+  const outs =
+    moneyRotation.outflows ||
+    [];
+
+
+  const mi =
+    ins[0]
+      ?.value ||
+    1;
+
+
+  const mo =
+    outs[0]
+      ?.value ||
+    1;
+
+
+  $("moneyInflows")
+    .innerHTML =
+      ins
+        .slice(
+          0,
+          10
+        )
+        .map(
+          x => `
+
+          <div class="flow-row">
+
+          <b>
+          ${x.coin}
+          </b>
+
+          <div class="track">
+
+          <i
+            class="in"
+            style="
+            width:${
+              Math.max(
+                3,
+                x.value /
+                mi *
+                100
+              )
+            }%
+            ">
+          </i>
+
+          </div>
+
+          <span class="good">
+
+          +$${money(
+            x.value
+          )}
+
+          </span>
+
+          </div>
+          `
+        )
+        .join("")
+
+      ||
+
+      "--";
+
+
+  $("moneyOutflows")
+    .innerHTML =
+      outs
+        .slice(
+          0,
+          10
+        )
+        .map(
+          x => `
+
+          <div class="flow-row">
+
+          <b>
+          ${x.coin}
+          </b>
+
+          <div class="track">
+
+          <i
+            class="out"
+            style="
+            width:${
+              Math.max(
+                3,
+                x.value /
+                mo *
+                100
+              )
+            }%
+            ">
+          </i>
+
+          </div>
+
+          <span class="bad">
+
+          -$${money(
+            x.value
+          )}
+
+          </span>
+
+          </div>
+          `
+        )
+        .join("")
+
+      ||
+
+      "--";
+
+
+  $("moneyPathList")
+    .innerHTML =
+      paths
+        .slice(
+          0,
+          10
+        )
+        .map(
+          (
+            p,
+            i
+          ) => `
+
+          <div class="signal">
+
+          #${i+1}
+
+          <b class="bad">
+          ${p.from}
+          </b>
+
+          →
+
+          <b class="good">
+          ${p.to}
+          </b>
+
+          <div class="small">
+
+          $${money(
+            p.value
+          )}
+
+          </div>
+
+          </div>
+          `
+        )
+        .join("")
+
+      ||
+
+      "No path";
 }
 
-function walletPart(s){let c=consensus().find(x=>x.coin===s.replace("USDT",""));return c?clamp(50+c.bias*45,0,100):50}
-function rotPart(s){let r=rotation?.net||[],x=r.find(y=>y.coin===s.replace("USDT","")),mx=Math.max(1,...r.map(y=>Math.abs(num(y.delta))));return clamp(50+num(x?.delta)/mx*50,0,100)}
-function plan(s){
- let u=universe[s]||{},m=market[s]||{},cur=num(m.lastPrice);if(!cur)return {symbol:s,current:0,side:"NO TRADE",grade:"-",score:50,reasons:["WAIT"],ready:false};
- let fs=num(flow[s]?.flowScore,u.flowScore||50),tech=num(u.technicalScore,50),us=num(u.selectionScore,50),ws=walletPart(s),rs=rotPart(s),btc=probability("BTCUSDT").p;
- let long=clamp(fs*.24+tech*.30+us*.18+ws*.14+rs*.10+btc*.04,0,100);
- if(num(u.rsi14)>78)long-=8;if(u.technicalState==="BEARISH")long-=7;long=clamp(long,0,100);
- let side="NO TRADE",grade="-";
- if(long>=80&&tech>=58){side="LONG";grade="A+"}else if(long>=71&&tech>=55){side="LONG";grade="A"}else if(long<=20&&tech<=42){side="SHORT";grade="A+"}else if(long<=29&&tech<=45){side="SHORT";grade="A"}else if(long>=60){side="WATCH LONG";grade="WATCH"}else if(long<=40){side="WATCH SHORT";grade="WATCH"};
- let a=Math.max(num(u.atr),cur*.004),mid=cur,dist=a*1.25,lo=mid-a*.15,hi=mid+a*.15,stop=null,tp1=null,tp2=null,tp3=null;
- if(side==="LONG"){stop=mid-dist;tp1=mid+dist*1.2;tp2=mid+dist*2;tp3=mid+dist*3}
- if(side==="SHORT"){stop=mid+dist;tp1=mid-dist*1.2;tp2=mid-dist*2;tp3=mid-dist*3}
- return {symbol:s,current:cur,side,grade,score:side==="SHORT"||side==="WATCH SHORT"?100-long:long,longScore:long,flowScore:fs,walletScore:ws,technicalScore:tech,entryLow:lo,entryHigh:hi,stop,tp1,tp2,tp3,dist,ready:(side==="LONG"||side==="SHORT")&&cur>=lo&&cur<=hi,reasons:[`Flow ${fs.toFixed(0)}`,`Tech ${tech.toFixed(0)}`,`RSI ${num(u.rsi14,50).toFixed(0)}`,`Universe ${us.toFixed(0)}`,`Wallet ${ws.toFixed(0)}`,`Rotation ${rs.toFixed(0)}`]}
+
+/* ======================================================
+   KLINES
+====================================================== */
+
+async function asyncPool(
+  items,
+  limit,
+  worker
+){
+
+  let next =
+    0;
+
+
+  const out =
+    [];
+
+
+  async function run(){
+
+    while (
+      true
+    ) {
+
+      const i =
+        next++;
+
+
+      if (
+        i >=
+        items.length
+      ) {
+        return;
+      }
+
+
+      out[i] =
+        await worker(
+          items[i],
+          i
+        );
+    }
+  }
+
+
+  await Promise.all(
+
+    Array.from(
+      {
+        length:
+          Math.min(
+            limit,
+            items.length
+          )
+      },
+
+      run
+    )
+  );
+
+
+  return out;
 }
-const balance=()=>num(demo.initialBalance,10000)+num(demo.closedPnl),openPnl=()=>demo.open.reduce((z,t)=>z+(t.side==="LONG"?1:-1)*(num(market[t.symbol]?.lastPrice,t.entry)-t.entry)*t.qty,0),equity=()=>balance()+openPnl(),used=()=>demo.open.reduce((z,t)=>z+num(t.marginUsed),0),free=()=>Math.max(0,equity()-used());
 
-function openTrade(s,type="MARKET"){
- let p=plan(s);if(!["LONG","SHORT"].includes(p.side))return type==="MARKET"&&alert("A/A+ نیست");if(type==="AUTO"&&!p.ready)return;if(demo.open.some(x=>x.symbol===s))return;if(demo.open.length>=demo.maxOpenPositions)return alert("سقف معاملات پر است");
- let lev=num(demo.leverage,5),risk=equity()*num(demo.riskPct,1)/100,dist=p.dist,qty=Math.min(risk/dist,free()*lev/p.current);if(qty<=0)return alert("Margin کافی نیست");
- let en=p.current,st=p.side==="LONG"?en-dist:en+dist,t1=p.side==="LONG"?en+dist*1.2:en-dist*1.2,t2=p.side==="LONG"?en+dist*2:en-dist*2,t3=p.side==="LONG"?en+dist*3:en-dist*3;
- demo.open.push({id:Date.now()+"_"+s,symbol:s,side:p.side,entryType:type,leverage:lev,entry:en,stop:st,tp1:t1,tp2:t2,tp3:t3,qty,positionValue:qty*en,marginUsed:qty*en/lev,liq:lev>1?(p.side==="LONG"?en*(1-.92/lev):en*(1+.92/lev)):null});
- demo.armed=demo.armed.filter(x=>x.symbol!==s);saveDemo();startSocket(true);renderDemo()
+
+async function refreshKlines(){
+
+  await asyncPool(
+
+    getActiveSymbols(),
+
+    4,
+
+    async s => {
+
+      try {
+
+        klinesData[s] =
+          await getJson(
+
+            "/api/klines?symbol=" +
+            s +
+            "&interval=5m&limit=120"
+          );
+
+      } catch {}
+    }
+  );
+
+
+  renderDemoTrading();
 }
-function arm(s){let p=plan(s);if(!["LONG","SHORT"].includes(p.side))return alert("A/A+ نیست");demo.armed=demo.armed.filter(x=>x.symbol!==s);demo.armed.push({symbol:s,side:p.side});saveDemo();renderDemo()}
-function processArmed(){[...demo.armed].forEach(a=>{let p=plan(a.symbol);if(p.side===a.side&&p.ready)openTrade(a.symbol,"AUTO")})}
-function closeTrade(id,reason="MANUAL"){let i=demo.open.findIndex(x=>x.id===id);if(i<0)return;let t=demo.open[i],x=num(market[t.symbol]?.lastPrice,t.entry),p=(t.side==="LONG"?1:-1)*(x-t.entry)*t.qty;demo.closedPnl+=p;demo.closed.unshift({...t,exit:x,pnl:p,reason});demo.open.splice(i,1);saveDemo();renderDemo()}
-function updatePositions(draw=true){[...demo.open].forEach(t=>{let c=num(market[t.symbol]?.lastPrice);if(!c)return;if(t.side==="LONG"&&c<=t.stop)closeTrade(t.id,"STOP");else if(t.side==="LONG"&&c>=t.tp3)closeTrade(t.id,"TP3");else if(t.side==="SHORT"&&c>=t.stop)closeTrade(t.id,"STOP");else if(t.side==="SHORT"&&c<=t.tp3)closeTrade(t.id,"TP3")});if(draw)renderDemo()}
 
-function renderDemo(){
- $("tradeSignalRows").innerHTML=symbols.map(s=>{let p=plan(s),action=["LONG","SHORT"].includes(p.side),armed=demo.armed.some(x=>x.symbol===s);return `<tr><td><b>${s}</b></td><td class="side ${p.side==="LONG"?"long":p.side==="SHORT"?"short":""}">${p.side}</td><td><span class="grade ${p.grade==="A+"||p.grade==="A"?"ga":"gw"}">${p.grade}</span></td><td>${p.score.toFixed(0)}</td><td>${fmt(p.current)}</td><td>${action?fmt(p.entryLow)+" – "+fmt(p.entryHigh):"--"}</td><td>${fmt(p.stop)}</td><td>${fmt(p.tp1)}</td><td>${fmt(p.tp2)}</td><td>${fmt(p.tp3)}</td><td>${armed?"ARMED":p.ready?"READY":action?"WAIT ENTRY":"NO TRADE"}</td><td><div class="tiny">${p.reasons.join(" • ")}</div></td><td><div class="actions">${action?`<button class="armbtn" onclick="arm('${s}')">ARM</button><button class="goodbtn" onclick="openTrade('${s}','MARKET')">MARKET ${demo.leverage}x</button>`:"--"}</div></td></tr>`}).join("");
- let op=openPnl(),wins=demo.closed.filter(x=>x.pnl>0),loss=demo.closed.filter(x=>x.pnl<0),gw=wins.reduce((a,b)=>a+b.pnl,0),gl=Math.abs(loss.reduce((a,b)=>a+b.pnl,0));
- $("demoBalance").textContent="$"+money(balance());$("demoEquity").textContent="$"+money(equity());$("demoOpenPnl").textContent=(op>=0?"+":"")+"$"+money(op);$("demoClosedPnl").textContent=(demo.closedPnl>=0?"+":"")+"$"+money(demo.closedPnl);$("demoUsedMargin").textContent="$"+money(used());$("demoFreeMargin").textContent="$"+money(free());$("demoOpenCount").textContent=demo.open.length;$("demoMaxOpenView").textContent=demo.maxOpenPositions;$("demoWinRate").textContent=demo.closed.length?(wins.length/demo.closed.length*100).toFixed(1)+"%":"--";$("demoProfitFactor").textContent=gl?(gw/gl).toFixed(2):"--";
- $("demoStartBalance").value=demo.initialBalance;$("demoRiskPct").value=demo.riskPct;$("demoLeverage").value=demo.leverage;$("demoMaxOpen").value=demo.maxOpenPositions;$("riskPreview").textContent=demo.riskPct+"%";$("leveragePreview").textContent=demo.leverage+"x";$("maxOpenPreview").textContent=demo.maxOpenPositions;
- $("armedRows").innerHTML=demo.armed.map(a=>{let p=plan(a.symbol);return `<tr><td>${a.symbol}</td><td>${a.side}</td><td>${fmt(p.entryLow)} – ${fmt(p.entryHigh)}</td><td>${fmt(p.current)}</td><td>${demo.leverage}x</td><td><button class="danger" onclick="demo.armed=demo.armed.filter(x=>x.symbol!=='${a.symbol}');saveDemo();renderDemo()">Cancel</button></td></tr>`}).join("");
- $("demoOpenRows").innerHTML=demo.open.map(t=>{let c=num(market[t.symbol]?.lastPrice,t.entry),p=(t.side==="LONG"?1:-1)*(c-t.entry)*t.qty,rom=t.marginUsed?p/t.marginUsed*100:0;return `<tr><td>${t.symbol}</td><td>${t.side}</td><td>${t.entryType}</td><td>${t.leverage}x</td><td>${fmt(t.entry)}</td><td>${fmt(c)}</td><td>$${money(t.positionValue)}</td><td>$${money(t.marginUsed)}</td><td>${fmt(t.stop)}</td><td>${fmt(t.tp1)}</td><td>${fmt(t.tp2)}</td><td>${fmt(t.tp3)}</td><td>${fmt(t.liq)}</td><td class="${p>=0?"good":"bad"}">${p>=0?"+":""}$${money(p)}</td><td>${rom.toFixed(2)}%</td><td><button class="danger" onclick="closeTrade('${t.id}')">Close</button></td></tr>`}).join("");
- $("demoClosedRows").innerHTML=demo.closed.slice(0,100).map(t=>`<tr><td>${t.symbol}</td><td>${t.side}</td><td>${t.entryType}</td><td>${t.leverage}x</td><td>${fmt(t.entry)}</td><td>${fmt(t.exit)}</td><td>${t.pnl>=0?"+":""}$${money(t.pnl)}</td><td>${t.reason}</td></tr>`).join("")
+
+/* ======================================================
+   TECHNICAL HELPERS
+====================================================== */
+
+function ema(v,p){
+
+  if (
+    !v.length
+  ) {
+    return null;
+  }
+
+
+  const k =
+    2 /
+    (
+      p +
+      1
+    );
+
+
+  let e =
+    v[0];
+
+
+  for (
+    let i =
+      1;
+
+    i <
+    v.length;
+
+    i++
+  ) {
+
+    e =
+      v[i] *
+      k +
+      e *
+      (
+        1 -
+        k
+      );
+  }
+
+
+  return e;
 }
-window.openTrade=openTrade;window.arm=arm;window.closeTrade=closeTrade;
-$("saveDemoSettings").onclick=()=>{demo.riskPct=clamp(num($("demoRiskPct").value,1),.1,5);demo.leverage=clamp(num($("demoLeverage").value,5),1,10);demo.maxOpenPositions=clamp(num($("demoMaxOpen").value,10),1,20);if(!demo.open.length&&!demo.closed.length)demo.initialBalance=Math.max(100,num($("demoStartBalance").value,10000));saveDemo();renderDemo()};
-$("resetDemo").onclick=()=>{if(!confirm("Reset Demo?"))return;demo={initialBalance:10000,riskPct:1,leverage:5,maxOpenPositions:10,closedPnl:0,open:[],closed:[],armed:[]};saveDemo();renderDemo()};
 
-async function refreshMacro(){try{macro=await json("/api/macro");$("macroRows").innerHTML=macro.map(x=>`<tr><td>${x.name}</td><td>${fmt(x.price)}</td><td>${pct(x.changePct)}</td><td>${x.stale?"CACHED":"LIVE"}</td></tr>`).join("");if(macroChart)macroChart.setOption({xAxis:{type:"category",data:macro.map(x=>x.symbol)},yAxis:{type:"value"},series:[{type:"bar",data:macro.map(x=>num(x.changePct))}]});renderGlobal()}catch{}}
-async function refreshIran(){try{iran=await json("/api/iran");$("iranState").textContent="LIVE";$("iranPrices").innerHTML=iran.map(x=>`<div class="iran"><div class="small">${x.name}</div><div class="metric medium">${x.value==null?"--":Math.round(x.value/10).toLocaleString("fa-IR")}</div><div class="small">تومان</div></div>`).join("")}catch{$("iranState").textContent="CACHED"}}
-function mf(s){return macro.find(x=>x.symbol===s)||{}}
-function renderGlobal(){let g=mf("XAUUSD"),b=mf("CB.F"),w=mf("CL.F"),d=mf("DX.F");$("igGold").textContent=fmt(g.price);$("igGoldMove").textContent=pct(g.changePct);$("igBrent").textContent=fmt(b.price);$("igBrentMove").textContent=pct(b.changePct);$("igWti").textContent=fmt(w.price);$("igWtiMove").textContent=pct(w.changePct);$("igDxy").textContent=fmt(d.price);$("igDxyMove").textContent=pct(d.changePct);if(iranChart)iranChart.setOption({series:[{type:"sankey",data:["Gold","DXY","Oil","USD/IRR","Iran Gold","Coin"].map(name=>({name})),links:[{source:"Gold",target:"Iran Gold",value:1},{source:"DXY",target:"USD/IRR",value:1},{source:"USD/IRR",target:"Iran Gold",value:1},{source:"Iran Gold",target:"Coin",value:1},{source:"Oil",target:"USD/IRR",value:.5}]}]})}
 
-function famous(){let c=[["Arthur Hayes","Crypto / Macro"],["Andrew Kang","Crypto / Macro"],["GCR","Crypto"],["Hsaka","Crypto"],["James Wynn","Crypto"]],m=[["George Soros","FX"],["Stanley Druckenmiller","Macro"],["Paul Tudor Jones","Futures"],["Bill Lipschutz","FX"],["Kathy Lien","FX"]],h=x=>`<div class="profile"><b>${x[0]}</b><div class="small">${x[1]}</div></div>`;$("famousCrypto").innerHTML=c.map(h).join("");$("famousMacro").innerHTML=m.map(h).join("")}
+function atr(
+  rows,
+  p = 14
+){
 
-function renderAll(){renderAssets();renderTerminal();renderWallets();renderDemo()}
+  if (
+    !rows ||
+    rows.length <
+    2
+  ) {
+    return null;
+  }
 
-async function boot(){famous();renderAll();health();refreshWallets();refreshMacro();refreshIran();await refreshUniverse();await refreshMarket();await refreshFlow();startSocket(true);setTimeout(refreshRotation,7000)}
+
+  const tr =
+    [];
+
+
+  for (
+    let i =
+      1;
+
+    i <
+    rows.length;
+
+    i++
+  ) {
+
+    const h =
+      num(
+        rows[i].high
+      );
+
+
+    const l =
+      num(
+        rows[i].low
+      );
+
+
+    const pc =
+      num(
+        rows[
+          i -
+          1
+        ].close
+      );
+
+
+    tr.push(
+
+      Math.max(
+
+        h -
+        l,
+
+        Math.abs(
+          h -
+          pc
+        ),
+
+        Math.abs(
+          l -
+          pc
+        )
+      )
+    );
+  }
+
+
+  const x =
+    tr.slice(
+      -p
+    );
+
+
+  return x.length
+    ? x.reduce(
+        (
+          a,
+          b
+        ) =>
+          a +
+          b,
+        0
+      ) /
+      x.length
+    : null;
+}
+
+
+function technicalData(s){
+
+  const u =
+    universeData[
+      s
+    ] ||
+    {};
+
+
+  const r =
+    klinesData[
+      s
+    ] ||
+    [];
+
+
+  const c =
+    r
+      .map(
+        x =>
+          num(
+            x.close
+          )
+      )
+      .filter(
+        x =>
+          x >
+          0
+      );
+
+
+  const cur =
+    num(
+      market[
+        s
+      ]?.lastPrice,
+      c.at(-1) ||
+      num(
+        u.lastPrice
+      )
+    );
+
+
+  const e9 =
+    num(
+      u.ema9,
+      ema(
+        c.slice(
+          -60
+        ),
+        9
+      ) ||
+      cur
+    );
+
+
+  const e21 =
+    num(
+      u.ema21,
+      ema(
+        c.slice(
+          -80
+        ),
+        21
+      ) ||
+      cur
+    );
+
+
+  const a =
+    num(
+      u.atr,
+      atr(
+        r,
+        14
+      ) ||
+      cur *
+      .0045 ||
+      1
+    );
+
+
+  const recent =
+    c.length >
+    6 &&
+    c.at(
+      -6
+    )
+
+      ? (
+          (
+            c.at(
+              -1
+            ) -
+            c.at(
+              -6
+            )
+          ) /
+          c.at(
+            -6
+          )
+        ) *
+        100
+
+      : num(
+          u.ret15m
+        );
+
+
+  const localTrend =
+    a
+      ? (
+          e9 -
+          e21
+        ) /
+        a
+      : 0;
+
+
+  const localScore =
+    clamp(
+      50 +
+      localTrend *
+      11 +
+      recent *
+      4,
+      0,
+      100
+    );
+
+
+  const score =
+    u.technicalScore !=
+    null
+
+      ? clamp(
+
+          num(
+            u.technicalScore
+          ) *
+          .72 +
+
+          localScore *
+          .28,
+
+          0,
+          100
+        )
+
+      : localScore;
+
+
+  return {
+
+    current:
+      cur,
+
+    ema9:
+      e9,
+
+    ema21:
+      e21,
+
+    atr:
+      a,
+
+    score,
+
+    rsi:
+      num(
+        u.rsi14,
+        50
+      ),
+
+    state:
+      u.technicalState ||
+      "MIXED",
+
+    selectionScore:
+      num(
+        u.selectionScore,
+        50
+      ),
+
+    inflowScore:
+      num(
+        u.inflowScore,
+        50
+      ),
+
+    volumeRatio:
+      num(
+        u.volumeRatio,
+        1
+      )
+  };
+}
+
+
+function rotationDataFor(s){
+
+  const coin =
+    s.replace(
+      "USDT",
+      ""
+    );
+
+
+  const rows =
+    moneyRotation
+      ?.net ||
+    [];
+
+
+  const r =
+    rows.find(
+      x =>
+        x.coin ===
+        coin
+    );
+
+
+  const max =
+    Math.max(
+
+      1,
+
+      ...rows.map(
+        x =>
+          Math.abs(
+            num(
+              x.delta
+            )
+          )
+      )
+    );
+
+
+  const delta =
+    num(
+      r?.delta
+    );
+
+
+  return {
+
+    delta,
+
+    score:
+      clamp(
+        50 +
+        delta /
+        max *
+        50,
+        0,
+        100
+      )
+  };
+}
+
+
+function walletComponent(s){
+
+  const coin =
+    s.replace(
+      "USDT",
+      ""
+    );
+
+
+  const c =
+    getConsensus()
+      .find(
+        x =>
+          x.coin ===
+          coin
+      );
+
+
+  return c
+
+    ? {
+
+        score:
+          clamp(
+            50 +
+            c.bias *
+            45,
+            0,
+            100
+          ),
+
+        longCount:
+          c.longCount,
+
+        shortCount:
+          c.shortCount
+      }
+
+    : {
+
+        score:
+          50,
+
+        longCount:
+          0,
+
+        shortCount:
+          0
+      };
+}
+
+
+function btcRegime(){
+
+  return clamp(
+
+    num(
+      flow.BTCUSDT
+        ?.flowScore,
+      50
+    ) *
+    .65 +
+
+    clamp(
+      50 +
+      num(
+        market.BTCUSDT
+          ?.priceChangePercent
+      ) *
+      3,
+      0,
+      100
+    ) *
+    .35,
+
+    0,
+    100
+  );
+}
+
+
+/* ======================================================
+   TRADE PLAN
+====================================================== */
+
+function buildTradePlan(s){
+
+  const current =
+    num(
+      market[
+        s
+      ]?.lastPrice
+    );
+
+
+  if (
+    !current
+  ) {
+
+    return {
+
+      symbol:
+        s,
+
+      current:
+        0,
+
+      side:
+        "NO TRADE",
+
+      grade:
+        "-",
+
+      longScore:
+        50,
+
+      shortScore:
+        50,
+
+      directionScore:
+        50,
+
+      ready:
+        false,
+
+      reasons:[
+        "Waiting for live price"
+      ],
+
+      exitRule:
+        "Waiting",
+
+      flowScore:
+        50,
+
+      walletScore:
+        50,
+
+      rotationScore:
+        50,
+
+      riskDistance:
+        null,
+
+      entryLow:
+        null,
+
+      entryHigh:
+        null,
+
+      stop:
+        null,
+
+      tp1:
+        null,
+
+      tp2:
+        null,
+
+      tp3:
+        null
+    };
+  }
+
+
+  const tech =
+    technicalData(
+      s
+    );
+
+
+  const rot =
+    rotationDataFor(
+      s
+    );
+
+
+  const wal =
+    walletComponent(
+      s
+    );
+
+
+  const reg =
+    btcRegime();
+
+
+  const fs =
+    num(
+      flow[
+        s
+      ]?.flowScore,
+      universeData[
+        s
+      ]?.flowScore ||
+      50
+    );
+
+
+  const us =
+    num(
+      universeData[
+        s
+      ]?.selectionScore,
+      50
+    );
+
+
+  let long =
+    clamp(
+
+      rot.score *
+      .18 +
+
+      wal.score *
+      .16 +
+
+      fs *
+      .22 +
+
+      tech.score *
+      .26 +
+
+      us *
+      .13 +
+
+      reg *
+      .05,
+
+      0,
+      100
+    );
+
+
+  if (
+    tech.rsi >
+    78
+  ) {
+
+    long -=
+      8;
+  }
+
+
+  if (
+    tech.state ===
+    "BEARISH"
+  ) {
+
+    long -=
+      6;
+  }
+
+
+  long =
+    clamp(
+      long,
+      0,
+      100
+    );
+
+
+  const short =
+    100 -
+    long;
+
+
+  let side =
+    "NO TRADE";
+
+
+  let grade =
+    "-";
+
+
+  const longTechOK =
+    tech.score >=
+    56 &&
+    tech.rsi <
+    79 &&
+    tech.state !==
+    "BEARISH";
+
+
+  const shortTechOK =
+    tech.score <=
+    44 &&
+    tech.state !==
+    "BULLISH";
+
+
+  if (
+    long >=
+    80 &&
+    longTechOK
+  ) {
+
+    side =
+      "LONG";
+
+    grade =
+      "A+";
+
+  } else if (
+    long >=
+    71 &&
+    longTechOK
+  ) {
+
+    side =
+      "LONG";
+
+    grade =
+      "A";
+
+  } else if (
+    long <=
+    20 &&
+    shortTechOK
+  ) {
+
+    side =
+      "SHORT";
+
+    grade =
+      "A+";
+
+  } else if (
+    long <=
+    29 &&
+    shortTechOK
+  ) {
+
+    side =
+      "SHORT";
+
+    grade =
+      "A";
+
+  } else if (
+    long >=
+    60
+  ) {
+
+    side =
+      "WATCH LONG";
+
+    grade =
+      "WATCH";
+
+  } else if (
+    long <=
+    40
+  ) {
+
+    side =
+      "WATCH SHORT";
+
+    grade =
+      "WATCH";
+  }
+
+
+  const actionable =
+    side ===
+    "LONG" ||
+    side ===
+    "SHORT";
+
+
+  const a =
+    Math.max(
+      tech.atr,
+      current *
+      .0025
+    );
+
+
+  const mid =
+    side ===
+    "LONG"
+
+      ? Math.min(
+          current,
+          tech.ema9 ||
+          current
+        )
+
+      : side ===
+        "SHORT"
+
+      ? Math.max(
+          current,
+          tech.ema9 ||
+          current
+        )
+
+      : current;
+
+
+  const entryLow =
+    mid -
+    a *
+    .15;
+
+
+  const entryHigh =
+    mid +
+    a *
+    .15;
+
+
+  const riskDistance =
+    a *
+    1.25;
+
+
+  let stop =
+    null;
+
+  let tp1 =
+    null;
+
+  let tp2 =
+    null;
+
+  let tp3 =
+    null;
+
+
+  if (
+    side ===
+    "LONG"
+  ) {
+
+    stop =
+      mid -
+      riskDistance;
+
+    tp1 =
+      mid +
+      riskDistance *
+      1.2;
+
+    tp2 =
+      mid +
+      riskDistance *
+      2;
+
+    tp3 =
+      mid +
+      riskDistance *
+      3;
+
+  } else if (
+    side ===
+    "SHORT"
+  ) {
+
+    stop =
+      mid +
+      riskDistance;
+
+    tp1 =
+      mid -
+      riskDistance *
+      1.2;
+
+    tp2 =
+      mid -
+      riskDistance *
+      2;
+
+    tp3 =
+      mid -
+      riskDistance *
+      3;
+  }
+
+
+  return {
+
+    symbol:
+      s,
+
+    current,
+
+    side,
+
+    grade,
+
+    longScore:
+      long,
+
+    shortScore:
+      short,
+
+    directionScore:
+      (
+        side ===
+        "SHORT" ||
+        side ===
+        "WATCH SHORT"
+      )
+        ? short
+        : long,
+
+    entryLow,
+
+    entryHigh,
+
+    stop,
+
+    tp1,
+
+    tp2,
+
+    tp3,
+
+    riskDistance,
+
+    ready:
+      actionable &&
+      current >=
+      entryLow &&
+      current <=
+      entryHigh,
+
+    reasons:[
+
+      `Universe ${us.toFixed(0)}`,
+
+      `Flow ${fs.toFixed(0)} / Net $${money(
+        universeData[
+          s
+        ]?.netFlow
+      )}`,
+
+      `Tech ${tech.score.toFixed(0)} ${tech.state}`,
+
+      `RSI ${tech.rsi.toFixed(0)}`,
+
+      `Wallet ${wal.score.toFixed(0)} (${wal.longCount}L/${wal.shortCount}S)`,
+
+      `Rotation ${rot.score.toFixed(0)}`
+    ],
+
+    exitRule:
+      side ===
+      "LONG"
+
+        ? "Exit: Stop / TP3 / flow reversal / technical break"
+
+        : side ===
+          "SHORT"
+
+        ? "Exit: Stop / TP3 / flow reversal / technical break"
+
+        : "Wait for A/A+ alignment",
+
+    flowScore:
+      fs,
+
+    walletScore:
+      wal.score,
+
+    rotationScore:
+      rot.score,
+
+    technicalScore:
+      tech.score,
+
+    rsi:
+      tech.rsi,
+
+    universeScore:
+      us
+  };
+}
+
+
+function gradeClass(g){
+
+  return g ===
+    "A+"
+      ? "aplus"
+      : g ===
+        "A"
+      ? "a"
+      : "watch";
+}
+
+
+/* ======================================================
+   DEMO ACCOUNT
+====================================================== */
+
+function demoOpenPnl(){
+
+  return demoState.open
+    .reduce(
+      (
+        sum,
+        t
+      ) => {
+
+        const cur =
+          num(
+            market[
+              t.symbol
+            ]?.lastPrice,
+            t.entry
+          );
+
+
+        return sum +
+
+          (
+            t.side ===
+            "LONG"
+              ? 1
+              : -1
+          ) *
+
+          (
+            cur -
+            t.entry
+          ) *
+
+          t.qty;
+      },
+      0
+    );
+}
+
+
+function demoBalance(){
+
+  return num(
+    demoState.initialBalance,
+    10000
+  ) +
+  num(
+    demoState.closedPnl
+  );
+}
+
+
+function demoEquity(){
+
+  return demoBalance() +
+  demoOpenPnl();
+}
+
+
+function demoUsedMargin(){
+
+  return demoState.open
+    .reduce(
+      (
+        s,
+        t
+      ) =>
+        s +
+        num(
+          t.marginUsed
+        ),
+      0
+    );
+}
+
+
+function demoFreeMargin(){
+
+  return Math.max(
+    0,
+    demoEquity() -
+    demoUsedMargin()
+  );
+}
+
+
+/* ======================================================
+   ARM
+====================================================== */
+
+function armDemoTrade(symbol){
+
+  const p =
+    buildTradePlan(
+      symbol
+    );
+
+
+  if (
+    !(
+      p.side ===
+      "LONG" ||
+      p.side ===
+      "SHORT"
+    )
+  ) {
+
+    return alert(
+      "فقط سیگنال A یا A+ قابل ARM است."
+    );
+  }
+
+
+  if (
+    demoState.open
+      .some(
+        x =>
+          x.symbol ===
+          symbol
+      )
+  ) {
+
+    return alert(
+      "برای این دارایی یک معامله باز داری."
+    );
+  }
+
+
+  const already =
+    demoState.armed
+      .some(
+        x =>
+          x.symbol ===
+          symbol
+      );
+
+
+  if (
+    !already &&
+    demoState.open.length +
+    demoState.armed.length >=
+    num(
+      demoState.maxOpenPositions,
+      10
+    )
+  ) {
+
+    return alert(
+      "سقف معاملات همزمان پر شده است."
+    );
+  }
+
+
+  demoState.armed =
+    demoState.armed
+      .filter(
+        x =>
+          x.symbol !==
+          symbol
+      );
+
+
+  demoState.armed
+    .push({
+
+      symbol,
+
+      side:
+        p.side,
+
+      leverage:
+        demoState.leverage,
+
+      armedAt:
+        Date.now()
+    });
+
+
+  saveDemo();
+
+  startPriceSocket();
+
+  renderDemoTrading();
+
+  processArmedEntries();
+}
+
+
+function cancelArm(symbol){
+
+  demoState.armed =
+    demoState.armed
+      .filter(
+        x =>
+          x.symbol !==
+          symbol
+      );
+
+
+  saveDemo();
+
+  startPriceSocket();
+
+  renderDemoTrading();
+}
+
+
+function processArmedEntries(){
+
+  if (
+    !demoState.armed.length
+  ) {
+    return;
+  }
+
+
+  for (
+    const a
+    of [
+      ...demoState.armed
+    ]
+  ) {
+
+    if (
+      demoState.open.length >=
+      num(
+        demoState.maxOpenPositions,
+        10
+      )
+    ) {
+
+      break;
+    }
+
+
+    const p =
+      buildTradePlan(
+        a.symbol
+      );
+
+
+    if (
+      !(
+        p.side ===
+        "LONG" ||
+        p.side ===
+        "SHORT"
+      ) ||
+      p.side !==
+      a.side
+    ) {
+
+      cancelArm(
+        a.symbol
+      );
+
+      continue;
+    }
+
+
+    if (
+      p.ready
+    ) {
+
+      openDemoTrade(
+        a.symbol,
+        "AUTO"
+      );
+    }
+  }
+}
+
+
+/* ======================================================
+   OPEN TRADE
+====================================================== */
+
+function openDemoTrade(
+  symbol,
+  type = "MARKET"
+){
+
+  const p =
+    buildTradePlan(
+      symbol
+    );
+
+
+  if (
+    !(
+      p.side ===
+      "LONG" ||
+      p.side ===
+      "SHORT"
+    )
+  ) {
+
+    if (
+      type ===
+      "MARKET"
+    ) {
+
+      alert(
+        "سیگنال A/A+ وجود ندارد."
+      );
+    }
+
+    return false;
+  }
+
+
+  if (
+    type ===
+    "AUTO" &&
+    !p.ready
+  ) {
+
+    return false;
+  }
+
+
+  if (
+    demoState.open.length >=
+    num(
+      demoState.maxOpenPositions,
+      10
+    )
+  ) {
+
+    if (
+      type ===
+      "MARKET"
+    ) {
+
+      alert(
+        "سقف معاملات همزمان پر شده است."
+      );
+    }
+
+    return false;
+  }
+
+
+  if (
+    demoState.open
+      .some(
+        x =>
+          x.symbol ===
+          symbol
+      )
+  ) {
+
+    if (
+      type ===
+      "MARKET"
+    ) {
+
+      alert(
+        "این دارایی معامله باز دارد."
+      );
+    }
+
+
+    demoState.armed =
+      demoState.armed
+        .filter(
+          x =>
+            x.symbol !==
+            symbol
+        );
+
+
+    saveDemo();
+
+    return false;
+  }
+
+
+  const equity =
+    Math.max(
+      1,
+      demoEquity()
+    );
+
+
+  const lev =
+    clamp(
+      num(
+        demoState.leverage,
+        5
+      ),
+      1,
+      10
+    );
+
+
+  const riskPct =
+    clamp(
+      num(
+        demoState.riskPct,
+        1
+      ),
+      .1,
+      5
+    );
+
+
+  const riskAmount =
+    equity *
+    riskPct /
+    100;
+
+
+  const entry =
+    p.current;
+
+
+  const dist =
+    Math.max(
+      p.riskDistance ||
+      0,
+      entry *
+      .0025
+    );
+
+
+  const stop =
+    p.side ===
+    "LONG"
+      ? entry -
+        dist
+      : entry +
+        dist;
+
+
+  const tp1 =
+    p.side ===
+    "LONG"
+      ? entry +
+        dist *
+        1.2
+      : entry -
+        dist *
+        1.2;
+
+
+  const tp2 =
+    p.side ===
+    "LONG"
+      ? entry +
+        dist *
+        2
+      : entry -
+        dist *
+        2;
+
+
+  const tp3 =
+    p.side ===
+    "LONG"
+      ? entry +
+        dist *
+        3
+      : entry -
+        dist *
+        3;
+
+
+  const free =
+    demoFreeMargin();
+
+
+  const riskQty =
+    riskAmount /
+    dist;
+
+
+  const maxQty =
+    free *
+    lev /
+    entry;
+
+
+  const qty =
+    Math.min(
+      riskQty,
+      maxQty
+    );
+
+
+  if (
+    !Number.isFinite(
+      qty
+    ) ||
+    qty <=
+    0
+  ) {
+
+    if (
+      type ===
+      "MARKET"
+    ) {
+
+      alert(
+        "Free Margin کافی نیست."
+      );
+    }
+
+    return false;
+  }
+
+
+  const positionValue =
+    qty *
+    entry;
+
+
+  const marginUsed =
+    positionValue /
+    lev;
+
+
+  const liq =
+    lev >
+    1
+
+      ? (
+          p.side ===
+          "LONG"
+
+            ? Math.max(
+                0,
+                entry *
+                (
+                  1 -
+                  .92 /
+                  lev
+                )
+              )
+
+            : entry *
+              (
+                1 +
+                .92 /
+                lev
+              )
+        )
+
+      : null;
+
+
+  demoState.open
+    .push({
+
+      id:
+        Date.now() +
+        "_" +
+        symbol +
+        "_" +
+        Math.random()
+          .toString(
+            36
+          )
+          .slice(
+            2,
+            7
+          ),
+
+      symbol,
+
+      side:
+        p.side,
+
+      grade:
+        p.grade,
+
+      score:
+        p.directionScore,
+
+      entryType:
+        type,
+
+      leverage:
+        lev,
+
+      entry,
+
+      stop,
+
+      tp1,
+
+      tp2,
+
+      tp3,
+
+      qty,
+
+      positionValue,
+
+      marginUsed,
+
+      estimatedLiquidation:
+        liq,
+
+      riskAmount:
+        qty *
+        dist,
+
+      openedAt:
+        Date.now(),
+
+      tp1Hit:
+        false,
+
+      tp2Hit:
+        false
+    });
+
+
+  demoState.armed =
+    demoState.armed
+      .filter(
+        x =>
+          x.symbol !==
+          symbol
+      );
+
+
+  saveDemo();
+
+  startPriceSocket();
+
+  renderDemoTrading();
+
+  return true;
+}
+
+
+/* ======================================================
+   CLOSE TRADE
+====================================================== */
+
+function closeDemoTrade(
+  id,
+  reason = "MANUAL"
+){
+
+  const i =
+    demoState.open
+      .findIndex(
+        x =>
+          x.id ===
+          id
+      );
+
+
+  if (
+    i <
+    0
+  ) {
+    return;
+  }
+
+
+  const t =
+    demoState.open[
+      i
+    ];
+
+
+  const exit =
+    num(
+      market[
+        t.symbol
+      ]?.lastPrice,
+      t.entry
+    );
+
+
+  const pnl =
+
+    (
+      t.side ===
+      "LONG"
+        ? 1
+        : -1
+    ) *
+
+    (
+      exit -
+      t.entry
+    ) *
+
+    t.qty;
+
+
+  demoState.closedPnl =
+    num(
+      demoState.closedPnl
+    ) +
+    pnl;
+
+
+  demoState.closed
+    .unshift({
+
+      ...t,
+
+      exit,
+
+      pnl,
+
+      reason,
+
+      closedAt:
+        Date.now()
+    });
+
+
+  demoState.closed =
+    demoState.closed
+      .slice(
+        0,
+        300
+      );
+
+
+  demoState.open
+    .splice(
+      i,
+      1
+    );
+
+
+  saveDemo();
+
+  startPriceSocket();
+
+  renderDemoTrading();
+}
+
+
+/* ======================================================
+   AUTO EXIT
+====================================================== */
+
+function updateDemoPositions(
+  full = true
+){
+
+  const close =
+    [];
+
+
+  for (
+    const t
+    of demoState.open
+  ) {
+
+    const cur =
+      num(
+        market[
+          t.symbol
+        ]?.lastPrice
+      );
+
+
+    if (
+      !cur
+    ) {
+      continue;
+    }
+
+
+    const p =
+      buildTradePlan(
+        t.symbol
+      );
+
+
+    if (
+      t.side ===
+      "LONG"
+    ) {
+
+      if (
+        cur <=
+        t.stop
+      ) {
+
+        close.push([
+          t.id,
+          "STOP"
+        ]);
+
+      } else if (
+        cur >=
+        t.tp3
+      ) {
+
+        close.push([
+          t.id,
+          "TP3"
+        ]);
+
+      } else if (
+        (
+          p.flowScore <
+          42 &&
+          p.walletScore <
+          45 &&
+          p.longScore <
+          35
+        ) ||
+        p.technicalScore <
+        40
+      ) {
+
+        close.push([
+          t.id,
+          "FLOW/TECH REVERSAL"
+        ]);
+
+      } else {
+
+        if (
+          cur >=
+          t.tp1
+        ) {
+
+          t.tp1Hit =
+            true;
+        }
+
+
+        if (
+          cur >=
+          t.tp2
+        ) {
+
+          t.tp2Hit =
+            true;
+        }
+      }
+
+    } else {
+
+      if (
+        cur >=
+        t.stop
+      ) {
+
+        close.push([
+          t.id,
+          "STOP"
+        ]);
+
+      } else if (
+        cur <=
+        t.tp3
+      ) {
+
+        close.push([
+          t.id,
+          "TP3"
+        ]);
+
+      } else if (
+        (
+          p.flowScore >
+          58 &&
+          p.walletScore >
+          55 &&
+          p.longScore >
+          65
+        ) ||
+        p.technicalScore >
+        60
+      ) {
+
+        close.push([
+          t.id,
+          "FLOW/TECH REVERSAL"
+        ]);
+
+      } else {
+
+        if (
+          cur <=
+          t.tp1
+        ) {
+
+          t.tp1Hit =
+            true;
+        }
+
+
+        if (
+          cur <=
+          t.tp2
+        ) {
+
+          t.tp2Hit =
+            true;
+        }
+      }
+    }
+  }
+
+
+  for (
+    const x
+    of close
+  ) {
+
+    closeDemoTrade(
+      x[0],
+      x[1]
+    );
+  }
+
+
+  if (
+    !close.length &&
+    full
+  ) {
+
+    saveDemo();
+
+    renderDemoTrading();
+  }
+}
+
+
+/* ======================================================
+   DEMO RENDER
+====================================================== */
+
+function renderDemoTrading(){
+
+  const plans =
+    symbols.map(
+      buildTradePlan
+    );
+
+
+  const armedSet =
+    new Set(
+
+      demoState.armed
+        .map(
+          x =>
+            x.symbol
+        )
+    );
+
+
+  $("tradeSignalRows")
+    .innerHTML =
+      plans
+        .map(
+          p => {
+
+            const action =
+              p.side ===
+              "LONG" ||
+              p.side ===
+              "SHORT";
+
+
+            const armed =
+              armedSet.has(
+                p.symbol
+              );
+
+
+            const state =
+              armed
+
+                ? '<span class="trade-armed">ARMED</span>'
+
+                : action
+
+                ? (
+                    p.ready
+                      ? '<span class="trade-ready">READY</span>'
+                      : '<span class="trade-wait">WAIT ENTRY</span>'
+                  )
+
+                : '<span class="trade-off">NO TRADE</span>';
+
+
+            const zone =
+              action
+
+                ? `${fmt(
+                    p.entryLow
+                  )} – ${fmt(
+                    p.entryHigh
+                  )}`
+
+                : "--";
+
+
+            return `
+
+            <tr>
+
+            <td>
+            <b>
+            ${p.symbol}
+            </b>
+            </td>
+
+            <td>
+
+            <span class="trade-side ${
+              p.side ===
+              "LONG"
+                ? "long"
+                : p.side ===
+                  "SHORT"
+                ? "short"
+                : "wait"
+            }">
+
+            ${p.side}
+
+            </span>
+
+            </td>
+
+            <td>
+
+            <span class="trade-grade ${
+              gradeClass(
+                p.grade
+              )
+            }">
+
+            ${p.grade}
+
+            </span>
+
+            </td>
+
+            <td>
+            <b>
+            ${p.directionScore.toFixed(
+              0
+            )}
+            </b>
+            </td>
+
+            <td>
+            <b>
+            ${fmt(
+              p.current
+            )}
+            </b>
+            </td>
+
+            <td>
+            ${zone}
+            </td>
+
+            <td>
+            ${fmt(
+              p.stop
+            )}
+            </td>
+
+            <td>
+            ${fmt(
+              p.tp1
+            )}
+            </td>
+
+            <td>
+            ${fmt(
+              p.tp2
+            )}
+            </td>
+
+            <td>
+            ${fmt(
+              p.tp3
+            )}
+            </td>
+
+            <td>
+            ${state}
+            </td>
+
+            <td>
+
+            <div class="reason-list tiny">
+
+            ${
+              p.reasons
+                .join(
+                  " • "
+                )
+            }
+
+            <br>
+
+            ${p.exitRule}
+
+            </div>
+
+            </td>
+
+            <td>
+
+            <div class="actions">
+
+            ${
+              action
+
+                ? `
+
+                  <button
+                    class="armbtn"
+                    ${
+                      armed
+                        ? "disabled"
+                        : ""
+                    }
+                    onclick="armDemoTrade('${p.symbol}')">
+
+                  ${
+                    armed
+                      ? "ARMED"
+                      : "ARM ENTRY"
+                  }
+
+                  </button>
+
+
+                  <button
+                    class="goodbtn"
+                    onclick="openDemoTrade('${p.symbol}','MARKET')">
+
+                  MARKET
+                  ${demoState.leverage}x
+
+                  </button>
+                  `
+
+                : "--"
+            }
+
+            </div>
+
+            </td>
+
+            </tr>
+            `;
+          }
+        )
+        .join("");
+
+
+  const openP =
+    demoOpenPnl();
+
+
+  const bal =
+    demoBalance();
+
+
+  const eq =
+    demoEquity();
+
+
+  const used =
+    demoUsedMargin();
+
+
+  const free =
+    demoFreeMargin();
+
+
+  const wins =
+    demoState.closed
+      .filter(
+        x =>
+          x.pnl >
+          0
+      );
+
+
+  const losses =
+    demoState.closed
+      .filter(
+        x =>
+          x.pnl <
+          0
+      );
+
+
+  const gw =
+    wins.reduce(
+      (
+        a,
+        b
+      ) =>
+        a +
+        b.pnl,
+      0
+    );
+
+
+  const gl =
+    Math.abs(
+
+      losses.reduce(
+        (
+          a,
+          b
+        ) =>
+          a +
+          b.pnl,
+        0
+      )
+    );
+
+
+  const wr =
+    demoState.closed.length
+
+      ? wins.length /
+        demoState.closed.length *
+        100
+
+      : null;
+
+
+  const pf =
+    gl
+      ? gw /
+        gl
+      : gw >
+        0
+      ? Infinity
+      : null;
+
+
+  $("demoBalance")
+    .textContent =
+      "$" +
+      money(
+        bal
+      );
+
+
+  $("demoEquity")
+    .textContent =
+      "$" +
+      money(
+        eq
+      );
+
+
+  $("demoOpenPnl")
+    .textContent =
+      (
+        openP >=
+        0
+          ? "+"
+          : ""
+      ) +
+      "$" +
+      money(
+        openP
+      );
+
+
+  $("demoOpenPnl")
+    .className =
+      "v " +
+      (
+        openP >=
+        0
+          ? "good"
+          : "bad"
+      );
+
+
+  $("demoClosedPnl")
+    .textContent =
+      (
+        demoState.closedPnl >=
+        0
+          ? "+"
+          : ""
+      ) +
+      "$" +
+      money(
+        demoState.closedPnl
+      );
+
+
+  $("demoClosedPnl")
+    .className =
+      "v " +
+      (
+        demoState.closedPnl >=
+        0
+          ? "good"
+          : "bad"
+      );
+
+
+  $("demoUsedMargin")
+    .textContent =
+      "$" +
+      money(
+        used
+      );
+
+
+  $("demoFreeMargin")
+    .textContent =
+      "$" +
+      money(
+        free
+      );
+
+
+  $("demoOpenCount")
+    .textContent =
+      demoState.open.length;
+
+
+  $("demoMaxOpenView")
+    .textContent =
+      demoState.maxOpenPositions;
+
+
+  $("demoWinRate")
+    .textContent =
+      wr ==
+      null
+        ? "--"
+        : wr.toFixed(
+            1
+          ) +
+          "%";
+
+
+  $("demoProfitFactor")
+    .textContent =
+      pf ==
+      null
+        ? "--"
+        : pf ===
+          Infinity
+        ? "∞"
+        : pf.toFixed(
+            2
+          );
+
+
+  $("demoStartBalance")
+    .value =
+      demoState.initialBalance;
+
+
+  $("demoRiskPct")
+    .value =
+      demoState.riskPct;
+
+
+  $("demoLeverage")
+    .value =
+      demoState.leverage;
+
+
+  $("demoMaxOpen")
+    .value =
+      demoState.maxOpenPositions;
+
+
+  $("riskPreview")
+    .textContent =
+      demoState.riskPct +
+      "%";
+
+
+  $("leveragePreview")
+    .textContent =
+      demoState.leverage +
+      "x";
+
+
+  $("maxOpenPreview")
+    .textContent =
+      demoState.maxOpenPositions;
+
+
+  $("armedRows")
+    .innerHTML =
+      demoState.armed
+        .map(
+          a => {
+
+            const p =
+              buildTradePlan(
+                a.symbol
+              );
+
+
+            return `
+
+            <tr>
+
+            <td>
+            <b>
+            ${a.symbol}
+            </b>
+            </td>
+
+            <td class="${
+              a.side ===
+              "LONG"
+                ? "good"
+                : "bad"
+            }">
+
+            ${a.side}
+
+            </td>
+
+            <td>
+
+            ${fmt(
+              p.entryLow
+            )}
+            –
+            ${fmt(
+              p.entryHigh
+            )}
+
+            </td>
+
+            <td>
+            ${fmt(
+              p.current
+            )}
+            </td>
+
+            <td>
+            ${a.leverage}x
+            </td>
+
+            <td>
+
+            ${
+              new Date(
+                a.armedAt
+              )
+                .toLocaleTimeString(
+                  "fa-IR"
+                )
+            }
+
+            </td>
+
+            <td>
+
+            <button
+              class="danger"
+              onclick="cancelArm('${a.symbol}')">
+
+            Cancel
+
+            </button>
+
+            </td>
+
+            </tr>
+            `;
+          }
+        )
+        .join("")
+
+      ||
+
+      `
+      <tr>
+      <td colspan="7">
+      No armed entries.
+      </td>
+      </tr>
+      `;
+
+
+  $("demoOpenRows")
+    .innerHTML =
+      demoState.open
+        .map(
+          t => {
+
+            const cur =
+              num(
+                market[
+                  t.symbol
+                ]?.lastPrice,
+                t.entry
+              );
+
+
+            const pnl =
+
+              (
+                t.side ===
+                "LONG"
+                  ? 1
+                  : -1
+              ) *
+
+              (
+                cur -
+                t.entry
+              ) *
+
+              t.qty;
+
+
+            const ret =
+              t.marginUsed
+
+                ? pnl /
+                  t.marginUsed *
+                  100
+
+                : 0;
+
+
+            return `
+
+            <tr>
+
+            <td>
+            <b>
+            ${t.symbol}
+            </b>
+            </td>
+
+            <td class="${
+              t.side ===
+              "LONG"
+                ? "good"
+                : "bad"
+            }">
+
+            ${t.side}
+
+            </td>
+
+            <td>
+            ${t.entryType}
+            </td>
+
+            <td>
+            <b>
+            ${t.leverage}x
+            </b>
+            </td>
+
+            <td>
+            ${fmt(
+              t.entry
+            )}
+            </td>
+
+            <td>
+            ${fmt(
+              cur
+            )}
+            </td>
+
+            <td>
+            $${money(
+              t.positionValue
+            )}
+            </td>
+
+            <td>
+            $${money(
+              t.marginUsed
+            )}
+            </td>
+
+            <td>
+            ${fmt(
+              t.stop
+            )}
+            </td>
+
+            <td class="${
+              t.tp1Hit
+                ? "good"
+                : ""
+            }">
+
+            ${fmt(
+              t.tp1
+            )}
+
+            </td>
+
+            <td class="${
+              t.tp2Hit
+                ? "good"
+                : ""
+            }">
+
+            ${fmt(
+              t.tp2
+            )}
+
+            </td>
+
+            <td>
+            ${fmt(
+              t.tp3
+            )}
+            </td>
+
+            <td>
+
+            ${
+              t.estimatedLiquidation
+                ? fmt(
+                    t.estimatedLiquidation
+                  )
+                : "--"
+            }
+
+            </td>
+
+            <td class="${
+              pnl >=
+              0
+                ? "good"
+                : "bad"
+            }">
+
+            ${
+              pnl >=
+              0
+                ? "+"
+                : ""
+            }
+
+            $${money(
+              pnl
+            )}
+
+            </td>
+
+            <td class="${
+              ret >=
+              0
+                ? "good"
+                : "bad"
+            }">
+
+            ${
+              ret >=
+              0
+                ? "+"
+                : ""
+            }
+
+            ${ret.toFixed(
+              2
+            )}%
+
+            </td>
+
+            <td>
+
+            <button
+              class="danger"
+              onclick="closeDemoTrade('${t.id}','MANUAL')">
+
+            Close
+
+            </button>
+
+            </td>
+
+            </tr>
+            `;
+          }
+        )
+        .join("")
+
+      ||
+
+      `
+      <tr>
+      <td colspan="16">
+      No open positions.
+      </td>
+      </tr>
+      `;
+
+
+  $("demoClosedRows")
+    .innerHTML =
+      demoState.closed
+        .slice(
+          0,
+          100
+        )
+        .map(
+          t => `
+
+          <tr>
+
+          <td>
+          <b>
+          ${t.symbol}
+          </b>
+          </td>
+
+          <td class="${
+            t.side ===
+            "LONG"
+              ? "good"
+              : "bad"
+          }">
+
+          ${t.side}
+
+          </td>
+
+          <td>
+          ${
+            t.entryType ||
+            "--"
+          }
+          </td>
+
+          <td>
+          ${
+            t.leverage ||
+            1
+          }x
+          </td>
+
+          <td>
+          ${fmt(
+            t.entry
+          )}
+          </td>
+
+          <td>
+          ${fmt(
+            t.exit
+          )}
+          </td>
+
+          <td class="${
+            t.pnl >=
+            0
+              ? "good"
+              : "bad"
+          }">
+
+          ${
+            t.pnl >=
+            0
+              ? "+"
+              : ""
+          }
+
+          $${money(
+            t.pnl
+          )}
+
+          </td>
+
+          <td>
+          ${t.reason}
+          </td>
+
+          <td>
+
+          ${
+            new Date(
+              t.closedAt
+            )
+              .toLocaleString(
+                "fa-IR"
+              )
+          }
+
+          </td>
+
+          </tr>
+          `
+        )
+        .join("")
+
+      ||
+
+      `
+      <tr>
+      <td colspan="9">
+      No closed trades.
+      </td>
+      </tr>
+      `;
+}
+
+
+/* ======================================================
+   DEMO GLOBALS
+====================================================== */
+
+window.armDemoTrade =
+  armDemoTrade;
+
+window.cancelArm =
+  cancelArm;
+
+window.openDemoTrade =
+  openDemoTrade;
+
+window.closeDemoTrade =
+  closeDemoTrade;
+
+
+/* ======================================================
+   DEMO SETTINGS
+====================================================== */
+
+$("saveDemoSettings")
+  .onclick =
+    () => {
+
+      demoState.riskPct =
+        clamp(
+          num(
+            $("demoRiskPct")
+              .value,
+            1
+          ),
+          .1,
+          5
+        );
+
+
+      demoState.leverage =
+        clamp(
+          num(
+            $("demoLeverage")
+              .value,
+            5
+          ),
+          1,
+          10
+        );
+
+
+      demoState.maxOpenPositions =
+        clamp(
+          num(
+            $("demoMaxOpen")
+              .value,
+            10
+          ),
+          1,
+          20
+        );
+
+
+      if (
+        !demoState.open.length &&
+        !demoState.closed.length
+      ) {
+
+        demoState.initialBalance =
+          Math.max(
+
+            100,
+
+            num(
+              $("demoStartBalance")
+                .value,
+              10000
+            )
+          );
+      }
+
+
+      saveDemo();
+
+      renderDemoTrading();
+    };
+
+
+$("resetDemo")
+  .onclick =
+    () => {
+
+      if (
+        !confirm(
+          "Reset all demo data?"
+        )
+      ) {
+
+        return;
+      }
+
+
+      demoState = {
+
+        initialBalance:
+          Math.max(
+
+            100,
+
+            num(
+              $("demoStartBalance")
+                .value,
+              10000
+            )
+          ),
+
+        riskPct:
+          clamp(
+            num(
+              $("demoRiskPct")
+                .value,
+              1
+            ),
+            .1,
+            5
+          ),
+
+        leverage:
+          clamp(
+            num(
+              $("demoLeverage")
+                .value,
+              5
+            ),
+            1,
+            10
+          ),
+
+        maxOpenPositions:
+          clamp(
+            num(
+              $("demoMaxOpen")
+                .value,
+              10
+            ),
+            1,
+            20
+          ),
+
+        closedPnl:
+          0,
+
+        open:
+          [],
+
+        closed:
+          [],
+
+        armed:
+          []
+      };
+
+
+      saveDemo();
+
+      startPriceSocket();
+
+      renderDemoTrading();
+    };
+
+
+$("demoRiskPct")
+  .oninput =
+    () => {
+
+      $("riskPreview")
+        .textContent =
+          $("demoRiskPct")
+            .value +
+          "%";
+    };
+
+
+$("demoLeverage")
+  .onchange =
+    () => {
+
+      $("leveragePreview")
+        .textContent =
+          $("demoLeverage")
+            .value +
+          "x";
+    };
+
+
+$("demoMaxOpen")
+  .onchange =
+    () => {
+
+      $("maxOpenPreview")
+        .textContent =
+          $("demoMaxOpen")
+            .value;
+    };
+
+
+/* ======================================================
+   MACRO
+====================================================== */
+
+async function refreshMacro(){
+
+  try {
+
+    macroData =
+      await getJson(
+        "/api/macro"
+      );
+
+
+    renderMacro();
+
+    renderIranGlobal();
+
+  } catch {}
+}
+
+
+function macroFind(s){
+
+  return macroData
+    .find(
+      x =>
+        x.symbol ===
+        s
+    ) ||
+    {};
+}
+
+
+function renderMacro(){
+
+  const v =
+    macroData
+      .filter(
+        x =>
+          x.price !=
+          null
+      );
+
+
+  $("macroRows")
+    .innerHTML =
+      macroData
+        .map(
+          x => `
+
+          <tr>
+
+          <td>
+          <b>
+          ${x.name}
+          </b>
+          </td>
+
+          <td>
+          ${price(
+            x.price
+          )}
+          </td>
+
+          <td class="${signClass(
+            x.changePct
+          )}">
+
+          ${pct(
+            x.changePct
+          )}
+
+          </td>
+
+          <td>
+          ${
+            x.stale
+              ? "CACHED"
+              : "LIVE"
+          }
+          </td>
+
+          </tr>
+          `
+        )
+        .join("");
+
+
+  if (
+    macroChart
+  ) {
+
+    macroChart
+      .setOption({
+
+        grid:{
+          left:
+            55,
+
+          right:
+            20,
+
+          bottom:
+            35
+        },
+
+        xAxis:{
+          type:
+            "category",
+
+          data:
+            v.map(
+              x =>
+                x.symbol
+            )
+        },
+
+        yAxis:{
+          type:
+            "value"
+        },
+
+        series:[{
+
+          type:
+            "bar",
+
+          data:
+            v.map(
+              x => ({
+
+                value:
+                  num(
+                    x.changePct
+                  ),
+
+                itemStyle:{
+                  color:
+                    num(
+                      x.changePct
+                    ) >=
+                    0
+                      ? "#49af7d"
+                      : "#db6b6b"
+                }
+              })
+            )
+        }]
+      });
+  }
+}
+
+
+/* ======================================================
+   IRAN
+====================================================== */
+
+async function refreshIran(){
+
+  try {
+
+    iranData =
+      await getJson(
+        "/api/iran"
+      );
+
+
+    $("iranState")
+      .textContent =
+        "LIVE";
+
+
+    $("iranState")
+      .className =
+        "metric medium good";
+
+
+    renderIran();
+
+    renderIranGlobal();
+
+
+  } catch {
+
+    $("iranState")
+      .textContent =
+        "CACHED";
+
+
+    $("iranState")
+      .className =
+        "metric medium warn";
+  }
+}
+
+
+function renderIran(){
+
+  $("iranPrices")
+    .innerHTML =
+      iranData
+        .map(
+          x => `
+
+          <div class="iran-price">
+
+          <div class="small">
+          ${x.name}
+          </div>
+
+          <div class="metric medium">
+
+          ${
+            x.value ==
+            null
+              ? "--"
+              : toman(
+                  x.value
+                )
+          }
+
+          </div>
+
+          <div class="small">
+
+          تومان
+
+          ${
+            x.stale
+              ? "• CACHED"
+              : ""
+          }
+
+          </div>
+
+          </div>
+          `
+        )
+        .join("");
+}
+
+
+function renderIranGlobal(){
+
+  const gold =
+    macroFind(
+      "XAUUSD"
+    );
+
+
+  const brent =
+    macroFind(
+      "CB.F"
+    );
+
+
+  const wti =
+    macroFind(
+      "CL.F"
+    );
+
+
+  const dxy =
+    macroFind(
+      "DX.F"
+    );
+
+
+  $("igGold")
+    .textContent =
+      price(
+        gold.price
+      );
+
+
+  $("igGoldMove")
+    .innerHTML =
+      `
+      <span class="${signClass(
+        gold.changePct
+      )}">
+      ${pct(
+        gold.changePct
+      )}
+      </span>
+      `;
+
+
+  $("igBrent")
+    .textContent =
+      price(
+        brent.price
+      );
+
+
+  $("igBrentMove")
+    .innerHTML =
+      `
+      <span class="${signClass(
+        brent.changePct
+      )}">
+      ${pct(
+        brent.changePct
+      )}
+      </span>
+      `;
+
+
+  $("igWti")
+    .textContent =
+      price(
+        wti.price
+      );
+
+
+  $("igWtiMove")
+    .innerHTML =
+      `
+      <span class="${signClass(
+        wti.changePct
+      )}">
+      ${pct(
+        wti.changePct
+      )}
+      </span>
+      `;
+
+
+  $("igDxy")
+    .textContent =
+      price(
+        dxy.price
+      );
+
+
+  $("igDxyMove")
+    .innerHTML =
+      `
+      <span class="${signClass(
+        dxy.changePct
+      )}">
+      ${pct(
+        dxy.changePct
+      )}
+      </span>
+      `;
+
+
+  if (
+    iranGlobalChart
+  ) {
+
+    const gs =
+      Math.max(
+        .2,
+        Math.abs(
+          num(
+            gold.changePct
+          )
+        )
+      );
+
+
+    const ds =
+      Math.max(
+        .2,
+        Math.abs(
+          num(
+            dxy.changePct
+          )
+        )
+      );
+
+
+    const os =
+      Math.max(
+
+        .2,
+
+        (
+          Math.abs(
+            num(
+              brent.changePct
+            )
+          ) +
+
+          Math.abs(
+            num(
+              wti.changePct
+            )
+          )
+        ) /
+        2
+      );
+
+
+    iranGlobalChart
+      .setOption({
+
+        series:[{
+
+          type:
+            "sankey",
+
+          data:[
+
+            "Global Gold",
+            "DXY",
+            "Brent / WTI",
+            "USD / IRR",
+            "Iran Gold 18K",
+            "Emami Coin",
+            "Inflation"
+
+          ]
+            .map(
+              name => ({
+                name
+              })
+            ),
+
+          links:[
+
+            {
+              source:
+                "DXY",
+
+              target:
+                "USD / IRR",
+
+              value:
+                ds
+            },
+
+            {
+              source:
+                "Global Gold",
+
+              target:
+                "Iran Gold 18K",
+
+              value:
+                gs
+            },
+
+            {
+              source:
+                "USD / IRR",
+
+              target:
+                "Iran Gold 18K",
+
+              value:
+                ds *
+                1.2
+            },
+
+            {
+              source:
+                "Global Gold",
+
+              target:
+                "Emami Coin",
+
+              value:
+                gs
+            },
+
+            {
+              source:
+                "USD / IRR",
+
+              target:
+                "Emami Coin",
+
+              value:
+                ds
+            },
+
+            {
+              source:
+                "Brent / WTI",
+
+              target:
+                "Inflation",
+
+              value:
+                os
+            },
+
+            {
+              source:
+                "Inflation",
+
+              target:
+                "USD / IRR",
+
+              value:
+                os *
+                .7
+            }
+          ],
+
+          lineStyle:{
+            color:
+              "gradient",
+
+            opacity:
+              .6
+          }
+        }]
+      });
+  }
+}
+
+
+/* ======================================================
+   START
+====================================================== */
+
+async function boot(){
+
+  renderProfiles();
+
+  renderWallets();
+
+  renderAssetGrid();
+
+  renderDemoTrading();
+
+  refreshHealth();
+
+  refreshMacro();
+
+  refreshIran();
+
+  refreshWallets();
+
+
+  await refreshUniverse();
+
+  await refreshMarket();
+
+
+  refreshFlow();
+
+  refreshKlines();
+
+  startPriceSocket();
+
+
+  setTimeout(
+    refreshMoneyFlow,
+    7000
+  );
+}
+
+
 boot();
-setInterval(health,30000);
-setInterval(refreshUniverse,60000);
-setInterval(refreshMarket,30000);
-setInterval(refreshFlow,20000);
-setInterval(refreshWallets,45000);
-setInterval(refreshRotation,30000);
-setInterval(refreshMacro,60000);
-setInterval(refreshIran,60000);
+
+
+setInterval(
+  refreshHealth,
+  30000
+);
+
+
+setInterval(
+  refreshUniverse,
+  60000
+);
+
+
+setInterval(
+  refreshMarket,
+  30000
+);
+
+
+setInterval(
+  refreshFlow,
+  20000
+);
+
+
+setInterval(
+  refreshKlines,
+  90000
+);
+
+
+setInterval(
+  refreshWallets,
+  60000
+);
+
+
+setInterval(
+  refreshMoneyFlow,
+  30000
+);
+
+
+setInterval(
+  refreshMacro,
+  60000
+);
+
+
+setInterval(
+  refreshIran,
+  60000
+);
+
 </script>
+
 </body>
 </html>
