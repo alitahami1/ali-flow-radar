@@ -442,7 +442,7 @@ async function getFlowForSymbol(symbol) {
       if (t.m) sell += value;
       else buy += value;
       oldest = Math.min(oldest, num(t.T));
-            newest = Math.max(newest, num(t.T));
+      newest = Math.max(newest, num(t.T));
     }
 
     const total = buy + sell;
@@ -913,6 +913,7 @@ async function analyzeMarketAsset(ticker) {
         (rsi5 - 72) * 2.5
       );
   }
+
   const earlyEntryScore =
     clamp(
       88 -
@@ -1453,7 +1454,6 @@ app.get(
                 );
 
               x.selectionScore =
-                              x.selectionScore =
                 clamp(
                   x.directionalFlowScore *
                     0.40 +
@@ -2101,7 +2101,785 @@ async function walletSummary(
                       ? "LONG"
                       : "SHORT",
                   size:
-                                a.value
+                    num(
+                      p.szi
+                    ),
+                  positionValue:
+                    Math.abs(
+                      num(
+                        p.positionValue
+                      )
+                    ),
+                  entryPx:
+                    num(
+                      p.entryPx
+                    ),
+                  unrealizedPnl:
+                    num(
+                      p.unrealizedPnl
+                    ),
+                  leverage:
+                    p.leverage
+                      ?.value !=
+                    null
+                      ? num(
+                          p.leverage
+                            .value
+                        )
+                      : null
+                })
+              );
+
+          const score =
+            walletScore(
+              day,
+              week,
+              month,
+              stats30
+            );
+
+          return {
+            user,
+            equity:
+              num(
+                state
+                  .marginSummary
+                  .accountValue
+              ),
+            positions,
+            pnl: {
+              day,
+              week,
+              month,
+              allTime
+            },
+            stats30,
+            smartScore:
+              score,
+            tier:
+              score >= 80
+                ? "A+"
+                : score >=
+                    70
+                ? "A"
+                : score >=
+                    60
+                ? "B"
+                : score >=
+                    50
+                ? "C"
+                : "D",
+            stale:
+              false,
+            updatedAt:
+              Date.now()
+          };
+        }
+      );
+
+    lastGoodWallet.set(
+      key,
+      summary
+    );
+
+    return summary;
+  } catch (e) {
+    const old =
+      lastGoodWallet.get(
+        key
+      );
+
+    if (old) {
+      return {
+        ...old,
+        stale:
+          true,
+        staleReason:
+          String(
+            e
+          )
+      };
+    }
+
+    throw e;
+  }
+}
+
+app.get(
+  "/api/hyperliquid/summary",
+  async (
+    req,
+    res
+  ) => {
+    const user =
+      String(
+        req.query.user ||
+          ""
+      );
+
+    if (
+      !/^0x[a-fA-F0-9]{40}$/.test(
+        user
+      )
+    ) {
+      return res
+        .status(
+          400
+        )
+        .json({
+          error:
+            "Invalid wallet"
+        });
+    }
+
+    try {
+      res.json(
+        await walletSummary(
+          user
+        )
+      );
+    } catch (e) {
+      res
+        .status(
+          502
+        )
+        .json({
+          error:
+            String(
+              e
+            )
+        });
+    }
+  }
+);
+
+/* =========================================================
+   TRADER DISCOVERY
+========================================================= */
+
+function perfMap(
+  row
+) {
+  const output =
+    {};
+
+  for (
+    const item
+    of row
+      ?.windowPerformances ||
+      []
+  ) {
+    if (
+      !Array.isArray(
+        item
+      ) ||
+      !item[1]
+    ) {
+      continue;
+    }
+
+    let key =
+      String(
+        item[0]
+      );
+
+    if (
+      key ===
+      "perpDay"
+    ) {
+      key =
+        "day";
+    }
+
+    if (
+      key ===
+      "perpWeek"
+    ) {
+      key =
+        "week";
+    }
+
+    if (
+      key ===
+      "perpMonth"
+    ) {
+      key =
+        "month";
+    }
+
+    if (
+      key ===
+      "perpAllTime"
+    ) {
+      key =
+        "allTime";
+    }
+
+    output[
+      key
+    ] = {
+      pnl:
+        num(
+          item[1].pnl
+        ),
+      roiPct:
+        num(
+          item[1].roi
+        ) *
+        100,
+      volume:
+        num(
+          item[1].vlm
+        )
+    };
+  }
+
+  return output;
+}
+
+function traderScore(
+  t
+) {
+  let s = 35;
+  const p =
+    t.performance;
+
+  if (
+    (
+      p.week
+        ?.pnl ||
+      0
+    ) >
+    0
+  ) {
+    s += 12;
+  }
+
+  if (
+    (
+      p.month
+        ?.pnl ||
+      0
+    ) >
+    0
+  ) {
+    s += 15;
+  }
+
+  if (
+    (
+      p.allTime
+        ?.pnl ||
+      0
+    ) >
+    0
+  ) {
+    s += 12;
+  }
+
+  s +=
+    clamp(
+      p.month
+        ?.roiPct ||
+        0,
+      -30,
+      30
+    ) *
+    0.5;
+
+  if (
+    t.turnover30d <
+    500
+  ) {
+    s += 7;
+  }
+
+  if (
+    t.equity >
+    100000
+  ) {
+    s += 5;
+  }
+
+  return Math.round(
+    clamp(
+      s,
+      0,
+      100
+    )
+  );
+}
+
+app.get(
+  "/api/traders",
+  async (
+    req,
+    res
+  ) => {
+    try {
+      const rows =
+        await cached(
+          "leaderboard",
+          10 *
+            60 *
+            1000,
+          async () => {
+            const d =
+              await fetchJson(
+                "https://stats-data.hyperliquid.xyz/Mainnet/leaderboard"
+              );
+
+            return (
+              d.leaderboardRows ||
+              []
+            ).map(
+              row => {
+                const performance =
+                  perfMap(
+                    row
+                  );
+
+                const equity =
+                  num(
+                    row.accountValue
+                  );
+
+                const turnover30d =
+                  equity
+                    ? (
+                        performance.month
+                          ?.volume ||
+                        0
+                      ) /
+                      equity
+                    : Infinity;
+
+                const t =
+                  {
+                    address:
+                      row.ethAddress,
+                    name:
+                      row.displayName ||
+                      "Anonymous",
+                    equity,
+                    performance,
+                    turnover30d,
+                    style:
+                      turnover30d <
+                      20
+                        ? "Position"
+                        : turnover30d <
+                            150
+                        ? "Swing"
+                        : turnover30d <
+                            1000
+                        ? "Active"
+                        : "HFT-like"
+                  };
+
+                t.discoveryScore =
+                  traderScore(
+                    t
+                  );
+
+                return t;
+              }
+            );
+          }
+        );
+
+      const minEquity =
+        num(
+          req.query
+            .minEquity,
+          50000
+        );
+
+      const minPnl =
+        num(
+          req.query
+            .minMonthPnl,
+          0
+        );
+
+      const maxTurnover =
+        num(
+          req.query
+            .maxTurnover,
+          5000
+        );
+
+      const limit =
+        clamp(
+          num(
+            req.query
+              .limit,
+            50
+          ),
+          10,
+          100
+        );
+
+      const filtered =
+        rows
+          .filter(
+            x =>
+              x.address &&
+              x.equity >=
+                minEquity
+          )
+          .filter(
+            x =>
+              (
+                x
+                  .performance
+                  .month
+                  ?.pnl ||
+                0
+              ) >=
+              minPnl
+          )
+          .filter(
+            x =>
+              x.turnover30d <=
+              maxTurnover
+          )
+          .sort(
+            (
+              a,
+              b
+            ) =>
+              b.discoveryScore -
+              a.discoveryScore
+          )
+          .slice(
+            0,
+            limit
+          );
+
+      res.json({
+        traders:
+          filtered
+      });
+    } catch (e) {
+      res
+        .status(
+          502
+        )
+        .json({
+          error:
+            String(
+              e
+            )
+        });
+    }
+  }
+);
+
+/* =========================================================
+   MONEY ROTATION
+========================================================= */
+
+function exposureSnapshot(
+  summaries
+) {
+  const exposure =
+    {};
+
+  let gross = 0;
+
+  for (
+    const w
+    of summaries
+  ) {
+    if (
+      !w ||
+      w.error
+    ) {
+      continue;
+    }
+
+    const weight =
+      num(
+        w.smartScore,
+        50
+      ) /
+      100;
+
+    for (
+      const p
+      of (
+        w.positions ||
+        []
+      )
+    ) {
+      const signed =
+        (
+          p.side ===
+          "LONG"
+            ? 1
+            : -1
+        ) *
+        p.positionValue *
+        weight;
+
+      exposure[
+        p.coin
+      ] =
+        (
+          exposure[
+            p.coin
+          ] ||
+          0
+        ) +
+        signed;
+
+      gross +=
+        Math.abs(
+          signed
+        );
+    }
+  }
+
+  return {
+    time:
+      Date.now(),
+    exposure,
+    gross
+  };
+}
+
+function rotationCalc(
+  before,
+  after
+) {
+  const allCoins =
+    Array.from(
+      new Set([
+        ...Object.keys(
+          before.exposure ||
+            {}
+        ),
+        ...Object.keys(
+          after.exposure ||
+            {}
+        )
+      ])
+    );
+
+  const net =
+    allCoins
+      .map(
+        coin => {
+          const a =
+            num(
+              before
+                .exposure
+                ?.[coin]
+            );
+
+          const b =
+            num(
+              after
+                .exposure
+                ?.[coin]
+            );
+
+          return {
+            coin,
+            before:
+              a,
+            after:
+              b,
+            delta:
+              b -
+              a
+          };
+        }
+      )
+      .filter(x => {
+        const grossBase = Math.max(num(before.gross), num(after.gross), 1);
+        const minRotationUsd = Math.max(75000, Math.min(5000000, grossBase * 0.00075));
+        return Math.abs(x.delta) >= minRotationUsd;
+      })
+      .sort(
+        (
+          a,
+          b
+        ) =>
+          Math.abs(
+            b.delta
+          ) -
+          Math.abs(
+            a.delta
+          )
+      );
+
+  const inflows =
+    net
+      .filter(
+        x =>
+          x.delta >
+          0
+      )
+      .map(
+        x => ({
+          coin:
+            x.coin,
+          value:
+            x.delta
+        })
+      )
+      .sort(
+        (
+          a,
+          b
+        ) =>
+          b.value -
+          a.value
+      );
+
+  const outflows =
+    net
+      .filter(
+        x =>
+          x.delta <
+          0
+      )
+      .map(
+        x => ({
+          coin:
+            x.coin,
+          value:
+            Math.abs(
+              x.delta
+            )
+        })
+      )
+      .sort(
+        (
+          a,
+          b
+        ) =>
+          b.value -
+          a.value
+      );
+
+  const source =
+    outflows.map(
+      x => ({
+        ...x,
+        remaining:
+          x.value
+      })
+    );
+
+  const target =
+    inflows.map(
+      x => ({
+        ...x,
+        remaining:
+          x.value
+      })
+    );
+
+  const paths =
+    [];
+
+  for (
+    const s
+    of source
+  ) {
+    for (
+      const t
+      of target
+    ) {
+      if (
+        s.remaining <=
+        0
+      ) {
+        break;
+      }
+
+      if (
+        t.remaining <=
+        0
+      ) {
+        continue;
+      }
+
+      const value =
+        Math.min(
+          s.remaining,
+          t.remaining
+        );
+
+      if (
+        value <= 0
+      ) {
+        continue;
+      }
+
+      paths.push({
+        from:
+          s.coin,
+        to:
+          t.coin,
+        value
+      });
+
+      s.remaining -=
+        value;
+
+      t.remaining -=
+        value;
+    }
+  }
+
+  return {
+    windowSeconds:
+      Math.max(
+        1,
+        Math.round(
+          (
+            after.time -
+            before.time
+          ) /
+            1000
+        )
+      ),
+    totalIn:
+      inflows.reduce(
+        (
+          s,
+          x
+        ) =>
+          s +
+          x.value,
+        0
+      ),
+    totalOut:
+      outflows.reduce(
+        (
+          s,
+          x
+        ) =>
+          s +
+          x.value,
+        0
+      ),
+    inflows,
+    outflows,
+    net,
+    paths:
+      paths
+        .sort(
+          (
+            a,
+            b
+          ) =>
+            b.value -
+            a.value
         )
         .slice(
           0,
