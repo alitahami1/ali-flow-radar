@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="fa" dir="rtl">
 
 <head>
@@ -16,7 +17,7 @@
 >
 
 <title>
-ALI Flow Radar Terminal v4.6
+ALI Flow Radar Terminal v4.7
 </title>
 
 <script
@@ -461,6 +462,101 @@ select{
   margin-top:8px
 }
 
+.trade-side{
+  font-weight:800
+}
+
+.trade-side.long{
+  color:var(--good)
+}
+
+.trade-side.short{
+  color:var(--bad)
+}
+
+.trade-side.wait{
+  color:var(--warn)
+}
+
+.trade-grade{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:34px;
+  height:24px;
+  border-radius:7px;
+  font-weight:800;
+  border:1px solid var(--line);
+  background:#fff
+}
+
+.trade-grade.aplus{
+  background:#e5f7ee;
+  color:#087847;
+  border-color:#a9dfc5
+}
+
+.trade-grade.a{
+  background:#eef7fd;
+  color:#176b9d;
+  border-color:#bcd9e9
+}
+
+.trade-grade.watch{
+  background:#fff7e8;
+  color:#a56d0c;
+  border-color:#ead2a0
+}
+
+.demo-kpis{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:9px
+}
+
+.demo-kpi{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  background:#fbfcfd
+}
+
+.demo-kpi .v{
+  font-size:20px;
+  font-weight:800;
+  margin-top:4px
+}
+
+.reason-list{
+  max-width:280px;
+  white-space:normal;
+  line-height:1.55
+}
+
+.demo-note{
+  padding:10px;
+  border:1px dashed #b9c8d3;
+  border-radius:10px;
+  background:#f8fbfd;
+  color:#586875;
+  font-size:10px
+}
+
+.trade-ready{
+  color:var(--good);
+  font-weight:700
+}
+
+.trade-wait{
+  color:var(--warn);
+  font-weight:700
+}
+
+.trade-off{
+  color:var(--muted);
+  font-weight:700
+}
+
 .footer{
   text-align:center;
   color:var(--muted);
@@ -484,6 +580,10 @@ select{
   .iran-grid,
   .profile-grid{
     grid-template-columns:1fr 1fr
+  }
+
+  .demo-kpis{
+    grid-template-columns:repeat(3,1fr)
   }
 }
 
@@ -509,7 +609,8 @@ select{
   .form4,
   .prob-grid,
   .iran-grid,
-  .profile-grid{
+  .profile-grid,
+  .demo-kpis{
     grid-template-columns:1fr
   }
 }
@@ -537,12 +638,12 @@ A
 <h1>
 ALI FLOW RADAR
 <span class="pill blue">
-v4.6 TERMINAL
+v4.7 TERMINAL
 </span>
 </h1>
 
 <div class="small">
-Persistent Watchlist • Smart Money • Money Flow • Iran / Global
+Persistent Watchlist • Flow Trade Engine • Demo Trading • Iran / Global
 </div>
 
 </div>
@@ -599,6 +700,12 @@ Money Flow
 
 <button
   class="tabbtn"
+  data-tab="demo">
+Demo Trading
+</button>
+
+<button
+  class="tabbtn"
   data-tab="iranGlobal">
 Iran / Global
 </button>
@@ -624,8 +731,6 @@ System
 
 <main>
 
-
-<!-- TERMINAL -->
 
 <section
   id="terminal"
@@ -896,8 +1001,6 @@ FLOW SIGNAL
 </section>
 
 
-<!-- TRADER DISCOVERY -->
-
 <section
   id="discover"
   class="tab">
@@ -991,8 +1094,6 @@ Scan Traders
 </section>
 
 
-<!-- SMART WALLETS -->
-
 <section
   id="wallets"
   class="tab">
@@ -1015,7 +1116,7 @@ PERMANENT IN THIS BROWSER
 </div>
 
 <div class="small">
-از این نسخه نام کلید ذخیره‌سازی ثابت است؛ Walletهایی که Follow می‌کنی بعد از بستن و باز کردن سایت باقی می‌مانند.
+Walletهایی که Follow می‌کنی در مرورگر ذخیره می‌شوند و با باز و بسته شدن سایت باقی می‌مانند.
 </div>
 
 <div
@@ -1097,8 +1198,6 @@ Add Wallet
 </section>
 
 
-<!-- FAMOUS -->
-
 <section
   id="famous"
   class="tab">
@@ -1121,7 +1220,7 @@ CURATED DIRECTORY
 </div>
 
 <div class="small">
-این بخش همیشه داخل برنامه است. نام مشهور بودن به معنی سودآوری یا توصیه سرمایه‌گذاری نیست. تا وقتی آدرس عمومی تأییدشده نداشته باشیم، برای یک فرد پوزیشن زنده نمایش نمی‌دهیم.
+این بخش فقط پروفایل افراد معروف است. تا زمانی که Wallet عمومی معتبر نداشته باشیم پوزیشن زنده‌ای به آنها نسبت داده نمی‌شود.
 </div>
 
 </div>
@@ -1175,8 +1274,6 @@ PROFILES
 
 </section>
 
-
-<!-- MONEY FLOW -->
 
 <section
   id="moneyflow"
@@ -1260,7 +1357,7 @@ CAPITAL ROTATION
 </div>
 
 <div class="small">
-مسیر استنباطی تغییر اکسپوژر Walletهای Follow شده؛ انتقال مستقیم بلاک‌چینی نیست.
+مسیر استنباطی تغییر اکسپوژر Walletهای Follow شده است و به معنی انتقال مستقیم بلاک‌چینی نیست.
 </div>
 
 <div
@@ -1361,7 +1458,328 @@ POSITIVE = INFLOW
 </section>
 
 
-<!-- IRAN GLOBAL -->
+<section
+  id="demo"
+  class="tab">
+
+<div class="grid">
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Flow Trade Engine — Demo Only
+</h2>
+
+<small>
+ENTRY • STOP • TARGET • EXIT
+</small>
+
+</div>
+
+<div class="demo-note">
+این بخش فقط معامله آزمایشی ثبت می‌کند و هیچ سفارش واقعی به صرافی نمی‌فرستد. سیگنال از Smart Money Rotation، Wallet Consensus، Taker Flow، روند 5 دقیقه‌ای و وضعیت کلی BTC ساخته می‌شود. فقط Grade A و A+ قابلیت Open Demo دارند.
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="demo-kpis">
+
+
+<div class="demo-kpi">
+
+<div class="label">
+Balance
+</div>
+
+<div
+  id="demoBalance"
+  class="v">
+$10,000
+</div>
+
+</div>
+
+
+<div class="demo-kpi">
+
+<div class="label">
+Equity
+</div>
+
+<div
+  id="demoEquity"
+  class="v">
+$10,000
+</div>
+
+</div>
+
+
+<div class="demo-kpi">
+
+<div class="label">
+Open PnL
+</div>
+
+<div
+  id="demoOpenPnl"
+  class="v">
+$0
+</div>
+
+</div>
+
+
+<div class="demo-kpi">
+
+<div class="label">
+Closed PnL
+</div>
+
+<div
+  id="demoClosedPnl"
+  class="v">
+$0
+</div>
+
+</div>
+
+
+<div class="demo-kpi">
+
+<div class="label">
+Win Rate
+</div>
+
+<div
+  id="demoWinRate"
+  class="v">
+--
+</div>
+
+</div>
+
+
+<div class="demo-kpi">
+
+<div class="label">
+Profit Factor
+</div>
+
+<div
+  id="demoProfitFactor"
+  class="v">
+--
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<div class="card s12">
+
+<div class="card-title">
+
+<h2>
+Demo Risk Settings
+</h2>
+
+<small>
+NO LEVERAGE
+</small>
+
+</div>
+
+<div class="filters">
+
+<input
+  id="demoStartBalance"
+  type="number"
+  value="10000"
+  min="100">
+
+<input
+  id="demoRiskPct"
+  type="number"
+  value="1"
+  step="0.1"
+  min="0.1"
+  max="5">
+
+<div
+  class="signal"
+  style="margin:0">
+
+Risk per trade:
+<b id="riskPreview">
+1%
+</b>
+
+</div>
+
+<button
+  id="saveDemoSettings"
+  class="primary">
+Save Risk
+</button>
+
+<button
+  id="resetDemo"
+  class="danger">
+Reset Demo
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+LONG / SHORT Entry & Exit Board
+</h2>
+
+<small>
+5M FLOW ENGINE
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Asset</th>
+<th>Signal</th>
+<th>Grade</th>
+<th>Score</th>
+<th>Price</th>
+<th>Entry Zone</th>
+<th>Stop</th>
+<th>TP1</th>
+<th>TP2</th>
+<th>TP3</th>
+<th>State</th>
+<th>Why / Exit Rule</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tradeSignalRows">
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+Open Demo Positions
+</h2>
+
+<small>
+LIVE PNL
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Asset</th>
+<th>Side</th>
+<th>Entry</th>
+<th>Current</th>
+<th>Qty</th>
+<th>Stop</th>
+<th>TP1</th>
+<th>TP2</th>
+<th>TP3</th>
+<th>PnL</th>
+<th>Opened</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="demoOpenRows">
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="card s12 scroll">
+
+<div class="card-title">
+
+<h2>
+Closed Demo Trades
+</h2>
+
+<small>
+JOURNAL
+</small>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Asset</th>
+<th>Side</th>
+<th>Entry</th>
+<th>Exit</th>
+<th>PnL</th>
+<th>Reason</th>
+<th>Opened</th>
+<th>Closed</th>
+
+</tr>
+
+</thead>
+
+<tbody id="demoClosedRows">
+</tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+</section>
+
 
 <section
   id="iranGlobal"
@@ -1385,7 +1803,7 @@ CROSS-MARKET
 </div>
 
 <div class="small">
-قیمت‌های داخلی کنار طلا، نفت و شاخص دلار جهانی. نمودار رابطه پایین مدل اثر است، نه اثبات انتقال مستقیم پول.
+قیمت‌های داخلی کنار طلا، نفت و شاخص دلار جهانی.
 </div>
 
 </div>
@@ -1557,8 +1975,6 @@ Dominant driver:
 </section>
 
 
-<!-- MACRO -->
-
 <section
   id="macro"
   class="tab">
@@ -1640,8 +2056,6 @@ DAILY MOVE
 </section>
 
 
-<!-- SYSTEM -->
-
 <section
   id="system"
   class="tab">
@@ -1701,7 +2115,7 @@ Version
 </div>
 
 <div class="metric medium">
-4.6
+4.7
 </div>
 
 </div>
@@ -1710,10 +2124,13 @@ Version
 <div class="card s12">
 
 <div class="signal">
+
 Permanent wallet key:
+
 <b>
 ALI_FLOW_RADAR_WALLETS_V1
 </b>
+
 </div>
 
 <div class="signal">
@@ -1730,6 +2147,16 @@ Global macro: Stooq
 
 <div class="signal">
 Iran market: TGJU parser + last-good cache
+</div>
+
+<div class="signal">
+
+<b>
+No TradingView:
+</b>
+
+این نسخه هیچ iframe، widget یا لینک TradingView ندارد.
+
 </div>
 
 </div>
@@ -1762,11 +2189,6 @@ const DEFAULT_SYMBOLS = [
   "XRPUSDT"
 ];
 
-
-/*
-  مهم:
-  این کلید را دیگر در نسخه‌های بعدی تغییر نده
-*/
 const WALLET_STORAGE_KEY =
   "ALI_FLOW_RADAR_WALLETS_V1";
 
@@ -1776,9 +2198,12 @@ const WALLET_CACHE_KEY =
 const WALLET_MIGRATION_KEY =
   "ALI_FLOW_RADAR_WALLET_MIGRATED_V1";
 
+const DEMO_STORAGE_KEY =
+  "ALI_FLOW_RADAR_DEMO_V1";
+
 
 /* ======================================================
-   FAMOUS PEOPLE
+   FAMOUS
 ====================================================== */
 
 const FAMOUS_CRYPTO = [
@@ -1900,7 +2325,7 @@ const FAMOUS_MACRO = [
 
 
 /* ======================================================
-   WALLET PERSISTENCE
+   WALLET STORAGE
 ====================================================== */
 
 function validWallet(w){
@@ -1917,7 +2342,9 @@ function validWallet(w){
 }
 
 
-function dedupeWallets(rows){
+function dedupeWallets(
+  rows
+){
 
   const map =
     new Map();
@@ -1929,7 +2356,9 @@ function dedupeWallets(rows){
   ) {
 
     if (
-      !validWallet(w)
+      !validWallet(
+        w
+      )
     ) {
       continue;
     }
@@ -1944,7 +2373,9 @@ function dedupeWallets(rows){
         .toLowerCase();
 
     if (
-      !map.has(key)
+      !map.has(
+        key
+      )
     ) {
 
       map.set(
@@ -1960,7 +2391,9 @@ function dedupeWallets(rows){
       map.set(
         key,
         {
-          ...map.get(key),
+          ...map.get(
+            key
+          ),
           ...w,
           address
         }
@@ -1973,11 +2406,6 @@ function dedupeWallets(rows){
   );
 }
 
-
-/*
-  یکبار Walletهای نسخه‌های قبلی را
-  به کلید دائمی جدید منتقل می‌کند
-*/
 
 function migrateWalletsOnce(){
 
@@ -2008,15 +2436,18 @@ function migrateWalletsOnce(){
     "wallets"
   ];
 
-  let merged = [];
+  let merged =
+    [];
 
   try {
 
     const current =
       JSON.parse(
+
         localStorage.getItem(
           WALLET_STORAGE_KEY
         ) ||
+
         "[]"
       );
 
@@ -2043,9 +2474,11 @@ function migrateWalletsOnce(){
 
       const rows =
         JSON.parse(
+
           localStorage.getItem(
             key
           ) ||
+
           "[]"
         );
 
@@ -2104,15 +2537,94 @@ function loadWallets(){
         ) ||
 
         "[]"
-
       )
     );
 
   } catch {
 
     return [];
-
   }
+}
+
+
+/* ======================================================
+   DEMO STATE
+====================================================== */
+
+function loadDemoState(){
+
+  const fresh = {
+
+    initialBalance:
+      10000,
+
+    riskPct:
+      1,
+
+    closedPnl:
+      0,
+
+    open:
+      [],
+
+    closed:
+      []
+  };
+
+  try {
+
+    const d =
+      JSON.parse(
+
+        localStorage.getItem(
+          DEMO_STORAGE_KEY
+        ) ||
+
+        "null"
+      );
+
+    if (!d) {
+      return fresh;
+    }
+
+    return {
+
+      ...fresh,
+
+      ...d,
+
+      open:
+        Array.isArray(
+          d.open
+        )
+          ? d.open
+          : [],
+
+      closed:
+        Array.isArray(
+          d.closed
+        )
+          ? d.closed
+          : []
+    };
+
+  } catch {
+
+    return fresh;
+  }
+}
+
+
+function saveDemoState(){
+
+  localStorage.setItem(
+
+    DEMO_STORAGE_KEY,
+
+    JSON.stringify(
+      demoState
+    )
+  );
 }
 
 
@@ -2138,13 +2650,11 @@ let walletData =
         ) ||
 
         "{}"
-
       );
 
     } catch {
 
       return {};
-
     }
   })();
 
@@ -2153,16 +2663,26 @@ let market = {};
 
 let flow = {};
 
-let macroData = [];
+let macroData =
+  [];
 
-let iranData = [];
+let iranData =
+  [];
 
-let discovered = [];
+let discovered =
+  [];
 
 let moneyRotation =
   null;
 
-let btcHistory = [];
+let btcHistory =
+  [];
+
+let klinesData =
+  {};
+
+let demoState =
+  loadDemoState();
 
 
 /* ======================================================
@@ -2205,7 +2725,8 @@ const clamp =
 
 const signClass =
   v =>
-    num(v) >= 0
+    num(v) >=
+    0
       ? "good"
       : "bad";
 
@@ -2250,7 +2771,8 @@ function money(v){
     Math.abs(v);
 
   if (
-    a >= 1e9
+    a >=
+    1e9
   ) {
 
     return (
@@ -2258,11 +2780,11 @@ function money(v){
       1e9
     ).toFixed(2) +
     "B";
-
   }
 
   if (
-    a >= 1e6
+    a >=
+    1e6
   ) {
 
     return (
@@ -2270,11 +2792,11 @@ function money(v){
       1e6
     ).toFixed(2) +
     "M";
-
   }
 
   if (
-    a >= 1e3
+    a >=
+    1e3
   ) {
 
     return (
@@ -2282,7 +2804,6 @@ function money(v){
       1e3
     ).toFixed(1) +
     "K";
-
   }
 
   return v.toFixed(0);
@@ -2295,8 +2816,11 @@ function price(v){
     Number(v);
 
   if (
-    !Number.isFinite(v)
+    !Number.isFinite(
+      v
+    )
   ) {
+
     return "--";
   }
 
@@ -2305,7 +2829,9 @@ function price(v){
     1
   ) {
 
-    return v.toFixed(5);
+    return v.toFixed(
+      5
+    );
   }
 
   if (
@@ -2313,7 +2839,9 @@ function price(v){
     100
   ) {
 
-    return v.toFixed(3);
+    return v.toFixed(
+      3
+    );
   }
 
   return v.toLocaleString(
@@ -2334,27 +2862,40 @@ function pct(v){
     Number(v);
 
   if (
-    !Number.isFinite(v)
+    !Number.isFinite(
+      v
+    )
   ) {
+
     return "--";
   }
 
   return (
-    v >= 0
+    v >=
+    0
       ? "+"
       : ""
   ) +
-  v.toFixed(2) +
+  v.toFixed(
+    2
+  ) +
   "%";
 }
 
 
-function shortAddress(a){
+function shortAddress(
+  a
+){
 
   return a
-    ? a.slice(0,6) +
+    ? a.slice(
+        0,
+        6
+      ) +
       "…" +
-      a.slice(-4)
+      a.slice(
+        -4
+      )
     : "--";
 }
 
@@ -2365,23 +2906,27 @@ function toman(v){
     Number(v);
 
   if (
-    !Number.isFinite(v)
+    !Number.isFinite(
+      v
+    )
   ) {
 
     return "--";
-
   }
 
   return Math.round(
     v /
     10
-  ).toLocaleString(
-    "fa-IR"
-  );
+  )
+    .toLocaleString(
+      "fa-IR"
+    );
 }
 
 
-async function getJson(url){
+async function getJson(
+  url
+){
 
   const r =
     await fetch(
@@ -2400,7 +2945,9 @@ async function getJson(url){
   try {
 
     d =
-      JSON.parse(text);
+      JSON.parse(
+        text
+      );
 
   } catch {
 
@@ -2409,7 +2956,9 @@ async function getJson(url){
     );
   }
 
-  if (!r.ok) {
+  if (
+    !r.ok
+  ) {
 
     throw new Error(
       d.error ||
@@ -2442,9 +2991,10 @@ document
             )
             .forEach(
               x =>
-                x.classList.remove(
-                  "active"
-                )
+                x.classList
+                  .remove(
+                    "active"
+                  )
             );
 
           document
@@ -2453,19 +3003,22 @@ document
             )
             .forEach(
               x =>
-                x.classList.remove(
-                  "active"
-                )
+                x.classList
+                  .remove(
+                    "active"
+                  )
             );
 
-          btn.classList.add(
-            "active"
-          );
+          btn.classList
+            .add(
+              "active"
+            );
 
           $(
             btn.dataset.tab
           )
-            .classList.add(
+            .classList
+            .add(
               "active"
             );
 
@@ -2543,7 +3096,7 @@ window.addEventListener(
 
 
 /* ======================================================
-   FAMOUS DIRECTORY
+   FAMOUS
 ====================================================== */
 
 function renderProfiles(){
@@ -2574,21 +3127,24 @@ function renderProfiles(){
     </div>
 
     </div>
-
     `;
 
 
   $("famousCrypto")
     .innerHTML =
       FAMOUS_CRYPTO
-        .map(card)
+        .map(
+          card
+        )
         .join("");
 
 
   $("famousMacro")
     .innerHTML =
       FAMOUS_MACRO
-        .map(card)
+        .map(
+          card
+        )
         .join("");
 }
 
@@ -2606,13 +3162,11 @@ async function refreshHealth(){
         "/api/health"
       );
 
-
     $("backendState")
       .textContent =
         d.ok
           ? "LIVE"
           : "ERROR";
-
 
     $("backendState")
       .className =
@@ -2628,7 +3182,6 @@ async function refreshHealth(){
     $("backendState")
       .textContent =
         "OFFLINE";
-
 
     $("backendState")
       .className =
@@ -2655,33 +3208,30 @@ async function refreshMarket(){
         )
       );
 
-
-    market = {};
-
+    market =
+      {};
 
     d.forEach(
       x =>
         market[
           x.symbol
-        ] = x
+        ] =
+          x
     );
 
-
     $("dot")
-      .classList.add(
+      .classList
+      .add(
         "live"
       );
-
 
     $("status")
       .textContent =
         "LIVE";
 
-
     $("cryptoState")
       .textContent =
         "LIVE";
-
 
     $("cryptoState")
       .className =
@@ -2691,8 +3241,9 @@ async function refreshMarket(){
     const btc =
       market.BTCUSDT;
 
-
-    if (btc) {
+    if (
+      btc
+    ) {
 
       btcHistory.push({
 
@@ -2718,7 +3269,6 @@ async function refreshMarket(){
           )
       });
 
-
       if (
         btcHistory.length >
         120
@@ -2728,26 +3278,25 @@ async function refreshMarket(){
       }
     }
 
-
     renderTerminal();
+
+    updateDemoPositions();
 
   } catch {
 
     $("dot")
-      .classList.remove(
+      .classList
+      .remove(
         "live"
       );
-
 
     $("status")
       .textContent =
         "RECONNECTING";
 
-
     $("cryptoState")
       .textContent =
         "RETRY";
-
 
     $("cryptoState")
       .className =
@@ -2776,33 +3325,31 @@ async function refreshFlow(){
         )
       );
 
-
-    flow = {};
-
+    flow =
+      {};
 
     d.forEach(
       x =>
         flow[
           x.symbol
-        ] = x
+        ] =
+          x
     );
-
 
     renderTerminal();
 
   } catch {}
-
 }
 
 
 /* ======================================================
-   CONSENSUS + PROBABILITY
+   CONSENSUS
 ====================================================== */
 
 function getConsensus(){
 
-  const coins = {};
-
+  const coins =
+    {};
 
   for (
     const w
@@ -2815,14 +3362,13 @@ function getConsensus(){
           .toLowerCase()
       ];
 
-
     if (
       !d ||
       d.error
     ) {
+
       continue;
     }
-
 
     const weight =
       num(
@@ -2831,7 +3377,6 @@ function getConsensus(){
       ) /
       100;
 
-
     for (
       const p
       of d.positions ||
@@ -2839,10 +3384,14 @@ function getConsensus(){
     ) {
 
       if (
-        !coins[p.coin]
+        !coins[
+          p.coin
+        ]
       ) {
 
-        coins[p.coin] = {
+        coins[
+          p.coin
+        ] = {
 
           coin:
             p.coin,
@@ -2861,17 +3410,19 @@ function getConsensus(){
         };
       }
 
-
       if (
         p.side ===
         "LONG"
       ) {
 
-        coins[p.coin]
+        coins[
+          p.coin
+        ]
           .longCount++;
 
-
-        coins[p.coin]
+        coins[
+          p.coin
+        ]
           .longValue +=
             num(
               p.positionValue
@@ -2880,24 +3431,27 @@ function getConsensus(){
 
       } else {
 
-        coins[p.coin]
+        coins[
+          p.coin
+        ]
           .shortCount++;
 
-
-        coins[p.coin]
+        coins[
+          p.coin
+        ]
           .shortValue +=
             num(
               p.positionValue
             ) *
             weight;
-
       }
     }
   }
 
-
   return Object
-    .values(coins)
+    .values(
+      coins
+    )
     .map(
       x => {
 
@@ -2905,11 +3459,9 @@ function getConsensus(){
           x.longValue +
           x.shortValue;
 
-
         const net =
           x.longValue -
           x.shortValue;
-
 
         return {
 
@@ -2939,26 +3491,31 @@ function getConsensus(){
 }
 
 
+/* ======================================================
+   PROBABILITY
+====================================================== */
+
 function assetProbability(
   symbol
 ){
 
   const m =
-    market[symbol] ||
+    market[
+      symbol
+    ] ||
     {};
-
 
   const f =
-    flow[symbol] ||
+    flow[
+      symbol
+    ] ||
     {};
-
 
   const flowScore =
     num(
       f.flowScore,
       50
     );
-
 
   const momentum =
     clamp(
@@ -2971,13 +3528,11 @@ function assetProbability(
       100
     );
 
-
   const coin =
     symbol.replace(
       "USDT",
       ""
     );
-
 
   const c =
     getConsensus()
@@ -2986,7 +3541,6 @@ function assetProbability(
           x.coin ===
           coin
       );
-
 
   const walletScore =
     c
@@ -2998,7 +3552,6 @@ function assetProbability(
           100
         )
       : 50;
-
 
   return {
 
@@ -3033,17 +3586,14 @@ function renderTerminal(){
     market.BTCUSDT ||
     {};
 
-
   const eth =
     market.ETHUSDT ||
     {};
-
 
   const bp =
     assetProbability(
       "BTCUSDT"
     );
-
 
   $("btcPrice")
     .textContent =
@@ -3051,25 +3601,21 @@ function renderTerminal(){
         btc.lastPrice
       );
 
-
   $("ethPrice")
     .textContent =
       price(
         eth.lastPrice
       );
 
-
   $("walletCount")
     .textContent =
       wallets.length;
-
 
   $("probUp")
     .textContent =
       bp.probability
         .toFixed(0) +
       "%";
-
 
   $("probDown")
     .textContent =
@@ -3080,31 +3626,26 @@ function renderTerminal(){
         .toFixed(0) +
       "%";
 
-
   $("probFlow")
     .textContent =
       bp.flowScore
         .toFixed(0);
-
 
   $("probMomentum")
     .textContent =
       bp.momentum
         .toFixed(0);
 
-
   $("probWallet")
     .textContent =
       bp.walletScore
         .toFixed(0);
-
 
   $("globalConfidence")
     .textContent =
       bp.probability
         .toFixed(0) +
       "/100";
-
 
   $("globalConfidence")
     .className =
@@ -3119,7 +3660,6 @@ function renderTerminal(){
           : "warn"
       );
 
-
   renderProbabilityChart();
 
   renderPulseChart();
@@ -3132,175 +3672,203 @@ function renderTerminal(){
 }
 
 
-/* ======================================================
-   PROBABILITY CHART
-====================================================== */
-
 function renderProbabilityChart(){
 
   const data =
-    symbols.map(
-      s => ({
+    symbols
+      .map(
+        s => ({
 
-        name:
-          s.replace(
-            "USDT",
-            ""
+          name:
+            s.replace(
+              "USDT",
+              ""
+            ),
+
+          value:
+            Number(
+
+              assetProbability(
+                s
+              )
+                .probability
+                .toFixed(
+                  1
+                )
+            )
+        })
+      );
+
+  probChart
+    .setOption({
+
+      grid:{
+        left:
+          45,
+
+        right:
+          15,
+
+        top:
+          15,
+
+        bottom:
+          30
+      },
+
+      xAxis:{
+        type:
+          "category",
+
+        data:
+          data.map(
+            x =>
+              x.name
+          )
+      },
+
+      yAxis:{
+        min:
+          0,
+
+        max:
+          100
+      },
+
+      series:[{
+
+        type:
+          "bar",
+
+        data:
+          data.map(
+            x => ({
+
+              value:
+                x.value,
+
+              itemStyle:{
+                color:
+                  x.value >=
+                  60
+                    ? "#3bb47c"
+                    : x.value <=
+                      40
+                    ? "#dc6565"
+                    : "#6ba6ca"
+              }
+            })
           ),
 
-        value:
-          Number(
-            assetProbability(
-              s
-            )
-              .probability
-              .toFixed(1)
-          )
-      })
-    );
+        barWidth:
+          "42%",
 
+        label:{
+          show:
+            true,
 
-  probChart.setOption({
+          position:
+            "top",
 
-    grid:{
-      left:45,
-      right:15,
-      top:15,
-      bottom:30
-    },
+          formatter:
+            "{c}%",
 
-
-    xAxis:{
-      type:"category",
-
-      data:
-        data.map(
-          x => x.name
-        )
-    },
-
-
-    yAxis:{
-      min:0,
-      max:100
-    },
-
-
-    series:[{
-
-      type:"bar",
-
-      data:
-        data.map(
-          x => ({
-
-            value:
-              x.value,
-
-            itemStyle:{
-              color:
-                x.value >= 60
-                  ? "#3bb47c"
-                  : x.value <= 40
-                  ? "#dc6565"
-                  : "#6ba6ca"
-            }
-          })
-        ),
-
-      barWidth:
-        "42%",
-
-      label:{
-        show:true,
-        position:"top",
-        formatter:"{c}%",
-        fontSize:9
-      }
-    }]
-  });
+          fontSize:
+            9
+        }
+      }]
+    });
 }
 
-
-/* ======================================================
-   BTC PULSE
-====================================================== */
 
 function renderPulseChart(){
 
-  pulseChart.setOption({
+  pulseChart
+    .setOption({
 
-    animation:false,
-
-
-    grid:{
-      left:45,
-      right:15,
-      top:15,
-      bottom:35
-    },
-
-
-    tooltip:{
-      trigger:"axis"
-    },
-
-
-    xAxis:{
-      type:"category",
-
-      boundaryGap:
+      animation:
         false,
 
-      data:
-        btcHistory.map(
-          x => x.t
-        )
-    },
+      grid:{
+        left:
+          45,
 
+        right:
+          15,
 
-    yAxis:{
-      type:"value",
+        top:
+          15,
 
-      scale:true
-    },
-
-
-    series:[{
-
-      type:"line",
-
-      smooth:true,
-
-      showSymbol:false,
-
-      data:
-        btcHistory.map(
-          x => x.p
-        ),
-
-      lineStyle:{
-        width:2,
-        color:"#2779bd"
+        bottom:
+          35
       },
 
-      areaStyle:{
-        color:
-          "rgba(39,121,189,.08)"
-      }
-    }]
-  });
+      tooltip:{
+        trigger:
+          "axis"
+      },
+
+      xAxis:{
+        type:
+          "category",
+
+        boundaryGap:
+          false,
+
+        data:
+          btcHistory.map(
+            x =>
+              x.t
+          )
+      },
+
+      yAxis:{
+        type:
+          "value",
+
+        scale:
+          true
+      },
+
+      series:[{
+
+        type:
+          "line",
+
+        smooth:
+          true,
+
+        showSymbol:
+          false,
+
+        data:
+          btcHistory.map(
+            x =>
+              x.p
+          ),
+
+        lineStyle:{
+          width:
+            2,
+
+          color:
+            "#2779bd"
+        },
+
+        areaStyle:{
+          color:
+            "rgba(39,121,189,.08)"
+        }
+      }]
+    });
 }
 
-
-/* ======================================================
-   EARLY MONEY
-====================================================== */
 
 function renderEarlyMoney(){
 
   const rows =
     symbols
+
       .map(
         s => ({
           s,
@@ -3310,12 +3878,14 @@ function renderEarlyMoney(){
             flow[s]
         })
       )
+
       .filter(
         x =>
           x.m &&
           x.f &&
           !x.f.error
       )
+
       .sort(
         (a,b) =>
           Math.abs(
@@ -3331,15 +3901,16 @@ function renderEarlyMoney(){
             50
           )
       )
+
       .slice(
         0,
         6
       );
 
-
   $("earlyMoney")
     .innerHTML =
       rows.length
+
         ? rows
             .map(
               x => `
@@ -3353,7 +3924,8 @@ function renderEarlyMoney(){
               <span class="${
                 num(
                   x.f.flowScore
-                ) >= 50
+                ) >=
+                50
                   ? "good"
                   : "bad"
               }">
@@ -3361,7 +3933,8 @@ function renderEarlyMoney(){
               ${
                 num(
                   x.f.flowScore
-                ) >= 50
+                ) >=
+                50
                   ? "BUY PRESSURE"
                   : "SELL PRESSURE"
               }
@@ -3390,10 +3963,10 @@ function renderEarlyMoney(){
               </div>
 
               </div>
-
               `
             )
             .join("")
+
         : `
           <div class="small">
           Waiting for flow data...
@@ -3402,15 +3975,10 @@ function renderEarlyMoney(){
 }
 
 
-/* ======================================================
-   CONSENSUS
-====================================================== */
-
 function renderConsensus(){
 
   const rows =
     getConsensus();
-
 
   if (
     !rows.length
@@ -3420,7 +3988,6 @@ function renderConsensus(){
       .textContent =
         "NO SIGNAL";
 
-
     $("consensusList")
       .innerHTML =
         `
@@ -3429,33 +3996,30 @@ function renderConsensus(){
         </div>
         `;
 
-
     return;
   }
-
 
   const top =
     rows[0];
 
-
   $("topConsensus")
     .textContent =
       `${top.coin} ${
-        top.net >= 0
+        top.net >=
+        0
           ? "LONG"
           : "SHORT"
       }`;
-
 
   $("topConsensus")
     .className =
       "metric medium " +
       (
-        top.net >= 0
+        top.net >=
+        0
           ? "good"
           : "bad"
       );
-
 
   $("consensusList")
     .innerHTML =
@@ -3474,13 +4038,15 @@ function renderConsensus(){
           </b>
 
           <span class="${
-            x.net >= 0
+            x.net >=
+            0
               ? "good"
               : "bad"
           }">
 
           ${
-            x.net >= 0
+            x.net >=
+            0
               ? "LONG"
               : "SHORT"
           }
@@ -3509,163 +4075,171 @@ function renderConsensus(){
           </div>
 
           </div>
-
           `
         )
         .join("");
 }
 
 
-/* ======================================================
-   WALLET GRAPH
-====================================================== */
-
 function renderWalletGraph(){
 
-  const nodes = [];
+  const nodes =
+    [];
 
-  const links = [];
+  const links =
+    [];
 
   const seen =
     new Set();
 
+  wallets
+    .forEach(
+      (
+        w,
+        i
+      ) => {
 
-  wallets.forEach(
-    (
-      w,
-      i
-    ) => {
+        const wid =
+          "w" +
+          i;
 
-      const wid =
-        "w" + i;
+        nodes.push({
 
+          name:
+            wid,
 
-      nodes.push({
+          label:
+            w.name,
 
-        name:
-          wid,
+          symbolSize:
+            28,
 
-        label:
-          w.name,
+          itemStyle:{
+            color:
+              "#34495a"
+          }
+        });
 
-        symbolSize:
-          28,
+        const d =
+          walletData[
+            w.address
+              .toLowerCase()
+          ];
 
-        itemStyle:{
-          color:
-            "#34495a"
-        }
-      });
-
-
-      const d =
-        walletData[
-          w.address
-            .toLowerCase()
-        ];
-
-
-      for (
-        const p
-        of d?.positions ||
-        []
-      ) {
-
-        const cid =
-          "c_" +
-          p.coin;
-
-
-        if (
-          !seen.has(cid)
+        for (
+          const p
+          of d?.positions ||
+          []
         ) {
 
-          seen.add(cid);
+          const cid =
+            "c_" +
+            p.coin;
 
+          if (
+            !seen.has(
+              cid
+            )
+          ) {
 
-          nodes.push({
+            seen.add(
+              cid
+            );
 
-            name:
+            nodes.push({
+
+              name:
+                cid,
+
+              label:
+                p.coin,
+
+              symbolSize:
+                22,
+
+              itemStyle:{
+                color:
+                  "#2484bd"
+              }
+            });
+          }
+
+          links.push({
+
+            source:
+              wid,
+
+            target:
               cid,
 
-            label:
-              p.coin,
+            value:
+              p.positionValue,
 
-            symbolSize:
-              22,
-
-            itemStyle:{
+            lineStyle:{
               color:
-                "#2484bd"
+                p.side ===
+                "LONG"
+                  ? "#169b62"
+                  : "#d84b4b"
             }
           });
         }
-
-
-        links.push({
-
-          source:
-            wid,
-
-          target:
-            cid,
-
-          value:
-            p.positionValue,
-
-          lineStyle:{
-            color:
-              p.side ===
-              "LONG"
-                ? "#169b62"
-                : "#d84b4b"
-          }
-        });
       }
-    }
-  );
+    );
 
+  walletGraph
+    .setOption({
 
-  walletGraph.setOption({
+      tooltip:{},
 
-    tooltip:{},
+      series:[{
 
+        type:
+          "graph",
 
-    series:[{
+        layout:
+          "force",
 
-      type:"graph",
+        roam:
+          true,
 
-      layout:"force",
+        force:{
+          repulsion:
+            180,
 
-      roam:true,
+          edgeLength:
+            90
+        },
 
-      force:{
-        repulsion:180,
-        edgeLength:90
-      },
+        label:{
+          show:
+            true,
 
-      label:{
-        show:true,
+          formatter:
+            p =>
+              p.data.label,
 
-        formatter:
-          p =>
-            p.data.label,
+          fontSize:
+            9
+        },
 
-        fontSize:9
-      },
+        data:
+          nodes,
 
-      data:
-        nodes,
+        links,
 
-      links,
+        lineStyle:{
+          width:
+            1.5,
 
-      lineStyle:{
-        width:1.5,
-        opacity:.6,
-        curveness:.1
-      }
-    }]
-  });
+          opacity:
+            .6,
+
+          curveness:
+            .1
+        }
+      }]
+    });
 }
 
 
@@ -3684,7 +4258,6 @@ async function discoverTraders(){
       </td>
       </tr>
       `;
-
 
   try {
 
@@ -3712,18 +4285,15 @@ async function discoverTraders(){
           50
       });
 
-
     const d =
       await getJson(
         "/api/traders?" +
         q.toString()
       );
 
-
     discovered =
       d.traders ||
       [];
-
 
     renderDiscovered();
 
@@ -3733,14 +4303,17 @@ async function discoverTraders(){
       .innerHTML =
         `
         <tr>
+
         <td
           colspan="9"
           class="bad">
+
         ${e.message}
+
         </td>
+
         </tr>
         `;
-
   }
 }
 
@@ -3749,6 +4322,7 @@ function renderDiscovered(){
 
   $("discoverRows")
     .innerHTML =
+
       discovered.length
 
         ? discovered
@@ -3762,7 +4336,6 @@ function renderDiscovered(){
                   t.performance ||
                   {};
 
-
                 const followed =
                   wallets.some(
                     w =>
@@ -3771,7 +4344,6 @@ function renderDiscovered(){
                       t.address
                         .toLowerCase()
                   );
-
 
                 return `
 
@@ -3880,11 +4452,11 @@ window.followTrader =
     const t =
       discovered[i];
 
-
-    if (!t) {
+    if (
+      !t
+    ) {
       return;
     }
-
 
     if (
       wallets.some(
@@ -3898,7 +4470,6 @@ window.followTrader =
 
       return;
     }
-
 
     wallets.push({
 
@@ -3917,15 +4488,11 @@ window.followTrader =
         "Discovery"
     });
 
-
     saveWallets();
-
 
     renderDiscovered();
 
-
     refreshWallets();
-
 
     setTimeout(
       refreshMoneyFlow,
@@ -3943,7 +4510,9 @@ $("discoverBtn")
    WALLETS
 ====================================================== */
 
-async function refreshOneWallet(w){
+async function refreshOneWallet(
+  w
+){
 
   try {
 
@@ -3956,7 +4525,6 @@ async function refreshOneWallet(w){
           w.address
         )
       );
-
 
     if (
       d &&
@@ -3974,9 +4542,7 @@ async function refreshOneWallet(w){
           false
       };
 
-
       saveWalletCache();
-
     }
 
   } catch {
@@ -3987,8 +4553,9 @@ async function refreshOneWallet(w){
           .toLowerCase()
       ];
 
-
-    if (old) {
+    if (
+      old
+    ) {
 
       walletData[
         w.address
@@ -4001,9 +4568,7 @@ async function refreshOneWallet(w){
           true
       };
 
-
       saveWalletCache();
-
     }
   }
 }
@@ -4014,11 +4579,15 @@ async function refreshWallets(){
   const batchSize =
     3;
 
-
   for (
-    let i = 0;
-    i < wallets.length;
-    i += batchSize
+    let i =
+      0;
+
+    i <
+    wallets.length;
+
+    i +=
+      batchSize
   ) {
 
     await Promise.all(
@@ -4026,19 +4595,17 @@ async function refreshWallets(){
       wallets
         .slice(
           i,
-          i + batchSize
+          i +
+          batchSize
         )
         .map(
           refreshOneWallet
         )
     );
 
-
     renderWallets();
 
-
     renderTerminal();
-
 
     await new Promise(
       r =>
@@ -4048,7 +4615,6 @@ async function refreshWallets(){
         )
     );
   }
-
 
   $("walletCount")
     .textContent =
@@ -4062,7 +4628,6 @@ function renderWallets(){
     .textContent =
       wallets.length;
 
-
   if (
     !wallets.length
   ) {
@@ -4071,18 +4636,20 @@ function renderWallets(){
       .innerHTML =
         `
         <tr>
+
         <td
           colspan="10"
           class="small">
+
         No wallets followed yet.
+
         </td>
+
         </tr>
         `;
 
-
     return;
   }
-
 
   $("walletRows")
     .innerHTML =
@@ -4100,7 +4667,6 @@ function renderWallets(){
               ] ||
               {};
 
-
             return `
 
             <tr>
@@ -4112,14 +4678,18 @@ function renderWallets(){
             </b>
 
             <div class="tiny">
+
             ${shortAddress(
               w.address
             )}
+
             •
+
             ${
               w.tag ||
               "Manual"
             }
+
             </div>
 
             </td>
@@ -4141,6 +4711,7 @@ function renderWallets(){
             </td>
 
             <td>
+
             ${
               d.equity ==
               null
@@ -4150,11 +4721,13 @@ function renderWallets(){
                     d.equity
                   )
             }
+
             </td>
 
             <td class="${signClass(
               d.pnl?.week?.pnl
             )}">
+
             ${
               d.pnl?.week?.pnl ==
               null
@@ -4164,11 +4737,13 @@ function renderWallets(){
                     d.pnl.week.pnl
                   )
             }
+
             </td>
 
             <td class="${signClass(
               d.pnl?.month?.pnl
             )}">
+
             ${
               d.pnl?.month?.pnl ==
               null
@@ -4178,9 +4753,11 @@ function renderWallets(){
                     d.pnl.month.pnl
                   )
             }
+
             </td>
 
             <td>
+
             ${
               d.stats30?.winRate ==
               null
@@ -4191,6 +4768,7 @@ function renderWallets(){
                     .toFixed(1) +
                   "%"
             }
+
             </td>
 
             <td>
@@ -4223,7 +4801,9 @@ function renderWallets(){
             <button
               class="danger"
               onclick="removeWallet(${i})">
+
             Remove
+
             </button>
 
             </td>
@@ -4245,7 +4825,6 @@ $("addWallet")
           .value
           .trim();
 
-
       if (
         !/^0x[a-fA-F0-9]{40}$/.test(
           address
@@ -4255,9 +4834,7 @@ $("addWallet")
         return alert(
           "Invalid Hyperliquid wallet address."
         );
-
       }
-
 
       if (
         wallets.some(
@@ -4272,9 +4849,7 @@ $("addWallet")
         return alert(
           "Wallet already exists."
         );
-
       }
-
 
       wallets.push({
 
@@ -4295,29 +4870,19 @@ $("addWallet")
             .value
       });
 
-
-      /*
-        اینجا فوراً ذخیره می‌شود
-        و با بستن سایت از بین نمی‌رود
-      */
       saveWallets();
-
 
       $("walletName")
         .value =
           "";
 
-
       $("walletAddress")
         .value =
           "";
 
-
       renderWallets();
 
-
       refreshWallets();
-
 
       setTimeout(
         refreshMoneyFlow,
@@ -4334,18 +4899,13 @@ window.removeWallet =
       1
     );
 
-
     saveWallets();
-
 
     renderWallets();
 
-
     renderDiscovered();
 
-
     renderTerminal();
-
 
     refreshMoneyFlow();
   };
@@ -4361,7 +4921,6 @@ async function refreshMoneyFlow(){
     .textContent =
       wallets.length;
 
-
   if (
     !wallets.length
   ) {
@@ -4370,15 +4929,12 @@ async function refreshMoneyFlow(){
       .textContent =
         "NO WALLETS";
 
-
     $("rotationMini")
       .textContent =
         "NO WALLETS";
 
-
     return;
   }
-
 
   try {
 
@@ -4390,7 +4946,6 @@ async function refreshMoneyFlow(){
         )
         .join(",");
 
-
     const d =
       await getJson(
 
@@ -4401,7 +4956,6 @@ async function refreshMoneyFlow(){
         )
       );
 
-
     if (
       d.warmup
     ) {
@@ -4410,74 +4964,61 @@ async function refreshMoneyFlow(){
         .textContent =
           "WARMUP";
 
-
       $("mfStatus")
         .className =
           "metric medium warn";
-
 
       $("rotationMini")
         .textContent =
           "WARMUP";
 
-
       return;
     }
-
 
     moneyRotation =
       d.rotation;
 
-
     $("mfStatus")
       .textContent =
         "LIVE";
-
 
     $("mfStatus")
       .className =
         "metric medium good";
 
-
     $("rotationMini")
       .textContent =
         "LIVE";
-
 
     $("mfTotalIn")
       .textContent =
         "$" +
         money(
-          moneyRotation.totalIn
+          moneyRotation
+            .totalIn
         );
-
 
     $("mfTotalOut")
       .textContent =
         "$" +
         money(
-          moneyRotation.totalOut
+          moneyRotation
+            .totalOut
         );
-
 
     renderMoneyFlow();
 
-  } catch {
+    renderDemoTrading();
 
-    /*
-      اگر API موقتاً قطع شود
-      نمودار قبلی پاک نمی‌شود
-    */
+  } catch {
 
     $("mfStatus")
       .textContent =
         "CACHED";
 
-
     $("mfStatus")
       .className =
         "metric medium warn";
-
 
     $("rotationMini")
       .textContent =
@@ -4494,12 +5035,9 @@ function renderMoneyFlow(){
     return;
   }
 
-
   renderMoneySankey();
 
-
   renderMoneyRotationBar();
-
 
   renderMoneyLists();
 }
@@ -4511,13 +5049,11 @@ function renderMoneySankey(){
     moneyRotation.paths ||
     [];
 
-
   if (
     !paths.length
   ) {
 
     moneyFlowSankey.clear();
-
 
     moneyFlowSankey
       .setOption({
@@ -4544,31 +5080,27 @@ function renderMoneySankey(){
         }
       });
 
-
     return;
   }
-
 
   const nodeSet =
     new Set();
 
+  paths
+    .forEach(
+      p => {
 
-  paths.forEach(
-    p => {
+        nodeSet.add(
+          "OUT " +
+          p.from
+        );
 
-      nodeSet.add(
-        "OUT " +
-        p.from
-      );
-
-
-      nodeSet.add(
-        "IN " +
-        p.to
-      );
-    }
-  );
-
+        nodeSet.add(
+          "IN " +
+          p.to
+        );
+      }
+    );
 
   moneyFlowSankey
     .setOption({
@@ -4589,7 +5121,6 @@ function renderMoneySankey(){
 
               : p.name
       },
-
 
       series:[{
 
@@ -4645,9 +5176,10 @@ function renderMoneySankey(){
         },
 
         data:
-          Array.from(
-            nodeSet
-          )
+          Array
+            .from(
+              nodeSet
+            )
             .map(
               name => ({
                 name
@@ -4693,7 +5225,6 @@ function renderMoneyRotationBar(){
         12
       )
       .reverse();
-
 
   moneyRotationBar
     .setOption({
@@ -4750,7 +5281,8 @@ function renderMoneyRotationBar(){
 
               itemStyle:{
                 color:
-                  x.delta >= 0
+                  x.delta >=
+                  0
                     ? "#169b62"
                     : "#d84b4b"
               }
@@ -4767,24 +5299,23 @@ function renderMoneyLists(){
     moneyRotation.inflows ||
     [];
 
-
   const outflows =
     moneyRotation.outflows ||
     [];
 
-
   const maxIn =
-    inflows[0]?.value ||
+    inflows[0]
+      ?.value ||
     1;
-
 
   const maxOut =
-    outflows[0]?.value ||
+    outflows[0]
+      ?.value ||
     1;
-
 
   $("moneyInflows")
     .innerHTML =
+
       inflows
         .slice(
           0,
@@ -4818,16 +5349,19 @@ function renderMoneyLists(){
           </div>
 
           <span class="good">
+
           +$${money(
             x.value
           )}
+
           </span>
 
           </div>
-
           `
         )
-        .join("") ||
+        .join("")
+
+      ||
 
       `
       <div class="small">
@@ -4838,6 +5372,7 @@ function renderMoneyLists(){
 
   $("moneyOutflows")
     .innerHTML =
+
       outflows
         .slice(
           0,
@@ -4871,16 +5406,19 @@ function renderMoneyLists(){
           </div>
 
           <span class="bad">
+
           -$${money(
             x.value
           )}
+
           </span>
 
           </div>
-
           `
         )
-        .join("") ||
+        .join("")
+
+      ||
 
       `
       <div class="small">
@@ -4891,6 +5429,7 @@ function renderMoneyLists(){
 
   $("moneyPathList")
     .innerHTML =
+
       (
         moneyRotation.paths ||
         []
@@ -4934,10 +5473,11 @@ function renderMoneyLists(){
           </div>
 
           </div>
-
           `
         )
-        .join("") ||
+        .join("")
+
+      ||
 
       `
       <div class="small">
@@ -4945,6 +5485,2225 @@ function renderMoneyLists(){
       </div>
       `;
 }
+
+
+/* ======================================================
+   DEMO TRADE ENGINE
+====================================================== */
+
+async function refreshKlines(){
+
+  await Promise.all(
+
+    symbols.map(
+      async s => {
+
+        try {
+
+          klinesData[s] =
+            await getJson(
+
+              "/api/klines?symbol=" +
+
+              encodeURIComponent(
+                s
+              ) +
+
+              "&interval=5m&limit=120"
+            );
+
+        } catch {}
+      }
+    )
+  );
+
+  renderDemoTrading();
+}
+
+
+function ema(
+  values,
+  period
+){
+
+  if (
+    !values.length
+  ) {
+    return null;
+  }
+
+  const k =
+    2 /
+    (
+      period +
+      1
+    );
+
+  let e =
+    values[0];
+
+  for (
+    let i =
+      1;
+
+    i <
+    values.length;
+
+    i++
+  ) {
+
+    e =
+      values[i] *
+      k +
+      e *
+      (
+        1 -
+        k
+      );
+  }
+
+  return e;
+}
+
+
+function atr(
+  rows,
+  period = 14
+){
+
+  if (
+    !rows ||
+    rows.length <
+    2
+  ) {
+
+    return null;
+  }
+
+  const trs =
+    [];
+
+  for (
+    let i =
+      1;
+
+    i <
+    rows.length;
+
+    i++
+  ) {
+
+    const h =
+      num(
+        rows[i].high
+      );
+
+    const l =
+      num(
+        rows[i].low
+      );
+
+    const pc =
+      num(
+        rows[
+          i -
+          1
+        ].close
+      );
+
+    trs.push(
+
+      Math.max(
+
+        h -
+        l,
+
+        Math.abs(
+          h -
+          pc
+        ),
+
+        Math.abs(
+          l -
+          pc
+        )
+      )
+    );
+  }
+
+  const x =
+    trs.slice(
+      -period
+    );
+
+  return x.length
+    ? x.reduce(
+        (a,b) =>
+          a +
+          b,
+        0
+      ) /
+      x.length
+    : null;
+}
+
+
+function technicalData(
+  symbol
+){
+
+  const rows =
+    klinesData[
+      symbol
+    ] ||
+    [];
+
+  const closes =
+    rows
+      .map(
+        x =>
+          num(
+            x.close
+          )
+      )
+      .filter(
+        x =>
+          x >
+          0
+      );
+
+  const current =
+    num(
+      market[
+        symbol
+      ]?.lastPrice,
+      closes.at(-1) ||
+      0
+    );
+
+  const e9 =
+    ema(
+      closes.slice(
+        -60
+      ),
+      9
+    ) ||
+    current;
+
+  const e21 =
+    ema(
+      closes.slice(
+        -80
+      ),
+      21
+    ) ||
+    current;
+
+  const a =
+    atr(
+      rows,
+      14
+    ) ||
+    current *
+    .0045 ||
+    1;
+
+  const trend =
+    a
+      ? (
+          e9 -
+          e21
+        ) /
+        a
+      : 0;
+
+  const recent =
+    closes.length >
+    6 &&
+    closes.at(-6)
+      ? (
+          (
+            closes.at(-1) -
+            closes.at(-6)
+          ) /
+          closes.at(-6)
+        ) *
+        100
+      : 0;
+
+  const score =
+    clamp(
+      50 +
+      trend *
+      11 +
+      recent *
+      4,
+      0,
+      100
+    );
+
+  return {
+
+    current,
+
+    ema9:
+      e9,
+
+    ema21:
+      e21,
+
+    atr:
+      a,
+
+    score,
+
+    recent
+  };
+}
+
+
+function rotationDataFor(
+  symbol
+){
+
+  const coin =
+    symbol.replace(
+      "USDT",
+      ""
+    );
+
+  const rows =
+    moneyRotation?.net ||
+    [];
+
+  const row =
+    rows.find(
+      x =>
+        x.coin ===
+        coin
+    );
+
+  const maxAbs =
+    Math.max(
+
+      1,
+
+      ...rows.map(
+        x =>
+          Math.abs(
+            num(
+              x.delta
+            )
+          )
+      )
+    );
+
+  const delta =
+    num(
+      row?.delta,
+      0
+    );
+
+  return {
+
+    delta,
+
+    score:
+      clamp(
+        50 +
+        (
+          delta /
+          maxAbs
+        ) *
+        50,
+        0,
+        100
+      )
+  };
+}
+
+
+function walletComponent(
+  symbol
+){
+
+  const coin =
+    symbol.replace(
+      "USDT",
+      ""
+    );
+
+  const c =
+    getConsensus()
+      .find(
+        x =>
+          x.coin ===
+          coin
+      );
+
+  if (
+    !c
+  ) {
+
+    return {
+
+      score:
+        50,
+
+      longCount:
+        0,
+
+      shortCount:
+        0,
+
+      bias:
+        0,
+
+      net:
+        0
+    };
+  }
+
+  return {
+
+    score:
+      clamp(
+        50 +
+        c.bias *
+        45,
+        0,
+        100
+      ),
+
+    longCount:
+      c.longCount,
+
+    shortCount:
+      c.shortCount,
+
+    bias:
+      c.bias,
+
+    net:
+      c.net
+  };
+}
+
+
+function btcRegime(){
+
+  const m =
+    market.BTCUSDT ||
+    {};
+
+  const f =
+    flow.BTCUSDT ||
+    {};
+
+  return clamp(
+
+    num(
+      f.flowScore,
+      50
+    ) *
+    .65 +
+
+    clamp(
+      50 +
+      num(
+        m.priceChangePercent
+      ) *
+      3,
+      0,
+      100
+    ) *
+    .35,
+
+    0,
+    100
+  );
+}
+
+
+function buildTradePlan(
+  symbol
+){
+
+  const m =
+    market[
+      symbol
+    ] ||
+    {};
+
+  const current =
+    num(
+      m.lastPrice
+    );
+
+  if (
+    !current
+  ) {
+
+    return {
+
+      symbol,
+
+      side:
+        "NO TRADE",
+
+      grade:
+        "-",
+
+      longScore:
+        50,
+
+      ready:
+        false
+    };
+  }
+
+  const f =
+    flow[
+      symbol
+    ] ||
+    {};
+
+  const tech =
+    technicalData(
+      symbol
+    );
+
+  const rot =
+    rotationDataFor(
+      symbol
+    );
+
+  const wal =
+    walletComponent(
+      symbol
+    );
+
+  const regime =
+    btcRegime();
+
+  const flowScore =
+    num(
+      f.flowScore,
+      50
+    );
+
+  const longScore =
+    clamp(
+
+      rot.score *
+      .35 +
+
+      wal.score *
+      .25 +
+
+      flowScore *
+      .20 +
+
+      tech.score *
+      .10 +
+
+      regime *
+      .10,
+
+      0,
+      100
+    );
+
+  const shortScore =
+    100 -
+    longScore;
+
+  let side =
+    "NO TRADE";
+
+  let grade =
+    "-";
+
+  if (
+    longScore >=
+    78
+  ) {
+
+    side =
+      "LONG";
+
+    grade =
+      "A+";
+
+  } else if (
+    longScore >=
+    70
+  ) {
+
+    side =
+      "LONG";
+
+    grade =
+      "A";
+
+  } else if (
+    longScore <=
+    22
+  ) {
+
+    side =
+      "SHORT";
+
+    grade =
+      "A+";
+
+  } else if (
+    longScore <=
+    30
+  ) {
+
+    side =
+      "SHORT";
+
+    grade =
+      "A";
+
+  } else if (
+    longScore >=
+    60
+  ) {
+
+    side =
+      "WATCH LONG";
+
+    grade =
+      "WATCH";
+
+  } else if (
+    longScore <=
+    40
+  ) {
+
+    side =
+      "WATCH SHORT";
+
+    grade =
+      "WATCH";
+  }
+
+
+  const actionable =
+    side ===
+    "LONG" ||
+    side ===
+    "SHORT";
+
+
+  const a =
+    Math.max(
+      tech.atr,
+      current *
+      .0025
+    );
+
+
+  let mid =
+    current;
+
+
+  if (
+    side ===
+    "LONG"
+  ) {
+
+    mid =
+      Math.min(
+        current,
+        tech.ema9 ||
+        current
+      );
+  }
+
+
+  if (
+    side ===
+    "SHORT"
+  ) {
+
+    mid =
+      Math.max(
+        current,
+        tech.ema9 ||
+        current
+      );
+  }
+
+
+  const entryLow =
+    mid -
+    a *
+    .15;
+
+
+  const entryHigh =
+    mid +
+    a *
+    .15;
+
+
+  const riskDistance =
+    a *
+    1.25;
+
+
+  let stop =
+    null;
+
+  let tp1 =
+    null;
+
+  let tp2 =
+    null;
+
+  let tp3 =
+    null;
+
+
+  if (
+    side ===
+    "LONG"
+  ) {
+
+    stop =
+      mid -
+      riskDistance;
+
+    tp1 =
+      mid +
+      riskDistance *
+      1.2;
+
+    tp2 =
+      mid +
+      riskDistance *
+      2;
+
+    tp3 =
+      mid +
+      riskDistance *
+      3;
+  }
+
+
+  if (
+    side ===
+    "SHORT"
+  ) {
+
+    stop =
+      mid +
+      riskDistance;
+
+    tp1 =
+      mid -
+      riskDistance *
+      1.2;
+
+    tp2 =
+      mid -
+      riskDistance *
+      2;
+
+    tp3 =
+      mid -
+      riskDistance *
+      3;
+  }
+
+
+  const ready =
+    actionable &&
+    current >=
+    entryLow &&
+    current <=
+    entryHigh;
+
+
+  const reasons = [
+
+    `Rotation ${rot.score.toFixed(0)}${
+      rot.delta
+        ? ` (${rot.delta>0?"+":""}$${money(rot.delta)})`
+        : ""
+    }`,
+
+    `Wallet ${wal.score.toFixed(0)} (${wal.longCount}L/${wal.shortCount}S)`,
+
+    `Taker Flow ${flowScore.toFixed(0)}`,
+
+    `5m Trend ${tech.score.toFixed(0)}`,
+
+    `BTC Regime ${regime.toFixed(0)}`
+  ];
+
+
+  const exitRule =
+
+    side ===
+    "LONG"
+
+      ? "Exit: Stop / TP3 / Flow<42 + Wallet<45 / score<35"
+
+      : side ===
+        "SHORT"
+
+      ? "Exit: Stop / TP3 / Flow>58 + Wallet>55 / score>65"
+
+      : "Wait for A/A+ alignment";
+
+
+  const directionScore =
+
+    (
+      side ===
+      "SHORT" ||
+      side ===
+      "WATCH SHORT"
+    )
+
+      ? shortScore
+
+      : longScore;
+
+
+  return {
+
+    symbol,
+
+    current,
+
+    side,
+
+    grade,
+
+    longScore,
+
+    shortScore,
+
+    directionScore,
+
+    entryLow,
+
+    entryHigh,
+
+    entryMid:
+      mid,
+
+    stop,
+
+    tp1,
+
+    tp2,
+
+    tp3,
+
+    riskDistance,
+
+    ready,
+
+    reasons,
+
+    exitRule,
+
+    flowScore,
+
+    walletScore:
+      wal.score,
+
+    rotationScore:
+      rot.score,
+
+    rotationDelta:
+      rot.delta,
+
+    technicalScore:
+      tech.score,
+
+    marketScore:
+      regime
+  };
+}
+
+
+function fmtTradePrice(
+  v
+){
+
+  if (
+    v == null ||
+    !Number.isFinite(
+      Number(v)
+    )
+  ) {
+
+    return "--";
+  }
+
+  const x =
+    Number(v);
+
+  return x <
+    1
+      ? x.toFixed(
+          5
+        )
+      : x <
+        100
+      ? x.toFixed(
+          3
+        )
+      : x.toFixed(
+          2
+        );
+}
+
+
+function tradeGradeClass(
+  g
+){
+
+  return g ===
+    "A+"
+      ? "aplus"
+      : g ===
+        "A"
+      ? "a"
+      : "watch";
+}
+
+
+function demoOpenPnl(){
+
+  return demoState.open
+    .reduce(
+      (
+        sum,
+        t
+      ) => {
+
+        const cur =
+          num(
+            market[
+              t.symbol
+            ]?.lastPrice,
+            t.entry
+          );
+
+        return sum +
+
+          (
+            t.side ===
+            "LONG"
+              ? 1
+              : -1
+          ) *
+
+          (
+            cur -
+            t.entry
+          ) *
+
+          t.qty;
+      },
+      0
+    );
+}
+
+
+function demoBalance(){
+
+  return num(
+    demoState.initialBalance,
+    10000
+  ) +
+  num(
+    demoState.closedPnl,
+    0
+  );
+}
+
+
+function demoEquity(){
+
+  return demoBalance() +
+  demoOpenPnl();
+}
+
+
+function openDemoTrade(
+  symbol
+){
+
+  const p =
+    buildTradePlan(
+      symbol
+    );
+
+  if (
+    !(
+      p.side ===
+      "LONG" ||
+      p.side ===
+      "SHORT"
+    )
+  ) {
+
+    return alert(
+      "فعلاً سیگنال A/A+ برای ورود وجود ندارد."
+    );
+  }
+
+  if (
+    !p.ready
+  ) {
+
+    return alert(
+      "سیگنال وجود دارد اما قیمت هنوز داخل Entry Zone نیست. برای Demo صبر کن تا READY شود."
+    );
+  }
+
+  if (
+    demoState.open
+      .some(
+        x =>
+          x.symbol ===
+          symbol
+      )
+  ) {
+
+    return alert(
+      "برای این دارایی یک معامله Demo باز داری."
+    );
+  }
+
+
+  const equity =
+    Math.max(
+      1,
+      demoEquity()
+    );
+
+
+  const riskAmount =
+    equity *
+
+    clamp(
+      num(
+        demoState.riskPct,
+        1
+      ),
+      .1,
+      5
+    ) /
+
+    100;
+
+
+  const entry =
+    p.current;
+
+
+  const stopDistance =
+    Math.abs(
+      entry -
+      p.stop
+    );
+
+
+  if (
+    !stopDistance
+  ) {
+    return;
+  }
+
+
+  let qty =
+    riskAmount /
+    stopDistance;
+
+
+  qty =
+    Math.min(
+      qty,
+      equity /
+      entry
+    );
+
+
+  const actualRisk =
+    qty *
+    stopDistance;
+
+
+  const stop =
+
+    p.side ===
+    "LONG"
+
+      ? entry -
+        p.riskDistance
+
+      : entry +
+        p.riskDistance;
+
+
+  const tp1 =
+
+    p.side ===
+    "LONG"
+
+      ? entry +
+        p.riskDistance *
+        1.2
+
+      : entry -
+        p.riskDistance *
+        1.2;
+
+
+  const tp2 =
+
+    p.side ===
+    "LONG"
+
+      ? entry +
+        p.riskDistance *
+        2
+
+      : entry -
+        p.riskDistance *
+        2;
+
+
+  const tp3 =
+
+    p.side ===
+    "LONG"
+
+      ? entry +
+        p.riskDistance *
+        3
+
+      : entry -
+        p.riskDistance *
+        3;
+
+
+  demoState.open
+    .push({
+
+      id:
+        Date.now() +
+        "_" +
+        symbol,
+
+      symbol,
+
+      side:
+        p.side,
+
+      grade:
+        p.grade,
+
+      score:
+        p.directionScore,
+
+      entry,
+
+      stop,
+
+      tp1,
+
+      tp2,
+
+      tp3,
+
+      qty,
+
+      riskAmount:
+        actualRisk,
+
+      openedAt:
+        Date.now(),
+
+      tp1Hit:
+        false,
+
+      tp2Hit:
+        false
+    });
+
+
+  saveDemoState();
+
+  renderDemoTrading();
+}
+
+
+function closeDemoTrade(
+  id,
+  reason = "MANUAL"
+){
+
+  const i =
+    demoState.open
+      .findIndex(
+        x =>
+          x.id ===
+          id
+      );
+
+
+  if (
+    i <
+    0
+  ) {
+    return;
+  }
+
+
+  const t =
+    demoState.open[
+      i
+    ];
+
+
+  const exit =
+    num(
+      market[
+        t.symbol
+      ]?.lastPrice,
+      t.entry
+    );
+
+
+  const pnl =
+
+    (
+      t.side ===
+      "LONG"
+        ? 1
+        : -1
+    ) *
+
+    (
+      exit -
+      t.entry
+    ) *
+
+    t.qty;
+
+
+  demoState.closedPnl =
+    num(
+      demoState.closedPnl
+    ) +
+    pnl;
+
+
+  demoState.closed
+    .unshift({
+
+      ...t,
+
+      exit,
+
+      pnl,
+
+      reason,
+
+      closedAt:
+        Date.now()
+    });
+
+
+  demoState.closed =
+    demoState.closed
+      .slice(
+        0,
+        200
+      );
+
+
+  demoState.open
+    .splice(
+      i,
+      1
+    );
+
+
+  saveDemoState();
+
+  renderDemoTrading();
+}
+
+
+function updateDemoPositions(){
+
+  const toClose =
+    [];
+
+
+  for (
+    const t
+    of demoState.open
+  ) {
+
+    const cur =
+      num(
+        market[
+          t.symbol
+        ]?.lastPrice
+      );
+
+
+    if (
+      !cur
+    ) {
+      continue;
+    }
+
+
+    const p =
+      buildTradePlan(
+        t.symbol
+      );
+
+
+    if (
+      t.side ===
+      "LONG"
+    ) {
+
+      if (
+        cur <=
+        t.stop
+      ) {
+
+        toClose.push([
+          t.id,
+          "STOP"
+        ]);
+
+      } else if (
+        cur >=
+        t.tp3
+      ) {
+
+        toClose.push([
+          t.id,
+          "TP3"
+        ]);
+
+      } else if (
+        p.flowScore <
+        42 &&
+        p.walletScore <
+        45 &&
+        p.longScore <
+        35
+      ) {
+
+        toClose.push([
+          t.id,
+          "FLOW REVERSAL"
+        ]);
+
+      } else {
+
+        if (
+          cur >=
+          t.tp1
+        ) {
+          t.tp1Hit =
+            true;
+        }
+
+        if (
+          cur >=
+          t.tp2
+        ) {
+          t.tp2Hit =
+            true;
+        }
+      }
+
+    } else {
+
+      if (
+        cur >=
+        t.stop
+      ) {
+
+        toClose.push([
+          t.id,
+          "STOP"
+        ]);
+
+      } else if (
+        cur <=
+        t.tp3
+      ) {
+
+        toClose.push([
+          t.id,
+          "TP3"
+        ]);
+
+      } else if (
+        p.flowScore >
+        58 &&
+        p.walletScore >
+        55 &&
+        p.longScore >
+        65
+      ) {
+
+        toClose.push([
+          t.id,
+          "FLOW REVERSAL"
+        ]);
+
+      } else {
+
+        if (
+          cur <=
+          t.tp1
+        ) {
+          t.tp1Hit =
+            true;
+        }
+
+        if (
+          cur <=
+          t.tp2
+        ) {
+          t.tp2Hit =
+            true;
+        }
+      }
+    }
+  }
+
+
+  if (
+    toClose.length
+  ) {
+
+    for (
+      const [
+        id,
+        reason
+      ]
+      of toClose
+    ) {
+
+      closeDemoTrade(
+        id,
+        reason
+      );
+    }
+
+  } else {
+
+    saveDemoState();
+
+    renderDemoTrading();
+  }
+}
+
+
+function renderDemoTrading(){
+
+  if (
+    !$(
+      "tradeSignalRows"
+    )
+  ) {
+    return;
+  }
+
+
+  const plans =
+    symbols.map(
+      buildTradePlan
+    );
+
+
+  $("tradeSignalRows")
+    .innerHTML =
+
+      plans.map(
+        p => {
+
+          const sideClass =
+
+            p.side ===
+            "LONG"
+
+              ? "long"
+
+              : p.side ===
+                "SHORT"
+
+              ? "short"
+
+              : "wait";
+
+
+          const zone =
+
+            (
+              p.side ===
+              "LONG" ||
+
+              p.side ===
+              "SHORT"
+            )
+
+              ? `${fmtTradePrice(
+                  p.entryLow
+                )} – ${fmtTradePrice(
+                  p.entryHigh
+                )}`
+
+              : "--";
+
+
+          const state =
+
+            (
+              p.side ===
+              "LONG" ||
+
+              p.side ===
+              "SHORT"
+            )
+
+              ? (
+                  p.ready
+
+                    ? '<span class="trade-ready">READY</span>'
+
+                    : '<span class="trade-wait">WAIT ENTRY</span>'
+                )
+
+              : '<span class="trade-off">NO TRADE</span>';
+
+
+          const btn =
+
+            (
+              p.side ===
+              "LONG" ||
+
+              p.side ===
+              "SHORT"
+            )
+
+              ? `
+
+                <button
+                  class="primary"
+                  ${
+                    p.ready
+                      ? ""
+                      : "disabled"
+                  }
+                  onclick="openDemoTrade('${p.symbol}')">
+
+                Open Demo
+
+                </button>
+                `
+
+              : "--";
+
+
+          return `
+
+          <tr>
+
+          <td>
+          <b>
+          ${p.symbol}
+          </b>
+          </td>
+
+          <td>
+
+          <span class="trade-side ${sideClass}">
+          ${p.side}
+          </span>
+
+          </td>
+
+          <td>
+
+          <span class="trade-grade ${tradeGradeClass(
+            p.grade
+          )}">
+          ${p.grade}
+          </span>
+
+          </td>
+
+          <td>
+          <b>
+          ${p.directionScore.toFixed(0)}
+          </b>
+          </td>
+
+          <td>
+          ${fmtTradePrice(
+            p.current
+          )}
+          </td>
+
+          <td>
+          ${zone}
+          </td>
+
+          <td>
+          ${fmtTradePrice(
+            p.stop
+          )}
+          </td>
+
+          <td>
+          ${fmtTradePrice(
+            p.tp1
+          )}
+          </td>
+
+          <td>
+          ${fmtTradePrice(
+            p.tp2
+          )}
+          </td>
+
+          <td>
+          ${fmtTradePrice(
+            p.tp3
+          )}
+          </td>
+
+          <td>
+          ${state}
+          </td>
+
+          <td>
+
+          <div class="reason-list tiny">
+
+          ${
+            p.reasons
+              ?.join(
+                " • "
+              ) ||
+            "--"
+          }
+
+          <br>
+
+          ${
+            p.exitRule ||
+            ""
+          }
+
+          </div>
+
+          </td>
+
+          <td>
+          ${btn}
+          </td>
+
+          </tr>
+          `;
+        }
+      )
+      .join("");
+
+
+  const openPnl =
+    demoOpenPnl();
+
+
+  const balance =
+    demoBalance();
+
+
+  const equity =
+    balance +
+    openPnl;
+
+
+  const wins =
+    demoState.closed
+      .filter(
+        x =>
+          x.pnl >
+          0
+      );
+
+
+  const losses =
+    demoState.closed
+      .filter(
+        x =>
+          x.pnl <
+          0
+      );
+
+
+  const grossWin =
+    wins.reduce(
+      (a,b) =>
+        a +
+        b.pnl,
+      0
+    );
+
+
+  const grossLoss =
+    Math.abs(
+
+      losses.reduce(
+        (a,b) =>
+          a +
+          b.pnl,
+        0
+      )
+    );
+
+
+  const wr =
+    demoState.closed.length
+
+      ? wins.length /
+        demoState.closed.length *
+        100
+
+      : null;
+
+
+  const pf =
+    grossLoss
+
+      ? grossWin /
+        grossLoss
+
+      : grossWin >
+        0
+
+      ? Infinity
+
+      : null;
+
+
+  $("demoBalance")
+    .textContent =
+      "$" +
+      money(
+        balance
+      );
+
+
+  $("demoEquity")
+    .textContent =
+      "$" +
+      money(
+        equity
+      );
+
+
+  $("demoOpenPnl")
+    .textContent =
+
+      (
+        openPnl >=
+        0
+          ? "+"
+          : ""
+      ) +
+
+      "$" +
+
+      money(
+        openPnl
+      );
+
+
+  $("demoOpenPnl")
+    .className =
+      "v " +
+      (
+        openPnl >=
+        0
+          ? "good"
+          : "bad"
+      );
+
+
+  $("demoClosedPnl")
+    .textContent =
+
+      (
+        demoState.closedPnl >=
+        0
+          ? "+"
+          : ""
+      ) +
+
+      "$" +
+
+      money(
+        demoState.closedPnl
+      );
+
+
+  $("demoClosedPnl")
+    .className =
+      "v " +
+      (
+        demoState.closedPnl >=
+        0
+          ? "good"
+          : "bad"
+      );
+
+
+  $("demoWinRate")
+    .textContent =
+      wr == null
+        ? "--"
+        : wr.toFixed(
+            1
+          ) +
+          "%";
+
+
+  $("demoProfitFactor")
+    .textContent =
+      pf == null
+        ? "--"
+        : pf ===
+          Infinity
+        ? "∞"
+        : pf.toFixed(
+            2
+          );
+
+
+  $("demoStartBalance")
+    .value =
+      demoState.initialBalance;
+
+
+  $("demoRiskPct")
+    .value =
+      demoState.riskPct;
+
+
+  $("riskPreview")
+    .textContent =
+      demoState.riskPct +
+      "%";
+
+
+  $("demoOpenRows")
+    .innerHTML =
+
+      demoState.open.length
+
+        ? demoState.open
+            .map(
+              t => {
+
+                const cur =
+                  num(
+                    market[
+                      t.symbol
+                    ]?.lastPrice,
+                    t.entry
+                  );
+
+
+                const pnl =
+
+                  (
+                    t.side ===
+                    "LONG"
+                      ? 1
+                      : -1
+                  ) *
+
+                  (
+                    cur -
+                    t.entry
+                  ) *
+
+                  t.qty;
+
+
+                return `
+
+                <tr>
+
+                <td>
+                <b>
+                ${t.symbol}
+                </b>
+                </td>
+
+                <td class="${
+                  t.side ===
+                  "LONG"
+                    ? "good"
+                    : "bad"
+                }">
+
+                <b>
+                ${t.side}
+                </b>
+
+                </td>
+
+                <td>
+                ${fmtTradePrice(
+                  t.entry
+                )}
+                </td>
+
+                <td>
+                ${fmtTradePrice(
+                  cur
+                )}
+                </td>
+
+                <td>
+                ${t.qty.toFixed(
+                  5
+                )}
+                </td>
+
+                <td>
+                ${fmtTradePrice(
+                  t.stop
+                )}
+                </td>
+
+                <td class="${
+                  t.tp1Hit
+                    ? "good"
+                    : ""
+                }">
+                ${fmtTradePrice(
+                  t.tp1
+                )}
+                </td>
+
+                <td class="${
+                  t.tp2Hit
+                    ? "good"
+                    : ""
+                }">
+                ${fmtTradePrice(
+                  t.tp2
+                )}
+                </td>
+
+                <td>
+                ${fmtTradePrice(
+                  t.tp3
+                )}
+                </td>
+
+                <td class="${
+                  pnl >=
+                  0
+                    ? "good"
+                    : "bad"
+                }">
+
+                ${
+                  pnl >=
+                  0
+                    ? "+"
+                    : ""
+                }
+
+                $${money(
+                  pnl
+                )}
+
+                </td>
+
+                <td>
+
+                ${
+                  new Date(
+                    t.openedAt
+                  )
+                    .toLocaleString(
+                      "fa-IR"
+                    )
+                }
+
+                </td>
+
+                <td>
+
+                <button
+                  class="danger"
+                  onclick="closeDemoTrade('${t.id}','MANUAL')">
+
+                Close
+
+                </button>
+
+                </td>
+
+                </tr>
+                `;
+              }
+            )
+            .join("")
+
+        : `
+          <tr>
+          <td
+            colspan="12"
+            class="small">
+          No open demo positions.
+          </td>
+          </tr>
+          `;
+
+
+  $("demoClosedRows")
+    .innerHTML =
+
+      demoState.closed.length
+
+        ? demoState.closed
+            .slice(
+              0,
+              50
+            )
+            .map(
+              t => `
+
+              <tr>
+
+              <td>
+              <b>
+              ${t.symbol}
+              </b>
+              </td>
+
+              <td class="${
+                t.side ===
+                "LONG"
+                  ? "good"
+                  : "bad"
+              }">
+              ${t.side}
+              </td>
+
+              <td>
+              ${fmtTradePrice(
+                t.entry
+              )}
+              </td>
+
+              <td>
+              ${fmtTradePrice(
+                t.exit
+              )}
+              </td>
+
+              <td class="${
+                t.pnl >=
+                0
+                  ? "good"
+                  : "bad"
+              }">
+
+              ${
+                t.pnl >=
+                0
+                  ? "+"
+                  : ""
+              }
+
+              $${money(
+                t.pnl
+              )}
+
+              </td>
+
+              <td>
+              ${t.reason}
+              </td>
+
+              <td>
+
+              ${
+                new Date(
+                  t.openedAt
+                )
+                  .toLocaleString(
+                    "fa-IR"
+                  )
+              }
+
+              </td>
+
+              <td>
+
+              ${
+                new Date(
+                  t.closedAt
+                )
+                  .toLocaleString(
+                    "fa-IR"
+                  )
+              }
+
+              </td>
+
+              </tr>
+              `
+            )
+            .join("")
+
+        : `
+          <tr>
+
+          <td
+            colspan="8"
+            class="small">
+
+          No closed demo trades.
+
+          </td>
+
+          </tr>
+          `;
+}
+
+
+window.openDemoTrade =
+  openDemoTrade;
+
+
+window.closeDemoTrade =
+  closeDemoTrade;
+
+
+$("saveDemoSettings")
+  .onclick =
+    () => {
+
+      demoState.riskPct =
+        clamp(
+          num(
+            $("demoRiskPct")
+              .value,
+            1
+          ),
+          .1,
+          5
+        );
+
+      if (
+        !demoState.open.length &&
+        !demoState.closed.length
+      ) {
+
+        demoState.initialBalance =
+          Math.max(
+
+            100,
+
+            num(
+              $("demoStartBalance")
+                .value,
+              10000
+            )
+          );
+      }
+
+      saveDemoState();
+
+      renderDemoTrading();
+    };
+
+
+$("resetDemo")
+  .onclick =
+    () => {
+
+      if (
+        !confirm(
+          "Reset all demo trades and PnL?"
+        )
+      ) {
+
+        return;
+      }
+
+      demoState = {
+
+        initialBalance:
+          Math.max(
+
+            100,
+
+            num(
+              $("demoStartBalance")
+                .value,
+              10000
+            )
+          ),
+
+        riskPct:
+          clamp(
+            num(
+              $("demoRiskPct")
+                .value,
+              1
+            ),
+            .1,
+            5
+          ),
+
+        closedPnl:
+          0,
+
+        open:
+          [],
+
+        closed:
+          []
+      };
+
+      saveDemoState();
+
+      renderDemoTrading();
+    };
 
 
 /* ======================================================
@@ -4960,9 +7719,7 @@ async function refreshMacro(){
         "/api/macro"
       );
 
-
     renderMacro();
-
 
     renderIranGlobal();
 
@@ -4993,141 +7750,154 @@ function renderMacro(){
         null
     );
 
-
   $("macroCards")
     .innerHTML =
-      valid
-        .map(
-          x => `
 
-          <div class="card s3">
+      valid.map(
+        x => `
 
-          <div class="label">
-          ${x.name}
-          </div>
+        <div class="card s3">
 
-          <div class="metric medium">
-          ${price(
-            x.price
-          )}
-          </div>
+        <div class="label">
+        ${x.name}
+        </div>
 
-          <div class="${signClass(
-            x.changePct
-          )}">
-          ${pct(
-            x.changePct
-          )}
-          </div>
+        <div class="metric medium">
+        ${price(
+          x.price
+        )}
+        </div>
 
-          </div>
+        <div class="${signClass(
+          x.changePct
+        )}">
 
-          `
-        )
-        .join("");
+        ${pct(
+          x.changePct
+        )}
+
+        </div>
+
+        </div>
+        `
+      )
+      .join("");
 
 
   $("macroRows")
     .innerHTML =
-      macroData
-        .map(
-          x => `
 
-          <tr>
+      macroData.map(
+        x => `
 
-          <td>
-          <b>
-          ${x.name}
-          </b>
-          </td>
+        <tr>
 
-          <td>
-          ${
-            x.price ==
-            null
-              ? "--"
-              : price(
-                  x.price
-                )
-          }
-          </td>
+        <td>
+        <b>
+        ${x.name}
+        </b>
+        </td>
 
-          <td class="${signClass(
-            x.changePct
-          )}">
-          ${
-            x.changePct ==
-            null
-              ? "--"
-              : pct(
-                  x.changePct
-                )
-          }
-          </td>
+        <td>
+        ${
+          x.price ==
+          null
+            ? "--"
+            : price(
+                x.price
+              )
+        }
+        </td>
 
-          <td>
-          ${
-            x.stale
-              ? "CACHED"
-              : "LIVE"
-          }
-          </td>
+        <td class="${signClass(
+          x.changePct
+        )}">
 
-          </tr>
-
-          `
-        )
-        .join("");
-
-
-  macroChart.setOption({
-
-    grid:{
-      left:55,
-      right:20,
-      top:15,
-      bottom:35
-    },
-
-    xAxis:{
-      type:"category",
-
-      data:
-        valid.map(
-          x =>
-            x.symbol
-        )
-    },
-
-    yAxis:{
-      type:"value"
-    },
-
-    series:[{
-
-      type:"bar",
-
-      data:
-        valid.map(
-          x => ({
-
-            value:
-              num(
+        ${
+          x.changePct ==
+          null
+            ? "--"
+            : pct(
                 x.changePct
-              ),
+              )
+        }
 
-            itemStyle:{
-              color:
+        </td>
+
+        <td>
+        ${
+          x.stale
+            ? "CACHED"
+            : "LIVE"
+        }
+        </td>
+
+        </tr>
+        `
+      )
+      .join("");
+
+
+  macroChart
+    .setOption({
+
+      grid:{
+        left:
+          55,
+
+        right:
+          20,
+
+        top:
+          15,
+
+        bottom:
+          35
+      },
+
+      xAxis:{
+        type:
+          "category",
+
+        data:
+          valid.map(
+            x =>
+              x.symbol
+          )
+      },
+
+      yAxis:{
+        type:
+          "value"
+      },
+
+      series:[{
+
+        type:
+          "bar",
+
+        data:
+          valid.map(
+            x => ({
+
+              value:
                 num(
                   x.changePct
-                ) >= 0
-                  ? "#49af7d"
-                  : "#db6b6b"
-            }
-          })
-        )
-    }]
-  });
+                ),
+
+              itemStyle:{
+                color:
+                  num(
+                    x.changePct
+                  ) >=
+                  0
+                    ? "#49af7d"
+                    : "#db6b6b"
+              }
+            })
+          )
+      }]
+    });
 }
 
 
@@ -5144,24 +7914,19 @@ async function refreshIran(){
         "/api/iran"
       );
 
-
     $("iranState")
       .textContent =
         "LIVE";
-
 
     $("iranState")
       .className =
         "metric medium good";
 
-
     $("iranMini")
       .textContent =
         "LIVE";
 
-
     renderIran();
-
 
     renderIranGlobal();
 
@@ -5171,11 +7936,9 @@ async function refreshIran(){
       .textContent =
         "CACHED";
 
-
     $("iranState")
       .className =
         "metric medium warn";
-
 
     $("iranMini")
       .textContent =
@@ -5202,6 +7965,7 @@ function renderIran(){
 
   $("iranPrices")
     .innerHTML =
+
       iranData
         .map(
           x => `
@@ -5238,7 +8002,6 @@ function renderIran(){
           </div>
 
           </div>
-
           `
         )
         .join("");
@@ -5291,7 +8054,7 @@ function renderIran(){
 
 
 /* ======================================================
-   GLOBAL -> IRAN MAP
+   GLOBAL -> IRAN
 ====================================================== */
 
 function renderIranGlobal(){
@@ -5425,12 +8188,14 @@ function renderIranGlobal(){
   const oilStrength =
     Math.max(
       .2,
+
       (
         Math.abs(
           num(
             brent.changePct
           )
         ) +
+
         Math.abs(
           num(
             wti.changePct
@@ -5563,59 +8328,77 @@ function renderIranGlobal(){
   ];
 
 
-  iranGlobalChart.setOption({
+  iranGlobalChart
+    .setOption({
 
-    tooltip:{
+      tooltip:{
 
-      trigger:
-        "item",
+        trigger:
+          "item",
 
-      formatter:
-        p =>
-          p.dataType ===
-          "edge"
-            ? `${p.data.source} → ${p.data.target}<br>Influence score: ${Number(
-                p.data.value
-              ).toFixed(2)}`
-            : p.name
-    },
+        formatter:
+          p =>
+            p.dataType ===
+            "edge"
 
+              ? `${p.data.source} → ${p.data.target}<br>Influence score: ${Number(
+                  p.data.value
+                ).toFixed(2)}`
 
-    series:[{
-
-      type:"sankey",
-
-      left:20,
-
-      right:20,
-
-      top:20,
-
-      bottom:20,
-
-      nodeWidth:20,
-
-      nodeGap:18,
-
-      draggable:true,
-
-      label:{
-        color:"#344454",
-        fontSize:10
+              : p.name
       },
 
-      lineStyle:{
-        color:"gradient",
-        opacity:.6,
-        curveness:.5
-      },
+      series:[{
 
-      data:
-        nodes,
+        type:
+          "sankey",
 
-      links
-    }]
-  });
+        left:
+          20,
+
+        right:
+          20,
+
+        top:
+          20,
+
+        bottom:
+          20,
+
+        nodeWidth:
+          20,
+
+        nodeGap:
+          18,
+
+        draggable:
+          true,
+
+        label:{
+          color:
+            "#344454",
+
+          fontSize:
+            10
+        },
+
+        lineStyle:{
+          color:
+            "gradient",
+
+          opacity:
+            .6,
+
+          curveness:
+            .5
+        },
+
+        data:
+          nodes,
+
+        links
+      }]
+    });
 
 
   const usd =
@@ -5653,7 +8436,8 @@ function renderIranGlobal(){
 
     $("goldDriver")
       .textContent =
-        g > d
+        g >
+        d
           ? "GLOBAL GOLD"
           : "USD / FX PRESSURE";
 
@@ -5662,7 +8446,6 @@ function renderIranGlobal(){
     $("goldDriver")
       .textContent =
         "WAITING FOR IRAN DATA";
-
   }
 }
 
@@ -5675,6 +8458,8 @@ renderProfiles();
 
 renderWallets();
 
+renderDemoTrading();
+
 refreshHealth();
 
 refreshMarket();
@@ -5682,6 +8467,8 @@ refreshMarket();
 refreshFlow();
 
 refreshWallets();
+
+refreshKlines();
 
 refreshMacro();
 
@@ -5703,6 +8490,12 @@ setInterval(
 setInterval(
   refreshFlow,
   15000
+);
+
+
+setInterval(
+  refreshKlines,
+  30000
 );
 
 
