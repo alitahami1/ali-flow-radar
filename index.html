@@ -1,31 +1,14 @@
 <!doctype html>
-
 <html lang="fa" dir="rtl">
-
 <head>
-
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f6f8">
+<title>ALI Flow Radar Terminal v4.7</title>
 
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1"
->
-
-<meta
-  name="theme-color"
-  content="#f4f6f8"
->
-
-<title>
-ALI Flow Radar Terminal v4.7
-</title>
-
-<script
-  src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
 
 <style>
-
 :root{
   --bg:#f4f6f8;
   --panel:#fff;
@@ -53,10 +36,7 @@ body{
   min-height:100%;
   background:var(--bg);
   color:var(--text);
-  font-family:
-    Tahoma,
-    "Segoe UI",
-    sans-serif
+  font-family:Tahoma,"Segoe UI",sans-serif
 }
 
 header{
@@ -565,7 +545,6 @@ select{
 }
 
 @media(max-width:1000px){
-
   .s3,
   .s4,
   .s5,
@@ -588,7 +567,6 @@ select{
 }
 
 @media(max-width:600px){
-
   main{
     padding:8px
   }
@@ -614,123 +592,110 @@ select{
     grid-template-columns:1fr
   }
 }
-
 </style>
-
 </head>
 
 <body>
 
 <header>
-
 <div class="header-inner">
 
-<div class="topline">
+  <div class="topline">
 
-<div class="brandline">
+    <div class="brandline">
+      <div class="logo">A</div>
 
-<div class="logo">
-A
-</div>
+      <div>
+        <h1>
+          ALI FLOW RADAR
+          <span class="pill blue">
+            v4.7 TERMINAL
+          </span>
+        </h1>
 
-<div>
+        <div class="small">
+          Persistent Watchlist • Flow Trade Engine • Demo Trading • Iran / Global
+        </div>
+      </div>
+    </div>
 
-<h1>
-ALI FLOW RADAR
-<span class="pill blue">
-v4.7 TERMINAL
-</span>
-</h1>
+    <div class="livebox">
+      <span id="dot" class="dot"></span>
+      <span id="status">
+        CONNECTING
+      </span>
+    </div>
 
-<div class="small">
-Persistent Watchlist • Flow Trade Engine • Demo Trading • Iran / Global
-</div>
+  </div>
 
-</div>
+  <nav>
 
-</div>
+    <button
+      class="tabbtn active"
+      data-tab="terminal">
+      Terminal
+    </button>
 
-<div class="livebox">
+    <button
+      class="tabbtn"
+      data-tab="discover">
+      Trader Discovery
+    </button>
 
-<span
-  id="dot"
-  class="dot">
-</span>
+    <button
+      class="tabbtn"
+      data-tab="wallets">
+      Smart Wallets
+    </button>
 
-<span id="status">
-CONNECTING
-</span>
+    <button
+      class="tabbtn"
+      data-tab="famous">
+      Famous Traders
+    </button>
 
-</div>
+    <button
+      class="tabbtn"
+      data-tab="moneyflow">
+      Money Flow
+    </button>
 
-</div>
+    <button
+      class="tabbtn"
+      data-tab="demo">
+      Demo Trading
+    </button>
 
+    <button
+      class="tabbtn"
+      data-tab="iranGlobal">
+      Iran / Global
+    </button>
 
-<nav>
+    <button
+      class="tabbtn"
+      data-tab="macro">
+      Macro
+    </button>
 
-<button
-  class="tabbtn active"
-  data-tab="terminal">
-Terminal
-</button>
+    <button
+      class="tabbtn"
+      data-tab="system">
+      System
+    </button>
 
-<button
-  class="tabbtn"
-  data-tab="discover">
-Trader Discovery
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="wallets">
-Smart Wallets
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="famous">
-Famous Traders
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="moneyflow">
-Money Flow
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="demo">
-Demo Trading
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="iranGlobal">
-Iran / Global
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="macro">
-Macro
-</button>
-
-<button
-  class="tabbtn"
-  data-tab="system">
-System
-</button>
-
-</nav>
+  </nav>
 
 </div>
-
 </header>
 
 
 <main>
 
+
+<!-- =====================================================
+     TERMINAL
+===================================================== -->
 
 <section
   id="terminal"
@@ -742,15 +707,8 @@ System
 <div class="card s4">
 
 <div class="card-title">
-
-<h2>
-Market Intelligence
-</h2>
-
-<small>
-LIVE ENGINE
-</small>
-
+<h2>Market Intelligence</h2>
+<small>LIVE ENGINE</small>
 </div>
 
 <div class="label">
@@ -763,8 +721,7 @@ Composite BTC Confidence
 --
 </div>
 
-<div class="sep">
-</div>
+<div class="sep"></div>
 
 <div class="signal">
 
@@ -811,15 +768,8 @@ Iran:
 <div class="card s4">
 
 <div class="card-title">
-
-<h2>
-BTC Probability Engine
-</h2>
-
-<small>
-HEURISTIC
-</small>
-
+<h2>BTC Probability Engine</h2>
+<small>HEURISTIC</small>
 </div>
 
 <div class="prob-grid">
@@ -855,8 +805,7 @@ P(DOWN)
 
 </div>
 
-<div class="sep">
-</div>
+<div class="sep"></div>
 
 <div class="small">
 
@@ -887,15 +836,8 @@ Wallet:
 <div class="card s4">
 
 <div class="card-title">
-
-<h2>
-Top Smart Money Signal
-</h2>
-
-<small>
-CONSENSUS
-</small>
-
+<h2>Top Smart Money Signal</h2>
+<small>CONSENSUS</small>
 </div>
 
 <div
@@ -904,8 +846,7 @@ CONSENSUS
 NO SIGNAL
 </div>
 
-<div id="consensusList">
-</div>
+<div id="consensusList"></div>
 
 </div>
 
@@ -913,15 +854,8 @@ NO SIGNAL
 <div class="card s5">
 
 <div class="card-title">
-
-<h2>
-Probability Lattice
-</h2>
-
-<small>
-MULTI-ASSET
-</small>
-
+<h2>Probability Lattice</h2>
+<small>MULTI-ASSET</small>
 </div>
 
 <div
@@ -935,15 +869,8 @@ MULTI-ASSET
 <div class="card s7">
 
 <div class="card-title">
-
-<h2>
-Smart Wallet Relationship Graph
-</h2>
-
-<small>
-POSITION NETWORK
-</small>
-
+<h2>Smart Wallet Relationship Graph</h2>
+<small>POSITION NETWORK</small>
 </div>
 
 <div
@@ -957,15 +884,8 @@ POSITION NETWORK
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-BTC Live Pulse
-</h2>
-
-<small>
-LIVE
-</small>
-
+<h2>BTC Live Pulse</h2>
+<small>LIVE</small>
 </div>
 
 <div
@@ -979,19 +899,11 @@ LIVE
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Early Money Radar
-</h2>
-
-<small>
-FLOW SIGNAL
-</small>
-
+<h2>Early Money Radar</h2>
+<small>FLOW SIGNAL</small>
 </div>
 
-<div id="earlyMoney">
-</div>
+<div id="earlyMoney"></div>
 
 </div>
 
@@ -1001,25 +913,21 @@ FLOW SIGNAL
 </section>
 
 
+<!-- =====================================================
+     TRADER DISCOVERY
+===================================================== -->
+
 <section
   id="discover"
   class="tab">
 
 <div class="grid">
 
-
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Trader Discovery
-</h2>
-
-<small>
-HYPERLIQUID
-</small>
-
+<h2>Trader Discovery</h2>
+<small>HYPERLIQUID</small>
 </div>
 
 <div class="filters">
@@ -1066,7 +974,6 @@ Scan Traders
 <thead>
 
 <tr>
-
 <th>Rank</th>
 <th>Trader</th>
 <th>Score</th>
@@ -1076,23 +983,24 @@ Scan Traders
 <th>Month ROI</th>
 <th>Style</th>
 <th>Action</th>
-
 </tr>
 
 </thead>
 
-<tbody id="discoverRows">
-</tbody>
+<tbody id="discoverRows"></tbody>
 
 </table>
 
 </div>
 
-
 </div>
 
 </section>
 
+
+<!-- =====================================================
+     SMART WALLETS
+===================================================== -->
 
 <section
   id="wallets"
@@ -1100,23 +1008,15 @@ Scan Traders
 
 <div class="grid">
 
-
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Smart Wallet Watchlist
-</h2>
-
-<small>
-PERMANENT IN THIS BROWSER
-</small>
-
+<h2>Smart Wallet Watchlist</h2>
+<small>PERMANENT IN THIS BROWSER</small>
 </div>
 
 <div class="small">
-Walletهایی که Follow می‌کنی در مرورگر ذخیره می‌شوند و با باز و بسته شدن سایت باقی می‌مانند.
+از این نسخه نام کلید ذخیره‌سازی ثابت است؛ Walletهایی که Follow می‌کنی بعد از بستن و باز کردن سایت باقی می‌مانند.
 </div>
 
 <div
@@ -1169,7 +1069,6 @@ Add Wallet
 <thead>
 
 <tr>
-
 <th>Trader</th>
 <th>Tier</th>
 <th>Score</th>
@@ -1180,23 +1079,24 @@ Add Wallet
 <th>Positions</th>
 <th>Status</th>
 <th>Action</th>
-
 </tr>
 
 </thead>
 
-<tbody id="walletRows">
-</tbody>
+<tbody id="walletRows"></tbody>
 
 </table>
 
 </div>
 
-
 </div>
 
 </section>
 
+
+<!-- =====================================================
+     FAMOUS
+===================================================== -->
 
 <section
   id="famous"
@@ -1204,23 +1104,15 @@ Add Wallet
 
 <div class="grid">
 
-
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Famous Crypto / Forex / Macro Traders
-</h2>
-
-<small>
-CURATED DIRECTORY
-</small>
-
+<h2>Famous Crypto / Forex / Macro Traders</h2>
+<small>CURATED DIRECTORY</small>
 </div>
 
 <div class="small">
-این بخش فقط پروفایل افراد معروف است. تا زمانی که Wallet عمومی معتبر نداشته باشیم پوزیشن زنده‌ای به آنها نسبت داده نمی‌شود.
+این بخش همیشه داخل برنامه است. نام مشهور بودن به معنی سودآوری یا توصیه سرمایه‌گذاری نیست. تا وقتی آدرس عمومیِ تأییدشده نداشته باشیم، برای یک فرد پوزیشن زنده نمایش نمی‌دهیم.
 </div>
 
 </div>
@@ -1229,15 +1121,8 @@ CURATED DIRECTORY
 <div class="card s6">
 
 <div class="card-title">
-
-<h2>
-Crypto
-</h2>
-
-<small>
-PROFILES
-</small>
-
+<h2>Crypto</h2>
+<small>PROFILES</small>
 </div>
 
 <div
@@ -1251,15 +1136,8 @@ PROFILES
 <div class="card s6">
 
 <div class="card-title">
-
-<h2>
-Forex / Macro
-</h2>
-
-<small>
-PROFILES
-</small>
-
+<h2>Forex / Macro</h2>
+<small>PROFILES</small>
 </div>
 
 <div
@@ -1269,18 +1147,20 @@ PROFILES
 
 </div>
 
-
 </div>
 
 </section>
 
+
+<!-- =====================================================
+     MONEY FLOW
+===================================================== -->
 
 <section
   id="moneyflow"
   class="tab">
 
 <div class="grid">
-
 
 <div class="card s3">
 
@@ -1345,19 +1225,12 @@ Total Outflow
 <div class="card s8">
 
 <div class="card-title">
-
-<h2>
-Smart Money Path
-</h2>
-
-<small>
-CAPITAL ROTATION
-</small>
-
+<h2>Smart Money Path</h2>
+<small>CAPITAL ROTATION</small>
 </div>
 
 <div class="small">
-مسیر استنباطی تغییر اکسپوژر Walletهای Follow شده است و به معنی انتقال مستقیم بلاک‌چینی نیست.
+مسیر استنباطی تغییر اکسپوژر Walletهای Follow شده؛ انتقال مستقیم بلاک‌چینی نیست.
 </div>
 
 <div
@@ -1371,15 +1244,8 @@ CAPITAL ROTATION
 <div class="card s4">
 
 <div class="card-title">
-
-<h2>
-Top Money Paths
-</h2>
-
-<small>
-LIVE
-</small>
-
+<h2>Top Money Paths</h2>
+<small>LIVE</small>
 </div>
 
 <div id="moneyPathList">
@@ -1392,15 +1258,8 @@ Waiting...
 <div class="card s6">
 
 <div class="card-title">
-
-<h2>
-Capital Inflow
-</h2>
-
-<small>
-DESTINATIONS
-</small>
-
+<h2>Capital Inflow</h2>
+<small>DESTINATIONS</small>
 </div>
 
 <div id="moneyInflows">
@@ -1413,15 +1272,8 @@ DESTINATIONS
 <div class="card s6">
 
 <div class="card-title">
-
-<h2>
-Capital Outflow
-</h2>
-
-<small>
-SOURCES
-</small>
-
+<h2>Capital Outflow</h2>
+<small>SOURCES</small>
 </div>
 
 <div id="moneyOutflows">
@@ -1434,15 +1286,8 @@ SOURCES
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Net Capital Rotation
-</h2>
-
-<small>
-POSITIVE = INFLOW
-</small>
-
+<h2>Net Capital Rotation</h2>
+<small>POSITIVE = INFLOW</small>
 </div>
 
 <div
@@ -1452,11 +1297,14 @@ POSITIVE = INFLOW
 
 </div>
 
-
 </div>
 
 </section>
 
+
+<!-- =====================================================
+     DEMO TRADING
+===================================================== -->
 
 <section
   id="demo"
@@ -1468,19 +1316,14 @@ POSITIVE = INFLOW
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Flow Trade Engine — Demo Only
-</h2>
-
-<small>
-ENTRY • STOP • TARGET • EXIT
-</small>
-
+<h2>Flow Trade Engine — Demo Only</h2>
+<small>ENTRY • STOP • TARGET • EXIT</small>
 </div>
 
 <div class="demo-note">
-این بخش فقط معامله آزمایشی ثبت می‌کند و هیچ سفارش واقعی به صرافی نمی‌فرستد. سیگنال از Smart Money Rotation، Wallet Consensus، Taker Flow، روند 5 دقیقه‌ای و وضعیت کلی BTC ساخته می‌شود. فقط Grade A و A+ قابلیت Open Demo دارند.
+این بخش فقط معامله آزمایشی ثبت می‌کند و هیچ سفارش واقعی به صرافی نمی‌فرستد.
+سیگنال از Smart Money Rotation، Wallet Consensus، Taker Flow، روند 5 دقیقه‌ای و وضعیت کلی BTC ساخته می‌شود.
+برای جلوگیری از سیگنال کاذب، فقط Grade A و A+ قابلیت Open Demo دارند.
 </div>
 
 </div>
@@ -1589,15 +1432,8 @@ Profit Factor
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Demo Risk Settings
-</h2>
-
-<small>
-NO LEVERAGE
-</small>
-
+<h2>Demo Risk Settings</h2>
+<small>NO LEVERAGE</small>
 </div>
 
 <div class="filters">
@@ -1647,15 +1483,8 @@ Reset Demo
 <div class="card s12 scroll">
 
 <div class="card-title">
-
-<h2>
-LONG / SHORT Entry & Exit Board
-</h2>
-
-<small>
-5M FLOW ENGINE
-</small>
-
+<h2>LONG / SHORT Entry & Exit Board</h2>
+<small>5M FLOW ENGINE</small>
 </div>
 
 <table>
@@ -1663,7 +1492,6 @@ LONG / SHORT Entry & Exit Board
 <thead>
 
 <tr>
-
 <th>Asset</th>
 <th>Signal</th>
 <th>Grade</th>
@@ -1677,13 +1505,11 @@ LONG / SHORT Entry & Exit Board
 <th>State</th>
 <th>Why / Exit Rule</th>
 <th>Action</th>
-
 </tr>
 
 </thead>
 
-<tbody id="tradeSignalRows">
-</tbody>
+<tbody id="tradeSignalRows"></tbody>
 
 </table>
 
@@ -1693,15 +1519,8 @@ LONG / SHORT Entry & Exit Board
 <div class="card s12 scroll">
 
 <div class="card-title">
-
-<h2>
-Open Demo Positions
-</h2>
-
-<small>
-LIVE PNL
-</small>
-
+<h2>Open Demo Positions</h2>
+<small>LIVE PNL</small>
 </div>
 
 <table>
@@ -1709,7 +1528,6 @@ LIVE PNL
 <thead>
 
 <tr>
-
 <th>Asset</th>
 <th>Side</th>
 <th>Entry</th>
@@ -1722,13 +1540,11 @@ LIVE PNL
 <th>PnL</th>
 <th>Opened</th>
 <th>Action</th>
-
 </tr>
 
 </thead>
 
-<tbody id="demoOpenRows">
-</tbody>
+<tbody id="demoOpenRows"></tbody>
 
 </table>
 
@@ -1738,15 +1554,8 @@ LIVE PNL
 <div class="card s12 scroll">
 
 <div class="card-title">
-
-<h2>
-Closed Demo Trades
-</h2>
-
-<small>
-JOURNAL
-</small>
-
+<h2>Closed Demo Trades</h2>
+<small>JOURNAL</small>
 </div>
 
 <table>
@@ -1754,7 +1563,6 @@ JOURNAL
 <thead>
 
 <tr>
-
 <th>Asset</th>
 <th>Side</th>
 <th>Entry</th>
@@ -1763,23 +1571,24 @@ JOURNAL
 <th>Reason</th>
 <th>Opened</th>
 <th>Closed</th>
-
 </tr>
 
 </thead>
 
-<tbody id="demoClosedRows">
-</tbody>
+<tbody id="demoClosedRows"></tbody>
 
 </table>
 
 </div>
 
-
 </div>
 
 </section>
 
+
+<!-- =====================================================
+     IRAN GLOBAL
+===================================================== -->
 
 <section
   id="iranGlobal"
@@ -1791,19 +1600,12 @@ JOURNAL
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Iran / Global Market Intelligence
-</h2>
-
-<small>
-CROSS-MARKET
-</small>
-
+<h2>Iran / Global Market Intelligence</h2>
+<small>CROSS-MARKET</small>
 </div>
 
 <div class="small">
-قیمت‌های داخلی کنار طلا، نفت و شاخص دلار جهانی.
+قیمت‌های داخلی کنار طلا، نفت و شاخص دلار جهانی. نمودار رابطه پایین مدل اثر است، نه اثبات انتقال مستقیم پول.
 </div>
 
 </div>
@@ -1898,15 +1700,8 @@ DXY
 <div class="card s8">
 
 <div class="card-title">
-
-<h2>
-Global → Iran Influence Map
-</h2>
-
-<small>
-RELATIONSHIP MODEL
-</small>
-
+<h2>Global → Iran Influence Map</h2>
+<small>RELATIONSHIP MODEL</small>
 </div>
 
 <div
@@ -1920,51 +1715,36 @@ RELATIONSHIP MODEL
 <div class="card s4">
 
 <div class="card-title">
-
-<h2>
-Iran Gold Driver
-</h2>
-
-<small>
-MODEL
-</small>
-
+<h2>Iran Gold Driver</h2>
+<small>MODEL</small>
 </div>
 
 <div class="signal">
-
 USD/IRR:
 <b id="iranUsdText">
 --
 </b>
-
 </div>
 
 <div class="signal">
-
 Gold 18K:
 <b id="iranGold18Text">
 --
 </b>
-
 </div>
 
 <div class="signal">
-
 Global Gold:
 <b id="globalGoldText">
 --
 </b>
-
 </div>
 
 <div class="signal">
-
 Dominant driver:
 <b id="goldDriver">
 --
 </b>
-
 </div>
 
 </div>
@@ -1974,6 +1754,10 @@ Dominant driver:
 
 </section>
 
+
+<!-- =====================================================
+     MACRO
+===================================================== -->
 
 <section
   id="macro"
@@ -1985,15 +1769,8 @@ Dominant driver:
 <div class="card s12">
 
 <div class="card-title">
-
-<h2>
-Global Macro Radar
-</h2>
-
-<small>
-GOLD • OIL • FX
-</small>
-
+<h2>Global Macro Radar</h2>
+<small>GOLD • OIL • FX</small>
 </div>
 
 <div
@@ -2007,15 +1784,8 @@ GOLD • OIL • FX
 <div class="card s7">
 
 <div class="card-title">
-
-<h2>
-Macro Cross-Asset Map
-</h2>
-
-<small>
-DAILY MOVE
-</small>
-
+<h2>Macro Cross-Asset Map</h2>
+<small>DAILY MOVE</small>
 </div>
 
 <div
@@ -2033,18 +1803,15 @@ DAILY MOVE
 <thead>
 
 <tr>
-
 <th>Market</th>
 <th>Price</th>
 <th>Move</th>
 <th>Status</th>
-
 </tr>
 
 </thead>
 
-<tbody id="macroRows">
-</tbody>
+<tbody id="macroRows"></tbody>
 
 </table>
 
@@ -2055,6 +1822,10 @@ DAILY MOVE
 
 </section>
 
+
+<!-- =====================================================
+     SYSTEM
+===================================================== -->
 
 <section
   id="system"
@@ -2583,7 +2354,9 @@ function loadDemoState(){
         "null"
       );
 
-    if (!d) {
+    if (
+      !d
+    ) {
       return fresh;
     }
 
@@ -2659,9 +2432,11 @@ let walletData =
   })();
 
 
-let market = {};
+let market =
+  {};
 
-let flow = {};
+let flow =
+  {};
 
 let macroData =
   [];
@@ -2768,7 +2543,9 @@ function money(v){
     num(v);
 
   const a =
-    Math.abs(v);
+    Math.abs(
+      v
+    );
 
   if (
     a >=
@@ -2778,7 +2555,9 @@ function money(v){
     return (
       v /
       1e9
-    ).toFixed(2) +
+    ).toFixed(
+      2
+    ) +
     "B";
   }
 
@@ -2790,7 +2569,9 @@ function money(v){
     return (
       v /
       1e6
-    ).toFixed(2) +
+    ).toFixed(
+      2
+    ) +
     "M";
   }
 
@@ -2802,18 +2583,24 @@ function money(v){
     return (
       v /
       1e3
-    ).toFixed(1) +
+    ).toFixed(
+      1
+    ) +
     "K";
   }
 
-  return v.toFixed(0);
+  return v.toFixed(
+    0
+  );
 }
 
 
 function price(v){
 
   v =
-    Number(v);
+    Number(
+      v
+    );
 
   if (
     !Number.isFinite(
@@ -2825,7 +2612,9 @@ function price(v){
   }
 
   if (
-    Math.abs(v) <
+    Math.abs(
+      v
+    ) <
     1
   ) {
 
@@ -2835,7 +2624,9 @@ function price(v){
   }
 
   if (
-    Math.abs(v) <
+    Math.abs(
+      v
+    ) <
     100
   ) {
 
@@ -2859,7 +2650,9 @@ function price(v){
 function pct(v){
 
   v =
-    Number(v);
+    Number(
+      v
+    );
 
   if (
     !Number.isFinite(
@@ -2888,6 +2681,7 @@ function shortAddress(
 ){
 
   return a
+
     ? a.slice(
         0,
         6
@@ -2896,6 +2690,7 @@ function shortAddress(
       a.slice(
         -4
       )
+
     : "--";
 }
 
@@ -2903,7 +2698,9 @@ function shortAddress(
 function toman(v){
 
   v =
-    Number(v);
+    Number(
+      v
+    );
 
   if (
     !Number.isFinite(
@@ -3096,7 +2893,7 @@ window.addEventListener(
 
 
 /* ======================================================
-   FAMOUS
+   FAMOUS DIRECTORY
 ====================================================== */
 
 function renderProfiles(){
@@ -3204,7 +3001,9 @@ async function refreshMarket(){
         "/api/binance?symbols=" +
 
         encodeURIComponent(
-          symbols.join(",")
+          symbols.join(
+            ","
+          )
         )
       );
 
@@ -3321,7 +3120,9 @@ async function refreshFlow(){
               0,
               10
             )
-            .join(",")
+            .join(
+              ","
+            )
         )
       );
 
@@ -3614,7 +3415,9 @@ function renderTerminal(){
   $("probUp")
     .textContent =
       bp.probability
-        .toFixed(0) +
+        .toFixed(
+          0
+        ) +
       "%";
 
   $("probDown")
@@ -3623,28 +3426,38 @@ function renderTerminal(){
         100 -
         bp.probability
       )
-        .toFixed(0) +
+        .toFixed(
+          0
+        ) +
       "%";
 
   $("probFlow")
     .textContent =
       bp.flowScore
-        .toFixed(0);
+        .toFixed(
+          0
+        );
 
   $("probMomentum")
     .textContent =
       bp.momentum
-        .toFixed(0);
+        .toFixed(
+          0
+        );
 
   $("probWallet")
     .textContent =
       bp.walletScore
-        .toFixed(0);
+        .toFixed(
+          0
+        );
 
   $("globalConfidence")
     .textContent =
       bp.probability
-        .toFixed(0) +
+        .toFixed(
+          0
+        ) +
       "/100";
 
   $("globalConfidence")
@@ -4765,7 +4578,9 @@ function renderWallets(){
                 : num(
                     d.stats30.winRate
                   )
-                    .toFixed(1) +
+                    .toFixed(
+                      1
+                    ) +
                   "%"
             }
 
@@ -4944,7 +4759,9 @@ async function refreshMoneyFlow(){
           w =>
             w.address
         )
-        .join(",");
+        .join(
+          ","
+        );
 
     const d =
       await getJson(
@@ -5313,6 +5130,7 @@ function renderMoneyLists(){
       ?.value ||
     1;
 
+
   $("moneyInflows")
     .innerHTML =
 
@@ -5677,7 +5495,9 @@ function technicalData(
       market[
         symbol
       ]?.lastPrice,
-      closes.at(-1) ||
+      closes.at(
+        -1
+      ) ||
       0
     );
 
@@ -5720,13 +5540,21 @@ function technicalData(
   const recent =
     closes.length >
     6 &&
-    closes.at(-6)
+    closes.at(
+      -6
+    )
       ? (
           (
-            closes.at(-1) -
-            closes.at(-6)
+            closes.at(
+              -1
+            ) -
+            closes.at(
+              -6
+            )
           ) /
-          closes.at(-6)
+          closes.at(
+            -6
+          )
         ) *
         100
       : 0;
@@ -5940,6 +5768,14 @@ function buildTradePlan(
       m.lastPrice
     );
 
+
+  /*
+    مهم:
+    اگر Market هنوز لود نشده باشد
+    خروجی کامل و امن برمی‌گردانیم
+    تا JavaScript متوقف نشود.
+  */
+
   if (
     !current
   ) {
@@ -5947,6 +5783,9 @@ function buildTradePlan(
     return {
 
       symbol,
+
+      current:
+        0,
 
       side:
         "NO TRADE",
@@ -5957,10 +5796,66 @@ function buildTradePlan(
       longScore:
         50,
 
+      shortScore:
+        50,
+
+      directionScore:
+        50,
+
+      entryLow:
+        null,
+
+      entryHigh:
+        null,
+
+      entryMid:
+        null,
+
+      stop:
+        null,
+
+      tp1:
+        null,
+
+      tp2:
+        null,
+
+      tp3:
+        null,
+
+      riskDistance:
+        null,
+
       ready:
-        false
+        false,
+
+      reasons:[
+        "Waiting for live market data"
+      ],
+
+      exitRule:
+        "Waiting for market connection",
+
+      flowScore:
+        50,
+
+      walletScore:
+        50,
+
+      rotationScore:
+        50,
+
+      rotationDelta:
+        0,
+
+      technicalScore:
+        50,
+
+      marketScore:
+        50
     };
   }
+
 
   const f =
     flow[
@@ -5992,6 +5887,7 @@ function buildTradePlan(
       50
     );
 
+
   const longScore =
     clamp(
 
@@ -6014,15 +5910,18 @@ function buildTradePlan(
       100
     );
 
+
   const shortScore =
     100 -
     longScore;
+
 
   let side =
     "NO TRADE";
 
   let grade =
     "-";
+
 
   if (
     longScore >=
@@ -6342,7 +6241,9 @@ function fmtTradePrice(
   if (
     v == null ||
     !Number.isFinite(
-      Number(v)
+      Number(
+        v
+      )
     )
   ) {
 
@@ -6350,7 +6251,9 @@ function fmtTradePrice(
   }
 
   const x =
-    Number(v);
+    Number(
+      v
+    );
 
   return x <
     1
@@ -7750,6 +7653,7 @@ function renderMacro(){
         null
     );
 
+
   $("macroCards")
     .innerHTML =
 
@@ -8454,11 +8358,14 @@ function renderIranGlobal(){
    START
 ====================================================== */
 
+/*
+  اول داده‌ها را می‌گیریم.
+  Demo Trading دیگر قبل از Market اجرا نمی‌شود.
+*/
+
 renderProfiles();
 
 renderWallets();
-
-renderDemoTrading();
 
 refreshHealth();
 
@@ -8478,6 +8385,12 @@ refreshIran();
 setTimeout(
   refreshMoneyFlow,
   7000
+);
+
+
+setTimeout(
+  renderDemoTrading,
+  3000
 );
 
 
@@ -8531,5 +8444,4 @@ setInterval(
 </script>
 
 </body>
-
 </html>
