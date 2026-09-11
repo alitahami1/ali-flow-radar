@@ -1,19 +1,18 @@
 const express = require("express");
 const fetch = require("node-fetch");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "256kb" }));
-app.use(express.static(path.join(__dirname)));
 
 const cache = new Map();
 const lastGood = new Map();
 const lastGoodWallet = new Map();
 const walletHistory = new Map();
 const universeHistory = new Map();
-
 const MAX_ROTATION_SNAPSHOTS = 240;
 
 const num = (v, fallback = 0) => {
@@ -21,11 +20,10 @@ const num = (v, fallback = 0) => {
   return Number.isFinite(x) ? x : fallback;
 };
 
-const clamp = (x, a, b) =>
-  Math.max(a, Math.min(b, x));
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function cached(key, ttl, fn) {
-
   const hit = cache.get(key);
 
   if (
@@ -53,7 +51,7 @@ async function fetchText(url, options = {}) {
 
     headers: {
       "User-Agent":
-        "Mozilla/5.0 ALI-Flow-Radar/5.2",
+        "Mozilla/5.0 ALI-Flow-Radar/5.4",
 
       Accept:
         "text/html,text/plain,text/csv,application/json,*/*",
@@ -295,12 +293,16 @@ function atrFromKlines(
   ) {
 
     const h =
-      num(rows[i][2]);
+      num(
+        rows[i][2]
+      );
 
     const l =
-      num(rows[i][3]);
+      num(
+        rows[i][3]
+      );
 
-    const previousClose =
+    const pc =
       num(
         rows[i - 1][4]
       );
@@ -313,12 +315,12 @@ function atrFromKlines(
 
         Math.abs(
           h -
-          previousClose
+          pc
         ),
 
         Math.abs(
           l -
-          previousClose
+          pc
         )
       )
     );
@@ -332,7 +334,8 @@ function atrFromKlines(
   return x.length
     ? x.reduce(
         (a, b) =>
-          a + b,
+          a +
+          b,
         0
       ) /
       x.length
@@ -355,18 +358,18 @@ function returnPct(
   const last =
     values.at(-1);
 
-  const previous =
+  const prev =
     values.at(
       -(barsBack + 1)
     );
 
-  return previous
+  return prev
     ? (
         (
           last -
-          previous
+          prev
         ) /
-        previous
+        prev
       ) *
       100
     : 0;
@@ -386,13 +389,13 @@ app.get(
       ok: true,
 
       version:
-        "5.2",
+        "5.4",
 
       app:
         "ALI Flow Radar",
 
       universe:
-        "Dynamic top-20 inflow + technical ranking",
+        "Dynamic early-flow + multi-timeframe technical ranking",
 
       time:
         new Date()
@@ -511,7 +514,7 @@ app.get(
 
 
 /* ======================================================
-   ORDER FLOW
+   SAMPLE FLOW
 ====================================================== */
 
 async function getFlowForSymbol(
@@ -890,7 +893,12 @@ app.get(
 
 
 /* ======================================================
-   DYNAMIC TOP 20
+   DYNAMIC TOP-20 EARLY-FLOW UNIVERSE v5.4
+
+   - Flow 1m / 5m / 15m
+   - Technical 5m / 15m / 1h
+   - Anti-chase
+   - Early accumulation / pullback
 ====================================================== */
 
 const EXCLUDED_BASES =
@@ -952,10 +960,391 @@ function isEligibleUSDT(
 }
 
 
+function rawToBar(r) {
+
+  return {
+
+    openTime:
+      num(
+        r[0]
+      ),
+
+    open:
+      num(
+        r[1]
+      ),
+
+    high:
+      num(
+        r[2]
+      ),
+
+    low:
+      num(
+        r[3]
+      ),
+
+    close:
+      num(
+        r[4]
+      ),
+
+    volume:
+      num(
+        r[5]
+      ),
+
+    closeTime:
+      num(
+        r[6]
+      ),
+
+    quoteVolume:
+      num(
+        r[7]
+      ),
+
+    trades:
+      num(
+        r[8]
+      ),
+
+    takerBuyBase:
+      num(
+        r[9]
+      ),
+
+    takerBuyQuote:
+      num(
+        r[10]
+      )
+  };
+}
+
+
+function aggregateBars(
+  rawRows,
+  minutes
+) {
+
+  const bucketMs =
+    minutes *
+    60000;
+
+  const buckets =
+    new Map();
+
+  for (
+    const raw
+    of rawRows ||
+    []
+  ) {
+
+    const r =
+      Array.isArray(
+        raw
+      )
+        ? rawToBar(raw)
+        : raw;
+
+    const key =
+      Math.floor(
+        r.openTime /
+        bucketMs
+      ) *
+      bucketMs;
+
+    let b =
+      buckets.get(
+        key
+      );
+
+    if (!b) {
+
+      b = {
+
+        openTime:
+          key,
+
+        open:
+          r.open,
+
+        high:
+          r.high,
+
+        low:
+          r.low,
+
+        close:
+          r.close,
+
+        quoteVolume:
+          0,
+
+        takerBuyQuote:
+          0,
+
+        trades:
+          0
+      };
+
+      buckets.set(
+        key,
+        b
+      );
+    }
+
+    b.high =
+      Math.max(
+        b.high,
+        r.high
+      );
+
+    b.low =
+      Math.min(
+        b.low,
+        r.low
+      );
+
+    b.close =
+      r.close;
+
+    b.quoteVolume +=
+      r.quoteVolume;
+
+    b.takerBuyQuote +=
+      r.takerBuyQuote;
+
+    b.trades +=
+      r.trades;
+  }
+
+  return Array.from(
+    buckets.values()
+  )
+    .sort(
+      (a, b) =>
+        a.openTime -
+        b.openTime
+    );
+}
+
+
+function flowFromBars(
+  bars,
+  count
+) {
+
+  const rows =
+    (
+      bars ||
+      []
+    )
+      .slice(
+        -count
+      );
+
+  let total = 0;
+  let buy = 0;
+
+  for (
+    const r
+    of rows
+  ) {
+
+    total +=
+      num(
+        r.quoteVolume
+      );
+
+    buy +=
+      num(
+        r.takerBuyQuote
+      );
+  }
+
+  const sell =
+    Math.max(
+      0,
+      total -
+      buy
+    );
+
+  const buyRatio =
+    total
+      ? (
+          buy /
+          total
+        ) *
+        100
+      : 50;
+
+  const netFlow =
+    buy -
+    sell;
+
+  const intensityPct =
+    total
+      ? (
+          netFlow /
+          total
+        ) *
+        100
+      : 0;
+
+  return {
+
+    buy,
+
+    sell,
+
+    total,
+
+    netFlow,
+
+    buyRatio,
+
+    intensityPct,
+
+    score:
+      clamp(
+        50 +
+        (
+          buyRatio -
+          50
+        ) *
+        1.75,
+        0,
+        100
+      )
+  };
+}
+
+
+function atrObjects(
+  rows,
+  period = 14
+) {
+
+  if (
+    !rows ||
+    rows.length <
+    2
+  ) {
+    return 0;
+  }
+
+  const trs = [];
+
+  for (
+    let i = 1;
+    i < rows.length;
+    i++
+  ) {
+
+    const h =
+      num(
+        rows[i].high
+      );
+
+    const l =
+      num(
+        rows[i].low
+      );
+
+    const pc =
+      num(
+        rows[i - 1].close
+      );
+
+    trs.push(
+
+      Math.max(
+
+        h -
+        l,
+
+        Math.abs(
+          h -
+          pc
+        ),
+
+        Math.abs(
+          l -
+          pc
+        )
+      )
+    );
+  }
+
+  const x =
+    trs.slice(
+      -period
+    );
+
+  return x.length
+    ? x.reduce(
+        (a, b) =>
+          a +
+          b,
+        0
+      ) /
+      x.length
+    : 0;
+}
+
+
+function lastSwing(
+  rows,
+  side,
+  lookback = 12
+) {
+
+  const x =
+    (
+      rows ||
+      []
+    )
+      .slice(
+        -lookback
+      );
+
+  if (!x.length) {
+    return null;
+  }
+
+  if (
+    side ===
+    "LOW"
+  ) {
+
+    return Math.min(
+      ...x.map(
+        r =>
+          num(
+            r.low,
+            Infinity
+          )
+      )
+    );
+  }
+
+  return Math.max(
+    ...x.map(
+      r =>
+        num(
+          r.high,
+          -Infinity
+        )
+    )
+  );
+}
+
+
 function updateUniverseHistory(
   symbol,
-  netFlow,
-  buyRatio
+  flow5,
+  flow15
 ) {
 
   const arr =
@@ -969,14 +1358,20 @@ function updateUniverseHistory(
     time:
       Date.now(),
 
-    netFlow,
+    flow5:
+      num(
+        flow5
+      ),
 
-    buyRatio
+    flow15:
+      num(
+        flow15
+      )
   });
 
   while (
     arr.length >
-    6
+    8
   ) {
 
     arr.shift();
@@ -998,10 +1393,10 @@ function updateUniverseHistory(
   const positive =
     arr.filter(
       x =>
-        x.netFlow >
-        0 &&
-        x.buyRatio >=
-        50
+        x.flow5 >=
+        52 &&
+        x.flow15 >=
+        51
     )
       .length;
 
@@ -1013,72 +1408,137 @@ function updateUniverseHistory(
 }
 
 
-async function analyzeUniverseSymbol(
+function timeframeTrendScore(
+  fast,
+  slow,
+  atrValue
+) {
+
+  if (
+    !Number.isFinite(
+      fast
+    ) ||
+    !Number.isFinite(
+      slow
+    )
+  ) {
+
+    return 50;
+  }
+
+  const scale =
+    Math.max(
+
+      Math.abs(
+        atrValue
+      ),
+
+      Math.abs(
+        slow
+      ) *
+      0.001,
+
+      1e-12
+    );
+
+  return clamp(
+
+    50 +
+
+    (
+      (
+        fast -
+        slow
+      ) /
+      scale
+    ) *
+    12,
+
+    0,
+    100
+  );
+}
+
+
+async function getMinuteKlines(
+  symbol
+) {
+
+  return cached(
+
+    `universe-1m:${symbol}`,
+
+    30000,
+
+    () =>
+      fetchJson(
+
+        "https://data-api.binance.vision/api/v3/klines?symbol=" +
+
+        encodeURIComponent(
+          symbol
+        ) +
+
+        "&interval=1m&limit=360"
+      )
+  );
+}
+
+
+async function analyzeMarketAsset(
   ticker
 ) {
 
   const symbol =
     ticker.symbol;
 
-  const [
-    flowResult,
-    klineResult
-  ] =
-    await Promise.allSettled([
+  const raw =
+    await getMinuteKlines(
+      symbol
+    );
 
-      getFlowForSymbol(
-        symbol
-      ),
-
-      cached(
-
-        `universe-klines:${symbol}`,
-
-        15000,
-
-        () =>
-          fetchJson(
-
-            "https://data-api.binance.vision/api/v3/klines?symbol=" +
-
-            encodeURIComponent(
-              symbol
-            ) +
-
-            "&interval=5m&limit=72"
-          )
-      )
-    ]);
-
+  const one =
+    (
+      raw ||
+      []
+    )
+      .map(
+        rawToBar
+      );
 
   if (
-    flowResult.status !==
-    "fulfilled" ||
-    klineResult.status !==
-    "fulfilled"
+    one.length <
+    40
   ) {
 
     throw new Error(
-      "Universe analysis unavailable"
+      "Insufficient minute data"
     );
   }
 
+  const bars5 =
+    aggregateBars(
+      one,
+      5
+    );
 
-  const flow =
-    flowResult.value;
+  const bars15 =
+    aggregateBars(
+      one,
+      15
+    );
 
-  const klines =
-    klineResult.value ||
-    [];
+  const bars60 =
+    aggregateBars(
+      one,
+      60
+    );
 
-
-  const closes =
-    klines
+  const closes5 =
+    bars5
       .map(
-        r =>
-          num(
-            r[4]
-          )
+        x =>
+          x.close
       )
       .filter(
         x =>
@@ -1086,323 +1546,520 @@ async function analyzeUniverseSymbol(
           0
       );
 
-
-  const quoteVolumes =
-    klines
+  const closes15 =
+    bars15
       .map(
-        r =>
-          num(
-            r[7]
-          )
+        x =>
+          x.close
       )
       .filter(
         x =>
-          x >=
+          x >
           0
       );
 
+  const closes60 =
+    bars60
+      .map(
+        x =>
+          x.close
+      )
+      .filter(
+        x =>
+          x >
+          0
+      );
 
   const last =
-    closes.at(-1) ||
+    closes5.at(-1) ||
     num(
       ticker.lastPrice
     );
 
-
-  const e9 =
-    ema(
-      closes.slice(
-        -60
-      ),
-      9
-    ) ||
-    last;
-
-
-  const e21 =
-    ema(
-      closes.slice(
-        -60
-      ),
-      21
-    ) ||
-    last;
-
-
-  const rsi14 =
-    rsi(
-      closes,
-      14
-    );
-
-
-  const ret5m =
-    returnPct(
-      closes,
+  const flow1m =
+    flowFromBars(
+      one,
       1
     );
 
-
-  const ret15m =
-    returnPct(
-      closes,
-      3
+  const flow5m =
+    flowFromBars(
+      one,
+      5
     );
 
-
-  const ret1h =
-    returnPct(
-      closes,
-      12
+  const flow15m =
+    flowFromBars(
+      one,
+      15
     );
 
-
-  const atr =
-    atrFromKlines(
-      klines,
-      14
-    ) ||
-    last *
-    0.0045;
-
-
-  const atrPct =
-    last
-      ? (
-          atr /
-          last
-        ) *
-        100
-      : 0;
-
-
-  const recentVolume =
-    quoteVolumes.at(-1) ||
-    0;
-
-
-  const previousVolumes =
-    quoteVolumes.slice(
-      -21,
-      -1
-    );
-
-
-  const avgVolume20 =
-    previousVolumes.length
-
-      ? previousVolumes
-          .reduce(
-            (a, b) =>
-              a + b,
-            0
-          ) /
-          previousVolumes.length
-
-      : recentVolume ||
-        1;
-
-
-  const volumeRatio =
-    avgVolume20
-
-      ? recentVolume /
-        avgVolume20
-
-      : 1;
-
-
-  const emaDiffPct =
-    e21
-      ? (
-          (
-            e9 -
-            e21
-          ) /
-          e21
-        ) *
-        100
-      : 0;
-
-
-  const trendScore =
-    clamp(
-      50 +
-      emaDiffPct *
-      28,
-      0,
-      100
-    );
-
-
-  const momentumScore =
+  const flowComposite =
     clamp(
 
-      50 +
+      flow1m.score *
+      0.20 +
 
-      ret15m *
-      10 +
+      flow5m.score *
+      0.35 +
 
-      ret1h *
-      4,
+      flow15m.score *
+      0.45,
 
       0,
       100
     );
-
-
-  let rsiScore =
-    50;
-
-
-  if (
-    rsi14 >=
-    50 &&
-    rsi14 <=
-    68
-  ) {
-
-    rsiScore =
-      65 +
-      (
-        rsi14 -
-        50
-      ) *
-      1.3;
-
-  } else if (
-    rsi14 >
-    68 &&
-    rsi14 <=
-    76
-  ) {
-
-    rsiScore =
-      88 -
-      (
-        rsi14 -
-        68
-      ) *
-      4;
-
-  } else if (
-    rsi14 >
-    76
-  ) {
-
-    rsiScore =
-      clamp(
-        55 -
-        (
-          rsi14 -
-          76
-        ) *
-        3,
-        15,
-        55
-      );
-
-  } else {
-
-    rsiScore =
-      clamp(
-
-        50 -
-
-        (
-          50 -
-          rsi14
-        ) *
-        1.1,
-
-        10,
-        50
-      );
-  }
-
-
-  const volumeScore =
-    clamp(
-
-      45 +
-
-      (
-        volumeRatio -
-        1
-      ) *
-      30,
-
-      0,
-      100
-    );
-
-
-  const technicalScore =
-    clamp(
-
-      trendScore *
-      0.32 +
-
-      momentumScore *
-      0.28 +
-
-      rsiScore *
-      0.22 +
-
-      volumeScore *
-      0.18,
-
-      0,
-      100
-    );
-
 
   const persistenceScore =
     updateUniverseHistory(
 
       symbol,
 
-      flow.netFlow,
+      flow5m.score,
 
-      flow.buyRatio
+      flow15m.score
     );
 
+  const e5Fast =
+    ema(
+      closes5.slice(
+        -60
+      ),
+      9
+    ) ||
+    last;
 
-  const inflowScore =
+  const e5Slow =
+    ema(
+      closes5.slice(
+        -60
+      ),
+      21
+    ) ||
+    last;
+
+  const e15Fast =
+    ema(
+      closes15.slice(
+        -24
+      ),
+      5
+    ) ||
+    last;
+
+  const e15Slow =
+    ema(
+      closes15.slice(
+        -24
+      ),
+      13
+    ) ||
+    last;
+
+  const atr5 =
+    atrObjects(
+      bars5,
+      14
+    ) ||
+    last *
+    0.0045;
+
+  const rsi5 =
+    rsi(
+      closes5,
+      14
+    );
+
+  const ret5m =
+    returnPct(
+      closes5,
+      1
+    );
+
+  const ret15m =
+    returnPct(
+      closes5,
+      3
+    );
+
+  const ret1h =
+    returnPct(
+      closes5,
+      12
+    );
+
+  const ret3h =
+    returnPct(
+
+      closes60,
+
+      Math.min(
+        3,
+        Math.max(
+          1,
+          closes60.length -
+          1
+        )
+      )
+    );
+
+  const trend5Score =
+    timeframeTrendScore(
+
+      e5Fast,
+
+      e5Slow,
+
+      atr5
+    );
+
+  const trend15Score =
+    timeframeTrendScore(
+
+      e15Fast,
+
+      e15Slow,
+
+      atr5 *
+      1.8
+    );
+
+  const trend1hScore =
     clamp(
 
-      flow.flowScore *
-      0.55 +
+      50 +
 
-      persistenceScore *
-      0.25 +
+      ret1h *
+      6 +
 
-      volumeScore *
-      0.20,
+      ret3h *
+      2.5,
 
       0,
       100
     );
 
+  let rsiScore =
+    50;
+
+  if (
+    rsi5 >=
+    50 &&
+    rsi5 <=
+    66
+  ) {
+
+    rsiScore =
+      70 +
+      (
+        rsi5 -
+        50
+      ) *
+      1.6;
+
+  } else if (
+    rsi5 >
+    66 &&
+    rsi5 <=
+    72
+  ) {
+
+    rsiScore =
+      95 -
+      (
+        rsi5 -
+        66
+      ) *
+      5;
+
+  } else if (
+    rsi5 >
+    72
+  ) {
+
+    rsiScore =
+      clamp(
+
+        65 -
+
+        (
+          rsi5 -
+          72
+        ) *
+        5,
+
+        10,
+        65
+      );
+
+  } else if (
+    rsi5 >=
+    42
+  ) {
+
+    rsiScore =
+      45 +
+      (
+        rsi5 -
+        42
+      ) *
+      2.5;
+
+  } else {
+
+    rsiScore =
+      clamp(
+
+        45 -
+
+        (
+          42 -
+          rsi5
+        ) *
+        2.2,
+
+        10,
+        45
+      );
+  }
+
+  const qv =
+    one.map(
+      x =>
+        x.quoteVolume
+    );
+
+  const recent5 =
+    qv.slice(
+      -5
+    )
+      .reduce(
+        (a, b) =>
+          a +
+          b,
+        0
+      );
+
+  const prior20 =
+    qv.slice(
+      -25,
+      -5
+    );
+
+  const avg5 =
+    prior20.length
+
+      ? prior20
+          .reduce(
+            (a, b) =>
+              a +
+              b,
+            0
+          ) /
+          Math.max(
+            1,
+            prior20.length /
+            5
+          )
+
+      : recent5 ||
+        1;
+
+  const volumeRatio =
+    avg5
+      ? recent5 /
+        avg5
+      : 1;
+
+  const volumeScore =
+    clamp(
+
+      48 +
+
+      (
+        volumeRatio -
+        1
+      ) *
+      22,
+
+      0,
+      100
+    );
+
+  const technicalScore =
+    clamp(
+
+      trend5Score *
+      0.28 +
+
+      trend15Score *
+      0.28 +
+
+      trend1hScore *
+      0.18 +
+
+      rsiScore *
+      0.16 +
+
+      volumeScore *
+      0.10,
+
+      0,
+      100
+    );
+
+  const distanceAtr =
+    atr5
+      ? (
+          last -
+          e5Fast
+        ) /
+        atr5
+      : 0;
+
+  let chasePenalty =
+    0;
+
+  if (
+    distanceAtr >
+    0.65
+  ) {
+
+    chasePenalty +=
+      Math.min(
+
+        22,
+
+        (
+          distanceAtr -
+          0.65
+        ) *
+        18
+      );
+  }
+
+  if (
+    ret15m >
+    2.2
+  ) {
+
+    chasePenalty +=
+      Math.min(
+
+        15,
+
+        (
+          ret15m -
+          2.2
+        ) *
+        5
+      );
+  }
+
+  if (
+    rsi5 >
+    72
+  ) {
+
+    chasePenalty +=
+      Math.min(
+
+        18,
+
+        (
+          rsi5 -
+          72
+        ) *
+        2.5
+      );
+  }
+
+  const earlyEntryScore =
+    clamp(
+
+      88 -
+
+      Math.max(
+        0,
+        distanceAtr -
+        0.15
+      ) *
+      24 -
+
+      Math.max(
+        0,
+        ret15m -
+        0.7
+      ) *
+      11 -
+
+      Math.max(
+        0,
+        rsi5 -
+        66
+      ) *
+      2 +
+
+      Math.max(
+        0,
+        volumeRatio -
+        1
+      ) *
+      8,
+
+      0,
+      100
+    );
 
   const technicalState =
 
-    e9 >
-    e21 &&
-    rsi14 >=
-    50
+    e5Fast >
+    e5Slow &&
+    e15Fast >
+    e15Slow &&
+    ret1h >
+    -0.8
 
       ? "BULLISH"
 
-      : e9 <
-        e21 &&
-        rsi14 <=
-        50
+      : e5Fast <
+        e5Slow &&
+        e15Fast <
+        e15Slow &&
+        ret1h <
+        0.8
 
       ? "BEARISH"
 
       : "MIXED";
 
+  const setupType =
+
+    flow15m.score >=
+    56 &&
+    flow5m.score >=
+    57 &&
+    ret15m <=
+    1.6 &&
+    distanceAtr <=
+    0.65
+
+      ? "ACCUMULATION"
+
+      : flow15m.score >=
+        54 &&
+        flow5m.score >=
+        53 &&
+        flow1m.score <
+        50 &&
+        Math.abs(
+          distanceAtr
+        ) <=
+        0.55
+
+      ? "PULLBACK"
+
+      : "INFLOW";
 
   return {
 
@@ -1410,7 +2067,8 @@ async function analyzeUniverseSymbol(
 
     lastPrice:
       num(
-        ticker.lastPrice
+        ticker.lastPrice,
+        last
       ),
 
     priceChangePercent24h:
@@ -1423,17 +2081,30 @@ async function analyzeUniverseSymbol(
         ticker.quoteVolume
       ),
 
-    ...flow,
+    flow1m,
 
-    ema9:
-      e9,
+    flow5m,
 
-    ema21:
-      e21,
+    flow15m,
 
-    emaDiffPct,
+    flowComposite,
 
-    rsi14,
+    persistenceScore,
+
+    ema5m9:
+      e5Fast,
+
+    ema5m21:
+      e5Slow,
+
+    ema15m5:
+      e15Fast,
+
+    ema15m13:
+      e15Slow,
+
+    rsi14:
+      rsi5,
 
     ret5m,
 
@@ -1441,34 +2112,162 @@ async function analyzeUniverseSymbol(
 
     ret1h,
 
-    atr,
+    ret3h,
 
-    atrPct,
+    atr:
+      atr5,
+
+    atrPct:
+      last
+        ? (
+            atr5 /
+            last
+          ) *
+          100
+        : 0,
 
     volumeRatio,
 
-    trendScore,
-
-    momentumScore,
-
-    rsiScore,
-
     volumeScore,
+
+    trend5Score,
+
+    trend15Score,
+
+    trend1hScore,
 
     technicalScore,
 
     technicalState,
 
-    persistenceScore,
+    distanceAtr,
 
-    inflowScore
+    chasePenalty,
+
+    earlyEntryScore,
+
+    setupType,
+
+    swingLow:
+      lastSwing(
+        bars5,
+        "LOW",
+        12
+      ),
+
+    swingHigh:
+      lastSwing(
+        bars5,
+        "HIGH",
+        12
+      ),
+
+    netFlow1m:
+      flow1m.netFlow,
+
+    netFlow5m:
+      flow5m.netFlow,
+
+    netFlow15m:
+      flow15m.netFlow
   };
 }
 
 
-/* ======================================================
-   TOP 20 UNIVERSE API
-====================================================== */
+function marketRegimeFromBTC(
+  btc
+) {
+
+  if (!btc) {
+
+    return {
+
+      state:
+        "NEUTRAL",
+
+      score:
+        50,
+
+      reason:
+        "BTC data unavailable"
+    };
+  }
+
+  const score =
+    clamp(
+
+      btc.flowComposite *
+      0.42 +
+
+      btc.technicalScore *
+      0.43 +
+
+      clamp(
+
+        50 +
+
+        num(
+          btc.priceChangePercent24h
+        ) *
+        2.5,
+
+        0,
+        100
+      ) *
+      0.15,
+
+      0,
+      100
+    );
+
+  const state =
+    score >=
+    62
+      ? "RISK_ON"
+      : score <=
+        42
+      ? "RISK_OFF"
+      : "NEUTRAL";
+
+  return {
+
+    state,
+
+    score,
+
+    btcFlow1m:
+      btc.flow1m
+        ?.score ??
+      50,
+
+    btcFlow5m:
+      btc.flow5m
+        ?.score ??
+      50,
+
+    btcFlow15m:
+      btc.flow15m
+        ?.score ??
+      50,
+
+    btcTechnical:
+      btc.technicalScore ??
+      50,
+
+    btcTrend:
+      btc.technicalState,
+
+    reason:
+      `${state}: BTC flow ${num(
+        btc.flowComposite,
+        50
+      ).toFixed(0)}, technical ${num(
+        btc.technicalScore,
+        50
+      ).toFixed(0)}`
+  };
+}
+
 
 app.get(
   "/api/universe",
@@ -1488,287 +2287,363 @@ app.get(
       clamp(
         num(
           req.query.scan,
-          60
+          32
         ),
-        25,
-        60
+        24,
+        36
       );
-
 
     try {
 
-      const tickers =
+      const result =
         await cached(
 
-          "universe:tickers",
+          `universe:v54:${limit}:${scan}`,
 
-          5000,
+          55000,
 
-          () =>
-            fetchJson(
-              "https://data-api.binance.vision/api/v3/ticker/24hr"
-            )
-        );
+          async () => {
 
+            const tickers =
+              await cached(
 
-      const candidates =
-        (
-          Array.isArray(
-            tickers
-          )
-            ? tickers
-            : []
-        )
+                "universe:tickers",
 
-          .filter(
-            x =>
-              isEligibleUSDT(
-                x.symbol
-              )
-          )
+                5000,
 
-          .filter(
-            x =>
-              num(
-                x.quoteVolume
-              ) >
-              0
-          )
-
-          .sort(
-            (a, b) =>
-              num(
-                b.quoteVolume
-              ) -
-              num(
-                a.quoteVolume
-              )
-          )
-
-          .slice(
-            0,
-            scan
-          );
-
-
-      const analyzed =
-        await mapLimit(
-
-          candidates,
-
-          5,
-
-          async ticker => {
-
-            try {
-
-              return await analyzeUniverseSymbol(
-                ticker
+                () =>
+                  fetchJson(
+                    "https://data-api.binance.vision/api/v3/ticker/24hr"
+                  )
               );
 
-            } catch {
+            const all =
+              Array.isArray(
+                tickers
+              )
+                ? tickers
+                : [];
 
-              return null;
+            const candidates =
+              all
+                .filter(
+                  x =>
+                    isEligibleUSDT(
+                      x.symbol
+                    )
+                )
+                .filter(
+                  x =>
+                    num(
+                      x.quoteVolume
+                    ) >
+                    0
+                )
+                .sort(
+                  (a, b) =>
+                    num(
+                      b.quoteVolume
+                    ) -
+                    num(
+                      a.quoteVolume
+                    )
+                )
+                .slice(
+                  0,
+                  scan
+                );
+
+            const btcTicker =
+              all.find(
+                x =>
+                  x.symbol ===
+                  "BTCUSDT"
+              ) ||
+              {
+
+                symbol:
+                  "BTCUSDT",
+
+                lastPrice:
+                  0,
+
+                quoteVolume:
+                  0,
+
+                priceChangePercent:
+                  0
+              };
+
+            const analyzed =
+              await mapLimit(
+
+                candidates,
+
+                6,
+
+                async ticker => {
+
+                  try {
+
+                    return await analyzeMarketAsset(
+                      ticker
+                    );
+
+                  } catch {
+
+                    return null;
+                  }
+                }
+              );
+
+            let btc =
+              analyzed.find(
+                x =>
+                  x?.symbol ===
+                  "BTCUSDT"
+              ) ||
+              null;
+
+            if (!btc) {
+
+              try {
+
+                btc =
+                  await analyzeMarketAsset(
+                    btcTicker
+                  );
+
+              } catch {}
             }
+
+            const marketRegime =
+              marketRegimeFromBTC(
+                btc
+              );
+
+            const valid =
+              analyzed.filter(
+                Boolean
+              );
+
+            const volumes =
+              valid
+                .map(
+                  x =>
+                    x.quoteVolume24h
+                )
+                .filter(
+                  x =>
+                    x >
+                    0
+                );
+
+            const maxLog =
+              Math.max(
+
+                1,
+
+                ...volumes.map(
+                  v =>
+                    Math.log10(
+                      v +
+                      1
+                    )
+                )
+              );
+
+            const minLog =
+              volumes.length
+
+                ? Math.min(
+                    ...volumes.map(
+                      v =>
+                        Math.log10(
+                          v +
+                          1
+                        )
+                    )
+                  )
+
+                : maxLog;
+
+            for (
+              const x
+              of valid
+            ) {
+
+              const lv =
+                Math.log10(
+                  x.quoteVolume24h +
+                  1
+                );
+
+              x.liquidityScore =
+                maxLog ===
+                minLog
+
+                  ? 70
+
+                  : clamp(
+
+                      (
+                        (
+                          lv -
+                          minLog
+                        ) /
+                        (
+                          maxLog -
+                          minLog
+                        )
+                      ) *
+                      100,
+
+                      0,
+                      100
+                    );
+
+              x.accumulationScore =
+                clamp(
+
+                  x.flowComposite *
+                  0.46 +
+
+                  x.earlyEntryScore *
+                  0.28 +
+
+                  x.volumeScore *
+                  0.12 +
+
+                  x.persistenceScore *
+                  0.14,
+
+                  0,
+                  100
+                );
+
+              x.selectionScore =
+                clamp(
+
+                  x.flowComposite *
+                  0.36 +
+
+                  x.technicalScore *
+                  0.27 +
+
+                  x.earlyEntryScore *
+                  0.19 +
+
+                  x.persistenceScore *
+                  0.08 +
+
+                  x.liquidityScore *
+                  0.10 -
+
+                  x.chasePenalty,
+
+                  0,
+                  100
+                );
+
+              if (
+                x.flow15m.score <
+                51
+              ) {
+
+                x.selectionScore -=
+                  12;
+              }
+
+              if (
+                x.flow5m.score <
+                52
+              ) {
+
+                x.selectionScore -=
+                  8;
+              }
+
+              if (
+                x.netFlow15m <=
+                0
+              ) {
+
+                x.selectionScore -=
+                  15;
+              }
+
+              if (
+                x.technicalState ===
+                "BEARISH"
+              ) {
+
+                x.selectionScore -=
+                  10;
+              }
+
+              x.selectionScore =
+                clamp(
+                  x.selectionScore,
+                  0,
+                  100
+                );
+            }
+
+            const qualified =
+              valid
+                .filter(
+                  x =>
+                    x.netFlow15m >
+                    0
+                )
+                .filter(
+                  x =>
+                    x.flow15m.score >=
+                    51
+                )
+                .filter(
+                  x =>
+                    x.flow5m.score >=
+                    50
+                )
+                .sort(
+                  (a, b) =>
+                    b.selectionScore -
+                    a.selectionScore
+                );
+
+            const selected =
+              qualified.slice(
+                0,
+                limit
+              );
+
+            return {
+
+              generatedAt:
+                Date.now(),
+
+              scanCount:
+                candidates.length,
+
+              qualifiedCount:
+                qualified.length,
+
+              selectedCount:
+                selected.length,
+
+              marketRegime,
+
+              methodology:
+                "v5.4 selects early inflow rather than the biggest recent spike. Binance 1m klines provide taker-buy quote volume for 1m/5m/15m flow. Selection combines persistent multi-window inflow, 5m/15m/1h technical structure, liquidity, volume acceleration and an anti-chase penalty. This is still a research heuristic, not guaranteed capital flow.",
+
+              assets:
+                selected
+            };
           }
         );
 
-
-      const valid =
-        analyzed.filter(
-          Boolean
-        );
-
-
-      const volumes =
-        valid
-          .map(
-            x =>
-              x.quoteVolume24h
-          )
-          .filter(
-            x =>
-              x >
-              0
-          );
-
-
-      const maxLog =
-        Math.max(
-
-          1,
-
-          ...volumes.map(
-            v =>
-              Math.log10(
-                v +
-                1
-              )
-          )
-        );
-
-
-      const minLog =
-        Math.min(
-
-          ...volumes.map(
-            v =>
-              Math.log10(
-                v +
-                1
-              )
-          ),
-
-          maxLog
-        );
-
-
-      for (
-        const x
-        of valid
-      ) {
-
-        const lv =
-          Math.log10(
-            x.quoteVolume24h +
-            1
-          );
-
-
-        x.liquidityScore =
-          maxLog ===
-          minLog
-
-            ? 70
-
-            : clamp(
-
-                (
-                  (
-                    lv -
-                    minLog
-                  ) /
-                  (
-                    maxLog -
-                    minLog
-                  )
-                ) *
-                100,
-
-                0,
-                100
-              );
-
-
-        /*
-          Selection:
-          48% inflow
-          32% technical
-          10% persistence
-          10% liquidity
-        */
-
-        x.selectionScore =
-          clamp(
-
-            x.inflowScore *
-            0.48 +
-
-            x.technicalScore *
-            0.32 +
-
-            x.persistenceScore *
-            0.10 +
-
-            x.liquidityScore *
-            0.10,
-
-            0,
-            100
-          );
-
-
-        /*
-          Don't chase a pump.
-        */
-
-        if (
-          x.rsi14 >
-          78
-        ) {
-
-          x.selectionScore -=
-            10;
-        }
-
-
-        if (
-          x.ret15m >
-          4
-        ) {
-
-          x.selectionScore -=
-            7;
-        }
-
-
-        x.selectionScore =
-          clamp(
-            x.selectionScore,
-            0,
-            100
-          );
-      }
-
-
-      /*
-        فقط ارزهایی که
-        Net Flow مثبت دارند.
-      */
-
-      const positive =
-        valid
-
-          .filter(
-            x =>
-              x.netFlow >
-              0 &&
-              x.buyRatio >=
-              50
-          )
-
-          .sort(
-            (a, b) =>
-              b.selectionScore -
-              a.selectionScore
-          );
-
-
-      const selected =
-        positive.slice(
-          0,
-          limit
-        );
-
-
-      res.json({
-
-        generatedAt:
-          Date.now(),
-
-        scanCount:
-          candidates.length,
-
-        selectedCount:
-          selected.length,
-
-        methodology:
-          "Dynamic inflow + technical ranking",
-
-        assets:
-          selected
-      });
-
+      res.json(result);
 
     } catch (e) {
 
@@ -1800,7 +2675,6 @@ function portfolioWindow(
     return null;
   }
 
-
   for (
     const name
     of names
@@ -1814,17 +2688,14 @@ function portfolioWindow(
           name
       );
 
-
     if (
       !row?.[1]
     ) {
       continue;
     }
 
-
     const d =
       row[1];
-
 
     const av =
       Array.isArray(
@@ -1833,14 +2704,12 @@ function portfolioWindow(
         ? d.accountValueHistory
         : [];
 
-
     const pnlHistory =
       Array.isArray(
         d.pnlHistory
       )
         ? d.pnlHistory
         : [];
-
 
     const first =
       av.length
@@ -1849,14 +2718,12 @@ function portfolioWindow(
           )
         : 0;
 
-
     const last =
       av.length
         ? num(
             av.at(-1)?.[1]
           )
         : 0;
-
 
     const pnl =
       pnlHistory.length
@@ -1870,7 +2737,6 @@ function portfolioWindow(
           )
 
         : 0;
-
 
     const roi =
       first
@@ -1886,10 +2752,8 @@ function portfolioWindow(
           100
         : null;
 
-
     let peak = 0;
     let maxDD = 0;
-
 
     for (
       const point
@@ -1902,7 +2766,6 @@ function portfolioWindow(
           NaN
         );
 
-
       if (
         !Number.isFinite(
           value
@@ -1911,13 +2774,11 @@ function portfolioWindow(
         continue;
       }
 
-
       peak =
         Math.max(
           peak,
           value
         );
-
 
       if (
         peak >
@@ -1941,7 +2802,6 @@ function portfolioWindow(
       }
     }
 
-
     return {
 
       pnl,
@@ -1958,7 +2818,6 @@ function portfolioWindow(
     };
   }
 
-
   return null;
 }
 
@@ -1972,7 +2831,6 @@ function fillStats(
     Date.now() -
     days *
     86400000;
-
 
   const rows =
     (
@@ -1990,11 +2848,9 @@ function fillStats(
           cutoff
       );
 
-
   let closed = 0;
   let wins = 0;
   let pnl = 0;
-
 
   for (
     const f
@@ -2006,7 +2862,6 @@ function fillStats(
         f.closedPnl
       );
 
-
     if (
       Math.abs(x) >
       1e-12
@@ -2016,7 +2871,6 @@ function fillStats(
 
       pnl += x;
 
-
       if (
         x >
         0
@@ -2025,7 +2879,6 @@ function fillStats(
       }
     }
   }
-
 
   return {
 
@@ -2060,7 +2913,6 @@ function walletScore(
 
   let score = 50;
 
-
   const pnls = [
 
     day?.pnl,
@@ -2072,7 +2924,6 @@ function walletScore(
   ].filter(
     Number.isFinite
   );
-
 
   if (
     pnls.length
@@ -2087,7 +2938,6 @@ function walletScore(
         )
         .length;
 
-
     score +=
       (
         positives /
@@ -2096,7 +2946,6 @@ function walletScore(
       ) *
       24;
   }
-
 
   if (
     Number.isFinite(
@@ -2113,7 +2962,6 @@ function walletScore(
       0.55;
   }
 
-
   if (
     Number.isFinite(
       stats?.winRate
@@ -2129,7 +2977,6 @@ function walletScore(
       ) *
       0.5;
   }
-
 
   if (
     Number.isFinite(
@@ -2153,7 +3000,6 @@ function walletScore(
       0.65;
   }
 
-
   return Math.round(
 
     clamp(
@@ -2172,7 +3018,6 @@ async function walletSummary(
   const key =
     user.toLowerCase();
 
-
   try {
 
     const summary =
@@ -2185,9 +3030,9 @@ async function walletSummary(
         async () => {
 
           const [
-            stateResult,
-            portfolioResult,
-            fillsResult
+            stateR,
+            portfolioR,
+            fillsR
           ] =
             await Promise
               .allSettled([
@@ -2217,11 +3062,10 @@ async function walletSummary(
                 })
               ]);
 
-
           if (
-            stateResult.status !==
+            stateR.status !==
             "fulfilled" ||
-            !stateResult.value
+            !stateR.value
               ?.marginSummary
           ) {
 
@@ -2230,28 +3074,24 @@ async function walletSummary(
             );
           }
 
-
           const state =
-            stateResult.value;
-
+            stateR.value;
 
           const portfolio =
-            portfolioResult.status ===
+            portfolioR.status ===
             "fulfilled"
 
-              ? portfolioResult.value
+              ? portfolioR.value
 
               : [];
-
 
           const fills =
-            fillsResult.status ===
+            fillsR.status ===
             "fulfilled"
 
-              ? fillsResult.value
+              ? fillsR.value
 
               : [];
-
 
           const day =
             portfolioWindow(
@@ -2262,7 +3102,6 @@ async function walletSummary(
               ]
             );
 
-
           const week =
             portfolioWindow(
               portfolio,
@@ -2271,7 +3110,6 @@ async function walletSummary(
                 "week"
               ]
             );
-
 
           const month =
             portfolioWindow(
@@ -2282,7 +3120,6 @@ async function walletSummary(
               ]
             );
 
-
           const allTime =
             portfolioWindow(
               portfolio,
@@ -2292,26 +3129,22 @@ async function walletSummary(
               ]
             );
 
-
           const stats30 =
             fillStats(
               fills,
               30
             );
 
-
           const positions =
             (
               state.assetPositions ||
               []
             )
-
               .map(
                 x =>
                   x.position ||
                   x
               )
-
               .filter(
                 p =>
                   Math.abs(
@@ -2321,7 +3154,6 @@ async function walletSummary(
                   ) >
                   0
               )
-
               .map(
                 p => ({
 
@@ -2363,7 +3195,8 @@ async function walletSummary(
                     ),
 
                   leverage:
-                    p.leverage?.value !=
+                    p.leverage
+                      ?.value !=
                     null
                       ? num(
                           p.leverage.value
@@ -2371,7 +3204,6 @@ async function walletSummary(
                       : null
                 })
               );
-
 
           const score =
             walletScore(
@@ -2384,7 +3216,6 @@ async function walletSummary(
 
               stats30
             );
-
 
           return {
 
@@ -2435,15 +3266,12 @@ async function walletSummary(
         }
       );
 
-
     lastGoodWallet.set(
       key,
       summary
     );
 
-
     return summary;
-
 
   } catch (e) {
 
@@ -2451,7 +3279,6 @@ async function walletSummary(
       lastGoodWallet.get(
         key
       );
-
 
     if (
       old
@@ -2469,7 +3296,6 @@ async function walletSummary(
       };
     }
 
-
     throw e;
   }
 }
@@ -2485,7 +3311,6 @@ app.get(
         ""
       );
 
-
     if (
       !/^0x[a-fA-F0-9]{40}$/.test(
         user
@@ -2499,7 +3324,6 @@ app.get(
             "Invalid wallet"
         });
     }
-
 
     try {
 
@@ -2532,7 +3356,6 @@ function perfMap(
 
   const output = {};
 
-
   for (
     const item
     of row
@@ -2549,12 +3372,10 @@ function perfMap(
       continue;
     }
 
-
     let key =
       String(
         item[0]
       );
-
 
     if (
       key ===
@@ -2564,7 +3385,6 @@ function perfMap(
         "day";
     }
 
-
     if (
       key ===
       "perpWeek"
@@ -2572,7 +3392,6 @@ function perfMap(
       key =
         "week";
     }
-
 
     if (
       key ===
@@ -2582,7 +3401,6 @@ function perfMap(
         "month";
     }
 
-
     if (
       key ===
       "perpAllTime"
@@ -2590,7 +3408,6 @@ function perfMap(
       key =
         "allTime";
     }
-
 
     output[key] = {
 
@@ -2612,7 +3429,6 @@ function perfMap(
     };
   }
 
-
   return output;
 }
 
@@ -2626,7 +3442,6 @@ function traderScore(
   const p =
     t.performance;
 
-
   if (
     (
       p.week?.pnl ||
@@ -2636,7 +3451,6 @@ function traderScore(
   ) {
     s += 12;
   }
-
 
   if (
     (
@@ -2648,7 +3462,6 @@ function traderScore(
     s += 15;
   }
 
-
   if (
     (
       p.allTime?.pnl ||
@@ -2659,7 +3472,6 @@ function traderScore(
     s += 12;
   }
 
-
   s +=
     clamp(
       p.month?.roiPct ||
@@ -2669,7 +3481,6 @@ function traderScore(
     ) *
     0.5;
 
-
   if (
     t.turnover30d <
     500
@@ -2677,14 +3488,12 @@ function traderScore(
     s += 7;
   }
 
-
   if (
     t.equity >
     100000
   ) {
     s += 5;
   }
-
 
   return Math.round(
     clamp(
@@ -2718,7 +3527,6 @@ app.get(
                 "https://stats-data.hyperliquid.xyz/Mainnet/leaderboard"
               );
 
-
             return (
               d.leaderboardRows ||
               []
@@ -2731,12 +3539,10 @@ app.get(
                       row
                     );
 
-
                   const equity =
                     num(
                       row.accountValue
                     );
-
 
                   const turnover30d =
                     equity
@@ -2750,7 +3556,6 @@ app.get(
                         equity
 
                       : Infinity;
-
 
                   const t = {
 
@@ -2786,10 +3591,8 @@ app.get(
                         : "HFT-like"
                   };
 
-
                   t.discoveryScore =
                     traderScore(t);
-
 
                   return t;
                 }
@@ -2797,13 +3600,11 @@ app.get(
           }
         );
 
-
       const minEquity =
         num(
           req.query.minEquity,
           50000
         );
-
 
       const minPnl =
         num(
@@ -2811,13 +3612,11 @@ app.get(
           0
         );
 
-
       const maxTurnover =
         num(
           req.query.maxTurnover,
           5000
         );
-
 
       const limit =
         clamp(
@@ -2829,17 +3628,14 @@ app.get(
           100
         );
 
-
       const filtered =
         rows
-
           .filter(
             x =>
               x.address &&
               x.equity >=
               minEquity
           )
-
           .filter(
             x =>
               (
@@ -2850,30 +3646,25 @@ app.get(
               ) >=
               minPnl
           )
-
           .filter(
             x =>
               x.turnover30d <=
               maxTurnover
           )
-
           .sort(
             (a, b) =>
               b.discoveryScore -
               a.discoveryScore
           )
-
           .slice(
             0,
             limit
           );
 
-
       res.json({
         traders:
           filtered
       });
-
 
     } catch (e) {
 
@@ -2889,7 +3680,7 @@ app.get(
 
 
 /* ======================================================
-   SMART WALLET ROTATION
+   MONEY ROTATION
 ====================================================== */
 
 function exposureSnapshot(
@@ -2900,31 +3691,28 @@ function exposureSnapshot(
 
   let gross = 0;
 
-
   for (
-    const wallet
+    const w
     of summaries
   ) {
 
     if (
-      !wallet ||
-      wallet.error
+      !w ||
+      w.error
     ) {
       continue;
     }
 
-
     const weight =
       num(
-        wallet.smartScore,
+        w.smartScore,
         50
       ) /
       100;
 
-
     for (
       const p
-      of wallet.positions ||
+      of w.positions ||
       []
     ) {
 
@@ -2938,7 +3726,6 @@ function exposureSnapshot(
         p.positionValue *
         weight;
 
-
       exposure[
         p.coin
       ] =
@@ -2950,14 +3737,12 @@ function exposureSnapshot(
         ) +
         signed;
 
-
       gross +=
         Math.abs(
           signed
         );
     }
   }
-
 
   return {
 
@@ -2992,10 +3777,8 @@ function rotationCalc(
       ])
     );
 
-
   const net =
     allCoins
-
       .map(
         coin => {
 
@@ -3007,7 +3790,6 @@ function rotationCalc(
                 ]
             );
 
-
           const b =
             num(
               after
@@ -3015,7 +3797,6 @@ function rotationCalc(
                   coin
                 ]
             );
-
 
           return {
 
@@ -3033,7 +3814,6 @@ function rotationCalc(
           };
         }
       )
-
       .sort(
         (a, b) =>
           Math.abs(
@@ -3044,16 +3824,13 @@ function rotationCalc(
           )
       );
 
-
   const inflows =
     net
-
       .filter(
         x =>
           x.delta >
           0
       )
-
       .map(
         x => ({
 
@@ -3064,23 +3841,19 @@ function rotationCalc(
             x.delta
         })
       )
-
       .sort(
         (a, b) =>
           b.value -
           a.value
       );
 
-
   const outflows =
     net
-
       .filter(
         x =>
           x.delta <
           0
       )
-
       .map(
         x => ({
 
@@ -3093,13 +3866,11 @@ function rotationCalc(
             )
         })
       )
-
       .sort(
         (a, b) =>
           b.value -
           a.value
       );
-
 
   const source =
     outflows.map(
@@ -3112,7 +3883,6 @@ function rotationCalc(
       })
     );
 
-
   const target =
     inflows.map(
       x => ({
@@ -3124,9 +3894,7 @@ function rotationCalc(
       })
     );
 
-
   const paths = [];
-
 
   for (
     const s
@@ -3145,7 +3913,6 @@ function rotationCalc(
         break;
       }
 
-
       if (
         t.remaining <=
         0
@@ -3153,13 +3920,11 @@ function rotationCalc(
         continue;
       }
 
-
       const value =
         Math.min(
           s.remaining,
           t.remaining
         );
-
 
       if (
         value <=
@@ -3167,7 +3932,6 @@ function rotationCalc(
       ) {
         continue;
       }
-
 
       paths.push({
 
@@ -3180,16 +3944,13 @@ function rotationCalc(
         value
       });
 
-
       s.remaining -=
         value;
-
 
       t.remaining -=
         value;
     }
   }
-
 
   return {
 
@@ -3231,13 +3992,11 @@ function rotationCalc(
 
     paths:
       paths
-
         .sort(
           (a, b) =>
             b.value -
             a.value
         )
-
         .slice(
           0,
           30
@@ -3271,7 +4030,6 @@ app.get(
           25
         );
 
-
     if (
       !users.length
     ) {
@@ -3283,7 +4041,6 @@ app.get(
             "No wallets"
         });
     }
-
 
     try {
 
@@ -3315,12 +4072,10 @@ app.get(
           }
         );
 
-
-      const snapshot =
+      const snap =
         exposureSnapshot(
           summaries
         );
-
 
       const key =
         users
@@ -3331,41 +4086,35 @@ app.get(
           .sort()
           .join("|");
 
-
-      const history =
+      const hist =
         walletHistory.get(
           key
         ) ||
         [];
 
-
-      history.push(
-        snapshot
+      hist.push(
+        snap
       );
 
-
       while (
-        history.length >
+        hist.length >
         MAX_ROTATION_SNAPSHOTS
       ) {
 
-        history.shift();
+        hist.shift();
       }
-
 
       walletHistory.set(
         key,
-        history
+        hist
       );
-
 
       let previous =
         null;
 
-
       for (
         let i =
-          history.length -
+          hist.length -
           2;
 
         i >=
@@ -3375,11 +4124,10 @@ app.get(
       ) {
 
         previous =
-          history[i];
-
+          hist[i];
 
         if (
-          snapshot.time -
+          snap.time -
           previous.time >=
           60000
         ) {
@@ -3388,10 +4136,7 @@ app.get(
         }
       }
 
-
-      if (
-        !previous
-      ) {
+      if (!previous) {
 
         return res.json({
 
@@ -3402,7 +4147,6 @@ app.get(
             users.length
         });
       }
-
 
       res.json({
 
@@ -3415,10 +4159,9 @@ app.get(
         rotation:
           rotationCalc(
             previous,
-            snapshot
+            snap
           )
       });
-
 
     } catch (e) {
 
@@ -3447,7 +4190,10 @@ const MACRO = [
       "XAUUSD",
 
     stooq:
-      "xauusd"
+      "xauusd",
+
+    group:
+      "Gold"
   },
 
   {
@@ -3458,7 +4204,10 @@ const MACRO = [
       "CL.F",
 
     stooq:
-      "cl.f"
+      "cl.f",
+
+    group:
+      "Oil"
   },
 
   {
@@ -3469,7 +4218,10 @@ const MACRO = [
       "CB.F",
 
     stooq:
-      "cb.f"
+      "cb.f",
+
+    group:
+      "Oil"
   },
 
   {
@@ -3480,7 +4232,10 @@ const MACRO = [
       "DX.F",
 
     stooq:
-      "dx.f"
+      "dx.f",
+
+    group:
+      "FX"
   },
 
   {
@@ -3491,7 +4246,10 @@ const MACRO = [
       "EURUSD",
 
     stooq:
-      "eurusd"
+      "eurusd",
+
+    group:
+      "FX"
   }
 ];
 
@@ -3508,7 +4266,6 @@ function parseCSV(
       )
       .filter(Boolean);
 
-
   if (
     lines.length <
     2
@@ -3519,7 +4276,6 @@ function parseCSV(
     );
   }
 
-
   const header =
     lines[0]
       .split(",")
@@ -3527,7 +4283,6 @@ function parseCSV(
         x =>
           x.trim()
       );
-
 
   const values =
     lines[1]
@@ -3537,9 +4292,7 @@ function parseCSV(
           x.trim()
       );
 
-
   const row = {};
-
 
   header.forEach(
     (h, i) => {
@@ -3548,7 +4301,6 @@ function parseCSV(
         values[i];
     }
   );
-
 
   return row;
 }
@@ -3570,12 +4322,10 @@ async function macroQuote(
       "&f=sd2t2ohlcv&h&e=csv"
     );
 
-
   const row =
     parseCSV(
       text
     );
-
 
   const open =
     num(
@@ -3583,13 +4333,11 @@ async function macroQuote(
       NaN
     );
 
-
   const close =
     num(
       row.Close,
       NaN
     );
-
 
   if (
     !Number.isFinite(
@@ -3601,7 +4349,6 @@ async function macroQuote(
       "No quote"
     );
   }
-
 
   return {
 
@@ -3644,7 +4391,6 @@ app.get(
 
     const out = [];
 
-
     for (
       const asset
       of MACRO
@@ -3665,15 +4411,12 @@ app.get(
               )
           );
 
-
         lastGood.set(
           `macro:${asset.symbol}`,
           q
         );
 
-
         out.push(q);
-
 
       } catch (e) {
 
@@ -3681,7 +4424,6 @@ app.get(
           lastGood.get(
             `macro:${asset.symbol}`
           );
-
 
         out.push(
 
@@ -3701,7 +4443,6 @@ app.get(
         );
       }
     }
-
 
     res.json(out);
   }
@@ -3756,7 +4497,6 @@ function cleanNumber(
     return null;
   }
 
-
   const x =
     String(str)
 
@@ -3775,10 +4515,8 @@ function cleanNumber(
         ""
       );
 
-
   const value =
     Number(x);
-
 
   return Number.isFinite(
     value
@@ -3799,7 +4537,6 @@ function extractTGJU(
       "\\$&"
     );
 
-
   const patterns = [
 
     new RegExp(
@@ -3818,7 +4555,6 @@ function extractTGJU(
     )
   ];
 
-
   for (
     const regex
     of patterns
@@ -3829,12 +4565,10 @@ function extractTGJU(
         regex
       );
 
-
     const value =
       cleanNumber(
         m?.[1]
       );
-
 
     if (
       Number.isFinite(
@@ -3847,7 +4581,6 @@ function extractTGJU(
       return value;
     }
   }
-
 
   return null;
 }
@@ -3872,9 +4605,7 @@ app.get(
             )
         );
 
-
       const data = [];
-
 
       for (
         const item
@@ -3887,10 +4618,8 @@ app.get(
             item.key
           );
 
-
         const cacheKey =
           `iran:${item.key}`;
-
 
         if (
           Number.isFinite(
@@ -3911,15 +4640,12 @@ app.get(
               Date.now()
           };
 
-
           lastGood.set(
             cacheKey,
             row
           );
 
-
           data.push(row);
-
 
         } else {
 
@@ -3927,7 +4653,6 @@ app.get(
             lastGood.get(
               cacheKey
             );
-
 
           data.push(
 
@@ -3950,9 +4675,7 @@ app.get(
         }
       }
 
-
       res.json(data);
-
 
     } catch (e) {
 
@@ -3965,7 +4688,6 @@ app.get(
               lastGood.get(
                 `iran:${item.key}`
               );
-
 
             return old
 
@@ -3990,12 +4712,3187 @@ app.get(
 );
 
 
+/* ======================================================
+   v5.4 FRONTEND OVERRIDE
+====================================================== */
+
+const ANTI_CHASE_PATCH = String.raw`
+<script>
+
+(function(){
+
+  var COOLDOWN_MS =
+    15 *
+    60 *
+    1000;
+
+  var MAX_PORTFOLIO_RISK_PCT =
+    5;
+
+
+  function ensureV54State(){
+
+    if (
+      !demoState.cooldowns ||
+      typeof demoState.cooldowns !==
+      "object"
+    ) {
+
+      demoState.cooldowns =
+        {};
+    }
+
+
+    if (
+      !Number.isFinite(
+        Number(
+          demoState.maxPortfolioRiskPct
+        )
+      )
+    ) {
+
+      demoState.maxPortfolioRiskPct =
+        MAX_PORTFOLIO_RISK_PCT;
+    }
+
+
+    demoState.open =
+      Array.isArray(
+        demoState.open
+      )
+        ? demoState.open
+        : [];
+
+
+    demoState.closed =
+      Array.isArray(
+        demoState.closed
+      )
+        ? demoState.closed
+        : [];
+
+
+    demoState.armed =
+      Array.isArray(
+        demoState.armed
+      )
+        ? demoState.armed
+        : [];
+  }
+
+
+  function v54Regime(){
+
+    return (
+      universeMeta &&
+      universeMeta.marketRegime
+    ) || {
+
+      state:
+        "NEUTRAL",
+
+      score:
+        50
+    };
+  }
+
+
+  function inCooldown(
+    symbol
+  ){
+
+    ensureV54State();
+
+    var until =
+      Number(
+        demoState
+          .cooldowns[
+            symbol
+          ] ||
+        0
+      );
+
+
+    if (
+      until &&
+      until <=
+      Date.now()
+    ) {
+
+      delete demoState
+        .cooldowns[
+          symbol
+        ];
+
+
+      saveDemo();
+
+      return false;
+    }
+
+
+    return until >
+      Date.now();
+  }
+
+
+  function cooldownText(
+    symbol
+  ){
+
+    var until =
+      Number(
+        (
+          demoState.cooldowns ||
+          {}
+        )[
+          symbol
+        ] ||
+        0
+      );
+
+
+    if (
+      !until ||
+      until <=
+      Date.now()
+    ) {
+
+      return "";
+    }
+
+
+    return (
+
+      Math.max(
+
+        1,
+
+        Math.ceil(
+          (
+            until -
+            Date.now()
+          ) /
+          60000
+        )
+      ) +
+
+      "m cooldown"
+    );
+  }
+
+
+  refreshUniverse =
+    async function(){
+
+      if (
+        universeBusy
+      ) {
+        return;
+      }
+
+
+      universeBusy =
+        true;
+
+
+      try {
+
+        var d =
+          await getJson(
+            "/api/universe?limit=20&scan=36"
+          );
+
+
+        var assets =
+          Array.isArray(
+            d.assets
+          )
+            ? d.assets
+            : [];
+
+
+        if (
+          !assets.length
+        ) {
+          return;
+        }
+
+
+        universeMeta =
+          d;
+
+
+        for (
+          var i =
+            0;
+
+          i <
+          assets.length;
+
+          i++
+        ) {
+
+          var x =
+            assets[i];
+
+
+          universeData[
+            x.symbol
+          ] =
+            x;
+
+
+          market[
+            x.symbol
+          ] =
+            Object.assign(
+
+              {},
+
+              market[
+                x.symbol
+              ] ||
+              {},
+
+              {
+
+                symbol:
+                  x.symbol,
+
+                lastPrice:
+                  num(
+
+                    x.lastPrice,
+
+                    market[
+                      x.symbol
+                    ] &&
+                    market[
+                      x.symbol
+                    ]
+                      .lastPrice
+                  ),
+
+                quoteVolume:
+                  num(
+                    x.quoteVolume24h
+                  ),
+
+                priceChangePercent:
+                  num(
+                    x.priceChangePercent24h
+                  )
+              }
+            );
+
+
+          flow[
+            x.symbol
+          ] = {
+
+            symbol:
+              x.symbol,
+
+            netFlow:
+              num(
+                x.netFlow15m
+              ),
+
+            buyRatio:
+              num(
+                x.flow15m &&
+                x.flow15m.buyRatio,
+                50
+              ),
+
+            flowScore:
+              num(
+                x.flowComposite,
+                50
+              ),
+
+            flow1m:
+              x.flow1m,
+
+            flow5m:
+              x.flow5m,
+
+            flow15m:
+              x.flow15m,
+
+            sampleTrades:
+              0,
+
+            sampleSeconds:
+              900
+          };
+        }
+
+
+        var next =
+          assets
+            .map(
+              function(x){
+
+                return x.symbol;
+              }
+            )
+            .slice(
+              0,
+              20
+            );
+
+
+        var changed =
+          next.join(",") !==
+          symbols.join(",");
+
+
+        symbols =
+          next;
+
+
+        localStorage.setItem(
+
+          UNIVERSE_CACHE_KEY,
+
+          JSON.stringify(
+            symbols
+          )
+        );
+
+
+        if (
+          changed
+        ) {
+
+          currentSocketKey =
+            "";
+
+
+          startPriceSocket();
+
+          refreshKlines();
+        }
+
+
+        renderAssetGrid();
+
+        renderTerminal();
+
+        renderDemoTrading();
+
+
+      } catch(e) {
+
+        console.warn(
+          "v5.4 universe scan failed",
+          e
+        );
+
+      } finally {
+
+        universeBusy =
+          false;
+      }
+    };
+
+
+  renderAssetGrid =
+    function(){
+
+      if (
+        !symbols.length
+      ) {
+
+        $("assetGrid")
+          .innerHTML =
+            '<div class="small">در حال اسکن ورود پول و ساختار تکنیکال بازار...</div>';
+
+        return;
+      }
+
+
+      $("assetGrid")
+        .innerHTML =
+          symbols
+            .map(
+              function(
+                sym,
+                i
+              ){
+
+                var m =
+                  market[
+                    sym
+                  ] ||
+                  {};
+
+
+                var u =
+                  universeData[
+                    sym
+                  ] ||
+                  {};
+
+
+                var c =
+                  num(
+                    m.priceChangePercent
+                  );
+
+
+                var f1 =
+                  num(
+                    u.flow1m &&
+                    u.flow1m.score,
+                    50
+                  );
+
+
+                var f5 =
+                  num(
+                    u.flow5m &&
+                    u.flow5m.score,
+                    50
+                  );
+
+
+                var f15 =
+                  num(
+                    u.flow15m &&
+                    u.flow15m.score,
+                    50
+                  );
+
+
+                var tech =
+                  num(
+                    u.technicalScore,
+                    50
+                  );
+
+
+                var r =
+                  num(
+                    u.rsi14,
+                    50
+                  );
+
+
+                var early =
+                  num(
+                    u.earlyEntryScore,
+                    50
+                  );
+
+
+                var chase =
+                  num(
+                    u.chasePenalty,
+                    0
+                  );
+
+
+                return (
+
+                  '<div class="asset-card">' +
+
+                  '<div class="sym">#' +
+                  (
+                    i +
+                    1
+                  ) +
+                  " " +
+                  sym.replace(
+                    "USDT",
+                    ""
+                  ) +
+                  "/USDT</div>" +
+
+                  '<div class="p">' +
+                  price(
+                    m.lastPrice
+                  ) +
+                  "</div>" +
+
+                  '<div class="' +
+                  (
+                    c >=
+                    0
+                      ? "good"
+                      : "bad"
+                  ) +
+                  '">' +
+                  pct(c) +
+                  "</div>" +
+
+                  '<div class="tiny">FLOW 1m <b>' +
+                  f1.toFixed(0) +
+                  "</b> • 5m <b>" +
+                  f5.toFixed(0) +
+                  "</b> • 15m <b>" +
+                  f15.toFixed(0) +
+                  "</b></div>" +
+
+                  '<div class="tiny">TECH <b>' +
+                  tech.toFixed(0) +
+                  "</b> • RSI " +
+                  r.toFixed(0) +
+                  " • " +
+                  (
+                    u.technicalState ||
+                    "--"
+                  ) +
+                  "</div>" +
+
+                  '<div class="tiny">EARLY <b>' +
+                  early.toFixed(0) +
+                  "</b> • CHASE " +
+                  chase.toFixed(0) +
+                  " • " +
+                  (
+                    u.setupType ||
+                    "--"
+                  ) +
+                  "</div>" +
+
+                  '<div class="tiny">15m NET <span class="' +
+                  (
+                    num(
+                      u.netFlow15m
+                    ) >=
+                    0
+                      ? "good"
+                      : "bad"
+                  ) +
+                  '">' +
+                  (
+                    num(
+                      u.netFlow15m
+                    ) >=
+                    0
+                      ? "+"
+                      : ""
+                  ) +
+                  "$" +
+                  money(
+                    u.netFlow15m
+                  ) +
+                  "</span></div>" +
+
+                  "</div>"
+                );
+              }
+            )
+            .join("");
+    };
+
+
+  buildTradePlan =
+    function(
+      symbol
+    ){
+
+      var current =
+        num(
+          market[
+            symbol
+          ] &&
+          market[
+            symbol
+          ]
+            .lastPrice
+        );
+
+
+      var u =
+        universeData[
+          symbol
+        ] ||
+        {};
+
+
+      if (
+        !current
+      ) {
+
+        return {
+
+          symbol:
+            symbol,
+
+          current:
+            0,
+
+          side:
+            "NO TRADE",
+
+          grade:
+            "-",
+
+          longScore:
+            50,
+
+          shortScore:
+            50,
+
+          directionScore:
+            50,
+
+          ready:
+            false,
+
+          marketAllowed:
+            false,
+
+          reasons:[
+            "Waiting for live price"
+          ],
+
+          exitRule:
+            "Waiting",
+
+          flowScore:
+            50,
+
+          walletScore:
+            50,
+
+          rotationScore:
+            50,
+
+          technicalScore:
+            50,
+
+          entryLow:
+            null,
+
+          entryHigh:
+            null,
+
+          stop:
+            null,
+
+          tp1:
+            null,
+
+          tp2:
+            null,
+
+          tp3:
+            null,
+
+          riskDistance:
+            null,
+
+          cooldown:
+            false,
+
+          riskOffLong:
+            false
+        };
+      }
+
+
+      var tech =
+        technicalData(
+          symbol
+        );
+
+
+      var rot =
+        rotationDataFor(
+          symbol
+        );
+
+
+      var wal =
+        walletComponent(
+          symbol
+        );
+
+
+      var regime =
+        v54Regime();
+
+
+      var f1 =
+        num(
+          u.flow1m &&
+          u.flow1m.score,
+          50
+        );
+
+
+      var f5 =
+        num(
+
+          u.flow5m &&
+          u.flow5m.score,
+
+          num(
+            flow[
+              symbol
+            ] &&
+            flow[
+              symbol
+            ]
+              .flowScore,
+            50
+          )
+        );
+
+
+      var f15 =
+        num(
+
+          u.flow15m &&
+          u.flow15m.score,
+
+          f5
+        );
+
+
+      var flowComposite =
+        num(
+
+          u.flowComposite,
+
+          f1 *
+          0.2 +
+
+          f5 *
+          0.35 +
+
+          f15 *
+          0.45
+        );
+
+
+      var selection =
+        num(
+          u.selectionScore,
+          50
+        );
+
+
+      var early =
+        num(
+          u.earlyEntryScore,
+          50
+        );
+
+
+      var chase =
+        num(
+          u.chasePenalty,
+          0
+        );
+
+
+      var rsiVal =
+        num(
+
+          u.rsi14,
+
+          tech.rsi ||
+          50
+        );
+
+
+      var technicalScore =
+        num(
+
+          u.technicalScore,
+
+          tech.score ||
+          50
+        );
+
+
+      var technicalState =
+        u.technicalState ||
+        tech.state ||
+        "MIXED";
+
+
+      var setupType =
+        u.setupType ||
+        "INFLOW";
+
+
+      var cooldown =
+        inCooldown(
+          symbol
+        );
+
+
+      var longScore =
+        clamp(
+
+          flowComposite *
+          0.28 +
+
+          technicalScore *
+          0.27 +
+
+          early *
+          0.17 +
+
+          selection *
+          0.10 +
+
+          wal.score *
+          0.08 +
+
+          rot.score *
+          0.06 +
+
+          num(
+            regime.score,
+            50
+          ) *
+          0.04 -
+
+          chase *
+          0.45,
+
+          0,
+          100
+        );
+
+
+      if (
+        f15 <
+        51
+      ) {
+
+        longScore -=
+          12;
+      }
+
+
+      if (
+        f5 <
+        52
+      ) {
+
+        longScore -=
+          8;
+      }
+
+
+      if (
+        technicalState ===
+        "BEARISH"
+      ) {
+
+        longScore -=
+          12;
+      }
+
+
+      if (
+        rsiVal >
+        72
+      ) {
+
+        longScore -=
+          Math.min(
+
+            15,
+
+            (
+              rsiVal -
+              72
+            ) *
+            2.5
+          );
+      }
+
+
+      if (
+        num(
+          u.ret15m
+        ) >
+        2.2
+      ) {
+
+        longScore -=
+          8;
+      }
+
+
+      if (
+        regime.state ===
+        "RISK_OFF" &&
+        symbol !==
+        "BTCUSDT"
+      ) {
+
+        longScore -=
+          18;
+      }
+
+
+      longScore =
+        clamp(
+          longScore,
+          0,
+          100
+        );
+
+
+      var shortScore =
+        100 -
+        longScore;
+
+
+      var longOK =
+
+        f15 >=
+        53 &&
+
+        f5 >=
+        54 &&
+
+        technicalScore >=
+        58 &&
+
+        technicalState !==
+        "BEARISH" &&
+
+        rsiVal >=
+        46 &&
+
+        rsiVal <=
+        72 &&
+
+        early >=
+        48 &&
+
+        chase <=
+        18 &&
+
+        num(
+          u.netFlow15m
+        ) >=
+        0;
+
+
+      var shortOK =
+
+        f1 <=
+        42 &&
+
+        f5 <=
+        46 &&
+
+        technicalScore <=
+        42 &&
+
+        technicalState ===
+        "BEARISH" &&
+
+        rsiVal <=
+        54;
+
+
+      var side =
+        "NO TRADE";
+
+
+      var grade =
+        "-";
+
+
+      if (
+        longOK &&
+        longScore >=
+        80
+      ) {
+
+        side =
+          "LONG";
+
+        grade =
+          "A+";
+
+      } else if (
+        longOK &&
+        longScore >=
+        72
+      ) {
+
+        side =
+          "LONG";
+
+        grade =
+          "A";
+
+      } else if (
+        shortOK &&
+        shortScore >=
+        80
+      ) {
+
+        side =
+          "SHORT";
+
+        grade =
+          "A+";
+
+      } else if (
+        shortOK &&
+        shortScore >=
+        72
+      ) {
+
+        side =
+          "SHORT";
+
+        grade =
+          "A";
+
+      } else if (
+        longScore >=
+        61
+      ) {
+
+        side =
+          "WATCH LONG";
+
+        grade =
+          "WATCH";
+
+      } else if (
+        shortScore >=
+        61
+      ) {
+
+        side =
+          "WATCH SHORT";
+
+        grade =
+          "WATCH";
+      }
+
+
+      var actionable =
+        side ===
+        "LONG" ||
+        side ===
+        "SHORT";
+
+
+      var atrValue =
+        Math.max(
+
+          num(
+            u.atr,
+            tech.atr
+          ),
+
+          current *
+          0.0025
+        );
+
+
+      var emaFast =
+        num(
+
+          u.ema5m9,
+
+          tech.ema9 ||
+          current
+        );
+
+
+      var mid =
+
+        side ===
+        "LONG"
+
+          ? Math.min(
+              current,
+              emaFast
+            )
+
+          : side ===
+            "SHORT"
+
+          ? Math.max(
+              current,
+              emaFast
+            )
+
+          : current;
+
+
+      var entryLow =
+        mid -
+        atrValue *
+        0.18;
+
+
+      var entryHigh =
+        mid +
+        atrValue *
+        0.18;
+
+
+      var swingLow =
+        num(
+          u.swingLow,
+          0
+        );
+
+
+      var swingHigh =
+        num(
+          u.swingHigh,
+          0
+        );
+
+
+      var baseRisk =
+        atrValue *
+        1.6;
+
+
+      var stop =
+        null;
+
+
+      if (
+        side ===
+        "LONG"
+      ) {
+
+        stop =
+          Math.min(
+
+            mid -
+            baseRisk,
+
+            swingLow >
+            0 &&
+            swingLow <
+            mid
+
+              ? swingLow -
+                atrValue *
+                0.10
+
+              : mid -
+                baseRisk
+          );
+      }
+
+
+      if (
+        side ===
+        "SHORT"
+      ) {
+
+        stop =
+          Math.max(
+
+            mid +
+            baseRisk,
+
+            swingHigh >
+            mid
+
+              ? swingHigh +
+                atrValue *
+                0.10
+
+              : mid +
+                baseRisk
+          );
+      }
+
+
+      var riskDistance =
+        stop ==
+        null
+          ? baseRisk
+          : Math.abs(
+              mid -
+              stop
+            );
+
+
+      var tp1 =
+        null;
+
+      var tp2 =
+        null;
+
+      var tp3 =
+        null;
+
+
+      if (
+        side ===
+        "LONG"
+      ) {
+
+        tp1 =
+          mid +
+          riskDistance *
+          1.2;
+
+        tp2 =
+          mid +
+          riskDistance *
+          2;
+
+        tp3 =
+          mid +
+          riskDistance *
+          3;
+      }
+
+
+      if (
+        side ===
+        "SHORT"
+      ) {
+
+        tp1 =
+          mid -
+          riskDistance *
+          1.2;
+
+        tp2 =
+          mid -
+          riskDistance *
+          2;
+
+        tp3 =
+          mid -
+          riskDistance *
+          3;
+      }
+
+
+      var distanceToZone =
+
+        current <
+        entryLow
+
+          ? entryLow -
+            current
+
+          : current >
+            entryHigh
+
+          ? current -
+            entryHigh
+
+          : 0;
+
+
+      var marketAllowed =
+
+        actionable &&
+
+        distanceToZone <=
+        atrValue *
+        0.25 &&
+
+        chase <=
+        14 &&
+
+        !cooldown;
+
+
+      var riskOffLong =
+
+        side ===
+        "LONG" &&
+
+        regime.state ===
+        "RISK_OFF" &&
+
+        symbol !==
+        "BTCUSDT";
+
+
+      if (
+        riskOffLong
+      ) {
+
+        marketAllowed =
+          false;
+      }
+
+
+      var ready =
+
+        actionable &&
+
+        current >=
+        entryLow &&
+
+        current <=
+        entryHigh &&
+
+        !cooldown &&
+
+        !riskOffLong;
+
+
+      var blockedReason =
+
+        cooldown
+
+          ? cooldownText(
+              symbol
+            )
+
+          : riskOffLong
+
+          ? "BTC regime RISK_OFF"
+
+          : !marketAllowed &&
+            actionable
+
+          ? "Anti-chase: wait for pullback"
+
+          : "";
+
+
+      return {
+
+        symbol:
+          symbol,
+
+        current:
+          current,
+
+        side:
+          side,
+
+        grade:
+          grade,
+
+        longScore:
+          longScore,
+
+        shortScore:
+          shortScore,
+
+        directionScore:
+          (
+            side ===
+            "SHORT" ||
+            side ===
+            "WATCH SHORT"
+          )
+            ? shortScore
+            : longScore,
+
+        entryLow:
+          entryLow,
+
+        entryHigh:
+          entryHigh,
+
+        entryMid:
+          mid,
+
+        stop:
+          stop,
+
+        tp1:
+          tp1,
+
+        tp2:
+          tp2,
+
+        tp3:
+          tp3,
+
+        riskDistance:
+          riskDistance,
+
+        atr:
+          atrValue,
+
+        ready:
+          ready,
+
+        marketAllowed:
+          marketAllowed,
+
+        cooldown:
+          cooldown,
+
+        riskOffLong:
+          riskOffLong,
+
+        blockedReason:
+          blockedReason,
+
+        reasons:[
+
+          "Setup " +
+          setupType,
+
+          "Flow " +
+          f1.toFixed(0) +
+          "/" +
+          f5.toFixed(0) +
+          "/" +
+          f15.toFixed(0),
+
+          "Tech " +
+          technicalScore.toFixed(0) +
+          " " +
+          technicalState,
+
+          "RSI " +
+          rsiVal.toFixed(0),
+
+          "Early " +
+          early.toFixed(0),
+
+          "Chase " +
+          chase.toFixed(0),
+
+          "Wallet " +
+          wal.score.toFixed(0),
+
+          "BTC " +
+          regime.state
+        ],
+
+        exitRule:
+          "TP1 30% → BE • TP2 30% → trailing • TP3 final",
+
+        flowScore:
+          flowComposite,
+
+        walletScore:
+          wal.score,
+
+        rotationScore:
+          rot.score,
+
+        technicalScore:
+          technicalScore,
+
+        rsi:
+          rsiVal,
+
+        universeScore:
+          selection
+      };
+    };
+
+
+  function currentOpenRisk(){
+
+    return demoState.open
+      .reduce(
+        function(
+          sum,
+          t
+        ){
+
+          var riskPerUnit =
+
+            t.side ===
+            "LONG"
+
+              ? Math.max(
+                  0,
+                  num(
+                    t.entry
+                  ) -
+                  num(
+                    t.stop
+                  )
+                )
+
+              : Math.max(
+                  0,
+                  num(
+                    t.stop
+                  ) -
+                  num(
+                    t.entry
+                  )
+                );
+
+
+          return (
+            sum +
+            riskPerUnit *
+            num(
+              t.qty
+            )
+          );
+        },
+
+        0
+      );
+  }
+
+
+  armDemoTrade =
+    function(
+      symbol
+    ){
+
+      ensureV54State();
+
+
+      var p =
+        buildTradePlan(
+          symbol
+        );
+
+
+      if (
+        !(
+          p.side ===
+          "LONG" ||
+          p.side ===
+          "SHORT"
+        )
+      ) {
+
+        return alert(
+          "فقط سیگنال A/A+ قابل ARM است."
+        );
+      }
+
+
+      if (
+        p.cooldown
+      ) {
+
+        return alert(
+          "این ارز بعد از Stop در Cooldown است."
+        );
+      }
+
+
+      if (
+        p.riskOffLong
+      ) {
+
+        return alert(
+          "BTC در RISK_OFF است؛ LONG آلت‌کوین فعلاً مسدود است."
+        );
+      }
+
+
+      if (
+        demoState.open
+          .some(
+            function(x){
+
+              return x.symbol ===
+                symbol;
+            }
+          )
+      ) {
+
+        return alert(
+          "برای این ارز معامله باز داری."
+        );
+      }
+
+
+      var exists =
+        demoState.armed
+          .some(
+            function(x){
+
+              return x.symbol ===
+                symbol;
+            }
+          );
+
+
+      if (
+        !exists &&
+        demoState.open.length +
+        demoState.armed.length >=
+        num(
+          demoState.maxOpenPositions,
+          10
+        )
+      ) {
+
+        return alert(
+          "سقف معاملات همزمان پر است."
+        );
+      }
+
+
+      demoState.armed =
+        demoState.armed
+          .filter(
+            function(x){
+
+              return x.symbol !==
+                symbol;
+            }
+          );
+
+
+      demoState.armed
+        .push({
+
+          symbol:
+            symbol,
+
+          side:
+            p.side,
+
+          leverage:
+            demoState.leverage,
+
+          armedAt:
+            Date.now(),
+
+          expiresAt:
+            Date.now() +
+            30 *
+            60 *
+            1000
+        });
+
+
+      saveDemo();
+
+      startPriceSocket();
+
+      renderDemoTrading();
+
+      processArmedEntries();
+    };
+
+
+  cancelArm =
+    function(
+      symbol
+    ){
+
+      demoState.armed =
+        demoState.armed
+          .filter(
+            function(x){
+
+              return x.symbol !==
+                symbol;
+            }
+          );
+
+
+      saveDemo();
+
+      startPriceSocket();
+
+      renderDemoTrading();
+    };
+
+
+  processArmedEntries =
+    function(){
+
+      ensureV54State();
+
+
+      if (
+        !demoState.armed.length
+      ) {
+        return;
+      }
+
+
+      demoState.armed =
+        demoState.armed
+          .filter(
+            function(a){
+
+              return (
+                !a.expiresAt ||
+                a.expiresAt >
+                Date.now()
+              );
+            }
+          );
+
+
+      var copy =
+        demoState.armed
+          .slice();
+
+
+      for (
+        var i =
+          0;
+
+        i <
+        copy.length;
+
+        i++
+      ) {
+
+        if (
+          demoState.open.length >=
+          num(
+            demoState.maxOpenPositions,
+            10
+          )
+        ) {
+          break;
+        }
+
+
+        var a =
+          copy[i];
+
+
+        var p =
+          buildTradePlan(
+            a.symbol
+          );
+
+
+        if (
+          p.cooldown ||
+          p.riskOffLong
+        ) {
+
+          cancelArm(
+            a.symbol
+          );
+
+          continue;
+        }
+
+
+        if (
+          (
+            p.side ===
+            "LONG" ||
+            p.side ===
+            "SHORT"
+          ) &&
+          p.side ===
+          a.side &&
+          p.ready
+        ) {
+
+          openDemoTrade(
+            a.symbol,
+            "AUTO"
+          );
+        }
+      }
+    };
+
+
+  openDemoTrade =
+    function(
+      symbol,
+      type
+    ){
+
+      ensureV54State();
+
+
+      type =
+        type ||
+        "MARKET";
+
+
+      var p =
+        buildTradePlan(
+          symbol
+        );
+
+
+      if (
+        !(
+          p.side ===
+          "LONG" ||
+          p.side ===
+          "SHORT"
+        )
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "سیگنال A/A+ وجود ندارد."
+          );
+        }
+
+        return false;
+      }
+
+
+      if (
+        p.cooldown
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "بعد از Stop، ۱۵ دقیقه Cooldown فعال است."
+          );
+        }
+
+        return false;
+      }
+
+
+      if (
+        p.riskOffLong
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "BTC در RISK_OFF است؛ LONG آلت‌کوین مسدود است."
+          );
+        }
+
+        return false;
+      }
+
+
+      if (
+        type ===
+        "AUTO" &&
+        !p.ready
+      ) {
+
+        return false;
+      }
+
+
+      if (
+        type ===
+        "MARKET" &&
+        !p.marketAllowed
+      ) {
+
+        alert(
+          "ANTI-CHASE: قیمت از Entry Zone دور شده. ARM ENTRY بزن و منتظر Pullback بمان."
+        );
+
+        return false;
+      }
+
+
+      if (
+        demoState.open.length >=
+        num(
+          demoState.maxOpenPositions,
+          10
+        )
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "سقف معاملات همزمان پر شده است."
+          );
+        }
+
+        return false;
+      }
+
+
+      if (
+        demoState.open
+          .some(
+            function(x){
+
+              return x.symbol ===
+                symbol;
+            }
+          )
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "این ارز معامله باز دارد."
+          );
+        }
+
+        return false;
+      }
+
+
+      var eq =
+        Math.max(
+          1,
+          demoEquity()
+        );
+
+
+      var lev =
+        clamp(
+          num(
+            demoState.leverage,
+            3
+          ),
+          1,
+          10
+        );
+
+
+      var riskPct =
+        clamp(
+          num(
+            demoState.riskPct,
+            1
+          ),
+          0.1,
+          5
+        );
+
+
+      var riskAmount =
+        eq *
+        riskPct /
+        100;
+
+
+      var maxPortfolioRisk =
+        eq *
+        clamp(
+
+          num(
+            demoState.maxPortfolioRiskPct,
+            MAX_PORTFOLIO_RISK_PCT
+          ),
+
+          2,
+          10
+        ) /
+        100;
+
+
+      var availableRisk =
+        Math.max(
+
+          0,
+
+          maxPortfolioRisk -
+          currentOpenRisk()
+        );
+
+
+      riskAmount =
+        Math.min(
+          riskAmount,
+          availableRisk
+        );
+
+
+      if (
+        riskAmount <=
+        0
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "سقف ریسک کل پورتفو پر شده است."
+          );
+        }
+
+        return false;
+      }
+
+
+      var entry =
+        p.current;
+
+
+      var stop =
+
+        p.side ===
+        "LONG"
+
+          ? entry -
+            p.riskDistance
+
+          : entry +
+            p.riskDistance;
+
+
+      if (
+        p.side ===
+        "LONG" &&
+        p.stop !=
+        null
+      ) {
+
+        stop =
+          Math.min(
+            stop,
+            p.stop
+          );
+      }
+
+
+      if (
+        p.side ===
+        "SHORT" &&
+        p.stop !=
+        null
+      ) {
+
+        stop =
+          Math.max(
+            stop,
+            p.stop
+          );
+      }
+
+
+      var dist =
+        Math.abs(
+          entry -
+          stop
+        );
+
+
+      if (
+        !dist
+      ) {
+        return false;
+      }
+
+
+      var free =
+        Math.max(
+          0,
+          demoFreeMargin()
+        );
+
+
+      var riskQty =
+        riskAmount /
+        dist;
+
+
+      var maxQty =
+        free *
+        lev /
+        entry;
+
+
+      var qty =
+        Math.min(
+          riskQty,
+          maxQty
+        );
+
+
+      if (
+        !Number.isFinite(
+          qty
+        ) ||
+        qty <=
+        0
+      ) {
+
+        if (
+          type ===
+          "MARKET"
+        ) {
+
+          alert(
+            "Free Margin کافی نیست."
+          );
+        }
+
+        return false;
+      }
+
+
+      var pos =
+        qty *
+        entry;
+
+
+      var margin =
+        pos /
+        lev;
+
+
+      var tp1 =
+
+        p.side ===
+        "LONG"
+
+          ? entry +
+            dist *
+            1.2
+
+          : entry -
+            dist *
+            1.2;
+
+
+      var tp2 =
+
+        p.side ===
+        "LONG"
+
+          ? entry +
+            dist *
+            2
+
+          : entry -
+            dist *
+            2;
+
+
+      var tp3 =
+
+        p.side ===
+        "LONG"
+
+          ? entry +
+            dist *
+            3
+
+          : entry -
+            dist *
+            3;
+
+
+      var liq =
+
+        lev >
+        1
+
+          ? (
+              p.side ===
+              "LONG"
+
+                ? Math.max(
+
+                    0,
+
+                    entry *
+                    (
+                      1 -
+                      0.92 /
+                      lev
+                    )
+                  )
+
+                : entry *
+                  (
+                    1 +
+                    0.92 /
+                    lev
+                  )
+            )
+
+          : null;
+
+
+      demoState.open
+        .push({
+
+          id:
+            Date.now() +
+            "_" +
+            symbol +
+            "_" +
+            Math.random()
+              .toString(
+                36
+              )
+              .slice(
+                2,
+                7
+              ),
+
+          symbol:
+            symbol,
+
+          side:
+            p.side,
+
+          grade:
+            p.grade,
+
+          score:
+            p.directionScore,
+
+          entryType:
+            type,
+
+          leverage:
+            lev,
+
+          entry:
+            entry,
+
+          stop:
+            stop,
+
+          initialStop:
+            stop,
+
+          tp1:
+            tp1,
+
+          tp2:
+            tp2,
+
+          tp3:
+            tp3,
+
+          qty:
+            qty,
+
+          initialQty:
+            qty,
+
+          positionValue:
+            pos,
+
+          marginUsed:
+            margin,
+
+          estimatedLiquidation:
+            liq,
+
+          riskAmount:
+            qty *
+            dist,
+
+          initialRiskAmount:
+            qty *
+            dist,
+
+          realizedPnl:
+            0,
+
+          openedAt:
+            Date.now(),
+
+          tp1Hit:
+            false,
+
+          tp2Hit:
+            false,
+
+          trailingActive:
+            false,
+
+          atr:
+            num(
+              p.atr
+            ),
+
+          highWater:
+            entry,
+
+          lowWater:
+            entry
+        });
+
+
+      demoState.armed =
+        demoState.armed
+          .filter(
+            function(x){
+
+              return x.symbol !==
+                symbol;
+            }
+          );
+
+
+      saveDemo();
+
+      startPriceSocket();
+
+      renderDemoTrading();
+
+      return true;
+    };
+
+
+  function partialClose(
+    t,
+    qtyClose,
+    exitPrice,
+    label
+  ){
+
+    qtyClose =
+      Math.min(
+
+        num(
+          t.qty
+        ),
+
+        Math.max(
+          0,
+          qtyClose
+        )
+      );
+
+
+    if (
+      qtyClose <=
+      0
+    ) {
+      return 0;
+    }
+
+
+    var pnl =
+
+      (
+        t.side ===
+        "LONG"
+          ? 1
+          : -1
+      ) *
+
+      (
+        exitPrice -
+        t.entry
+      ) *
+
+      qtyClose;
+
+
+    t.qty =
+      Math.max(
+
+        0,
+
+        num(
+          t.qty
+        ) -
+        qtyClose
+      );
+
+
+    t.realizedPnl =
+      num(
+        t.realizedPnl
+      ) +
+      pnl;
+
+
+    demoState.closedPnl =
+      num(
+        demoState.closedPnl
+      ) +
+      pnl;
+
+
+    t.positionValue =
+      t.qty *
+      t.entry;
+
+
+    t.marginUsed =
+      t.positionValue /
+      Math.max(
+        1,
+        num(
+          t.leverage,
+          1
+        )
+      );
+
+
+    t.lastPartial =
+      label;
+
+
+    return pnl;
+  }
+
+
+  closeDemoTrade =
+    function(
+      id,
+      reason,
+      forcedExit
+    ){
+
+      ensureV54State();
+
+
+      var i =
+        demoState.open
+          .findIndex(
+            function(x){
+
+              return x.id ===
+                id;
+            }
+          );
+
+
+      if (
+        i <
+        0
+      ) {
+        return;
+      }
+
+
+      var t =
+        demoState.open[
+          i
+        ];
+
+
+      var exit =
+
+        Number.isFinite(
+          Number(
+            forcedExit
+          )
+        )
+
+          ? Number(
+              forcedExit
+            )
+
+          : num(
+
+              market[
+                t.symbol
+              ] &&
+              market[
+                t.symbol
+              ]
+                .lastPrice,
+
+              t.entry
+            );
+
+
+      var finalPnl =
+
+        (
+          t.side ===
+          "LONG"
+            ? 1
+            : -1
+        ) *
+
+        (
+          exit -
+          t.entry
+        ) *
+
+        num(
+          t.qty
+        );
+
+
+      demoState.closedPnl =
+        num(
+          demoState.closedPnl
+        ) +
+        finalPnl;
+
+
+      var totalPnl =
+        num(
+          t.realizedPnl
+        ) +
+        finalPnl;
+
+
+      demoState.closed
+        .unshift(
+
+          Object.assign(
+
+            {},
+
+            t,
+
+            {
+
+              exit:
+                exit,
+
+              pnl:
+                totalPnl,
+
+              reason:
+                reason ||
+                "MANUAL",
+
+              closedAt:
+                Date.now()
+            }
+          )
+        );
+
+
+      demoState.closed =
+        demoState.closed
+          .slice(
+            0,
+            300
+          );
+
+
+      demoState.open
+        .splice(
+          i,
+          1
+        );
+
+
+      if (
+        (
+          reason ||
+          ""
+        )
+          .indexOf(
+            "STOP"
+          ) ===
+        0
+      ) {
+
+        demoState.cooldowns[
+          t.symbol
+        ] =
+          Date.now() +
+          COOLDOWN_MS;
+      }
+
+
+      saveDemo();
+
+      startPriceSocket();
+
+      renderDemoTrading();
+    };
+
+
+  updateDemoPositions =
+    function(
+      full
+    ){
+
+      ensureV54State();
+
+
+      var copy =
+        demoState.open
+          .slice();
+
+
+      for (
+        var i =
+          0;
+
+        i <
+        copy.length;
+
+        i++
+      ) {
+
+        var t =
+          copy[i];
+
+
+        var cur =
+          num(
+            market[
+              t.symbol
+            ] &&
+            market[
+              t.symbol
+            ]
+              .lastPrice
+          );
+
+
+        if (
+          !cur
+        ) {
+          continue;
+        }
+
+
+        var atrValue =
+          Math.max(
+
+            num(
+              t.atr
+            ),
+
+            cur *
+            0.0025
+          );
+
+
+        t.highWater =
+          Math.max(
+
+            num(
+              t.highWater,
+              t.entry
+            ),
+
+            cur
+          );
+
+
+        t.lowWater =
+          Math.min(
+
+            num(
+              t.lowWater,
+              t.entry
+            ),
+
+            cur
+          );
+
+
+        if (
+          t.side ===
+          "LONG"
+        ) {
+
+          if (
+            cur <=
+            t.stop
+          ) {
+
+            closeDemoTrade(
+
+              t.id,
+
+              t.trailingActive
+
+                ? "STOP TRAIL"
+
+                : t.tp1Hit
+
+                ? "STOP BE"
+
+                : "STOP",
+
+              t.stop
+            );
+
+            continue;
+          }
+
+
+          if (
+            !t.tp1Hit &&
+            cur >=
+            t.tp1
+          ) {
+
+            partialClose(
+
+              t,
+
+              num(
+                t.initialQty,
+                t.qty
+              ) *
+              0.30,
+
+              t.tp1,
+
+              "TP1"
+            );
+
+
+            t.tp1Hit =
+              true;
+
+
+            t.stop =
+              Math.max(
+                t.stop,
+                t.entry
+              );
+          }
+
+
+          if (
+            !t.tp2Hit &&
+            cur >=
+            t.tp2
+          ) {
+
+            partialClose(
+
+              t,
+
+              num(
+                t.initialQty,
+                t.qty
+              ) *
+              0.30,
+
+              t.tp2,
+
+              "TP2"
+            );
+
+
+            t.tp2Hit =
+              true;
+
+
+            t.trailingActive =
+              true;
+
+
+            t.stop =
+              Math.max(
+
+                t.stop,
+
+                t.entry,
+
+                cur -
+                atrValue *
+                1.10
+              );
+          }
+
+
+          if (
+            t.trailingActive
+          ) {
+
+            t.stop =
+              Math.max(
+
+                t.stop,
+
+                cur -
+                atrValue *
+                1.10
+              );
+          }
+
+
+          if (
+            cur >=
+            t.tp3
+          ) {
+
+            closeDemoTrade(
+              t.id,
+              "TP3",
+              t.tp3
+            );
+
+            continue;
+          }
+
+        } else {
+
+          if (
+            cur >=
+            t.stop
+          ) {
+
+            closeDemoTrade(
+
+              t.id,
+
+              t.trailingActive
+
+                ? "STOP TRAIL"
+
+                : t.tp1Hit
+
+                ? "STOP BE"
+
+                : "STOP",
+
+              t.stop
+            );
+
+            continue;
+          }
+
+
+          if (
+            !t.tp1Hit &&
+            cur <=
+            t.tp1
+          ) {
+
+            partialClose(
+
+              t,
+
+              num(
+                t.initialQty,
+                t.qty
+              ) *
+              0.30,
+
+              t.tp1,
+
+              "TP1"
+            );
+
+
+            t.tp1Hit =
+              true;
+
+
+            t.stop =
+              Math.min(
+                t.stop,
+                t.entry
+              );
+          }
+
+
+          if (
+            !t.tp2Hit &&
+            cur <=
+            t.tp2
+          ) {
+
+            partialClose(
+
+              t,
+
+              num(
+                t.initialQty,
+                t.qty
+              ) *
+              0.30,
+
+              t.tp2,
+
+              "TP2"
+            );
+
+
+            t.tp2Hit =
+              true;
+
+
+            t.trailingActive =
+              true;
+
+
+            t.stop =
+              Math.min(
+
+                t.stop,
+
+                t.entry,
+
+                cur +
+                atrValue *
+                1.10
+              );
+          }
+
+
+          if (
+            t.trailingActive
+          ) {
+
+            t.stop =
+              Math.min(
+
+                t.stop,
+
+                cur +
+                atrValue *
+                1.10
+              );
+          }
+
+
+          if (
+            cur <=
+            t.tp3
+          ) {
+
+            closeDemoTrade(
+              t.id,
+              "TP3",
+              t.tp3
+            );
+
+            continue;
+          }
+        }
+      }
+
+
+      saveDemo();
+
+
+      if (
+        full !==
+        false
+      ) {
+
+        renderDemoTrading();
+      }
+    };
+
+
+  var oldRenderDemo =
+    renderDemoTrading;
+
+
+  renderDemoTrading =
+    function(){
+
+      ensureV54State();
+
+
+      oldRenderDemo();
+
+
+      var note =
+        document.querySelector(
+          "#demo .demo-note"
+        );
+
+
+      if (
+        note
+      ) {
+
+        var eq =
+          Math.max(
+            1,
+            demoEquity()
+          );
+
+
+        var risk =
+          currentOpenRisk() /
+          eq *
+          100;
+
+
+        note.innerHTML =
+
+          'نسخه <b>5.4 ANTI-CHASE</b>: ' +
+
+          'Flow چندبازه‌ای 1m/5m/15m + تکنیکال 5m/15m/1h + BTC Regime. ' +
+
+          'Market فقط نزدیک Entry Zone فعال است. ' +
+
+          'TP1: 30% و Stop→BE، TP2: 30% و Trailing، TP3: خروج نهایی. ' +
+
+          'ریسک باز پورتفو: <b>' +
+
+          risk.toFixed(
+            2
+          ) +
+
+          '%</b> از سقف <b>' +
+
+          num(
+            demoState.maxPortfolioRiskPct,
+            5
+          ) +
+
+          '%</b>. Regime: <b>' +
+
+          v54Regime().state +
+
+          '</b>.';
+      }
+    };
+
+
+  window.armDemoTrade =
+    armDemoTrade;
+
+
+  window.cancelArm =
+    cancelArm;
+
+
+  window.openDemoTrade =
+    openDemoTrade;
+
+
+  window.closeDemoTrade =
+    closeDemoTrade;
+
+
+  ensureV54State();
+
+
+  demoState.maxPortfolioRiskPct =
+    MAX_PORTFOLIO_RISK_PCT;
+
+
+  saveDemo();
+
+
+  var badge =
+    document.querySelector(
+      "h1 .pill"
+    );
+
+
+  if (
+    badge
+  ) {
+
+    badge.textContent =
+      "v5.4 ANTI-CHASE";
+  }
+
+
+  setTimeout(
+    function(){
+
+      refreshUniverse();
+
+      renderDemoTrading();
+    },
+
+    500
+  );
+
+})();
+</script>
+`;
+
+
+/* ======================================================
+   SERVE CURRENT INDEX.HTML + v5.4 PATCH
+====================================================== */
+
+function servePatchedIndex(
+  req,
+  res
+) {
+
+  try {
+
+    const file =
+      path.join(
+        __dirname,
+        "index.html"
+      );
+
+
+    let html =
+      fs.readFileSync(
+        file,
+        "utf8"
+      );
+
+
+    html =
+      html.replace(
+
+        /<\/body>/i,
+
+        ANTI_CHASE_PATCH +
+        "\n</body>"
+      );
+
+
+    res
+      .type("html")
+      .send(html);
+
+
+  } catch (e) {
+
+    res
+      .status(500)
+      .type("text")
+      .send(
+        "index.html unavailable: " +
+        String(e)
+      );
+  }
+}
+
+
+app.get(
+  "/",
+  servePatchedIndex
+);
+
+
+app.get(
+  "/index.html",
+  servePatchedIndex
+);
+
+
+app.use(
+  express.static(
+    path.join(
+      __dirname
+    )
+  )
+);
+
+
 app.listen(
   PORT,
   () => {
 
     console.log(
-      `ALI Flow Radar v5.2 running on ${PORT}`
+      `ALI Flow Radar v5.4 running on ${PORT}`
     );
   }
 );
