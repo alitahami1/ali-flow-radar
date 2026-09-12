@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');const {LiveFeed,STABLE}=require('./live-feed');let now=1000000;const f=new LiveFeed({now:()=>now});
+const send=(type,extra={})=>f.ingest({type,product_id:'ETH-USD',...extra});
+send('last_match',{trade_id:1,time:new Date(now).toISOString(),price:'100',size:'1',side:'sell'});
+now+=17000;send('match',{trade_id:2,time:new Date(now-1000).toISOString(),price:'100',size:'20',side:'sell'});send('heartbeat',{last_trade_id:2});
+let r=f.snapshot().assets[0];assert.equal(r.rawFastNetFlow,2000,'maker sell means taker buy');assert.equal(r.rawNetFlow1m,null,'incomplete minute must not masquerade as full minute');
+send('match',{trade_id:2,time:new Date(now-1000).toISOString(),price:'100',size:'20',side:'sell'});assert.equal(f.snapshot().assets[0].rawFastNetFlow,2000,'duplicate ignored');
+send('match',{trade_id:4,time:new Date(now).toISOString(),price:'100',size:'20',side:'buy'});assert.equal(f.snapshot().assets[0].rawFastNetFlow,null,'gap restarts warmup');assert.equal(f.gaps,1);
+now+=17000;send('match',{trade_id:5,time:new Date(now-1000).toISOString(),price:'100',size:'11',side:'buy'});send('heartbeat',{last_trade_id:5});assert.equal(f.snapshot().assets[0].rawFastNetFlow,-1100,'maker buy means taker sell');
+now+=6000;assert.equal(f.snapshot().assets[0].stale,true);assert.equal(f.snapshot().assets[0].rawFastNetFlow,null);
+assert.ok(STABLE.has('USD1'));console.log('PASS: taker direction, duplicate suppression, incomplete windows, gap invalidation, stale feed, stablecoin exclusion.');

@@ -1,0 +1,11 @@
+const {spawn}=require('node:child_process'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),vm=require('node:vm');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'flow-http-'));const child=spawn(process.execPath,[path.join(__dirname,'server.js')],{env:{...process.env,PORT:'3015',DATA_DIR:tmp},stdio:['ignore','pipe','pipe']});
+(async()=>{await new Promise((resolve,reject)=>{child.stdout.once('data',resolve);child.once('error',reject);child.once('exit',code=>reject(new Error('server exited '+code)))});
+ const base='http://127.0.0.1:3015';let r=await fetch(base+'/api/health');assert.equal((await r.json()).version,'5.15.0');
+ r=await fetch(base+'/api/engine/state');const state=await r.json();assert.equal(state.engine.mode,'SERVER_CONTINUOUS');
+ const html=await(await fetch(base)).text();const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];new vm.Script(js);assert.ok(js.includes('autoSyncDemoFromMoney=()=>{}'));
+ r=await fetch(base+'/api/engine/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'settings',leverage:5,riskPct:1,maxOpenPositions:10})});assert.equal(r.status,200);
+ assert.equal((await(await fetch(base+'/api/engine/state')).json()).demoState.leverage,5);
+ r=await fetch(base+'/api/engine/action',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://unrelated.example'},body:'{}'});assert.equal(r.status,403);
+ console.log('PASS: HTTP health, continuous server state, served JS syntax, browser mutation disabled, server settings, cross-origin rejection.');
+})().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>{child.kill('SIGTERM');setTimeout(()=>{child.kill('SIGKILL');fs.rmSync(tmp,{recursive:true,force:true})},300).unref()});

@@ -56,7 +56,7 @@ function proxy(req, res) {
     port: CORE_PORT,
     path: req.url,
     method: req.method,
-    headers: { ...req.headers, host: `${CORE_HOST}:${CORE_PORT}` }
+    headers: { ...req.headers }
   }, upstreamRes => {
     res.writeHead(upstreamRes.statusCode || 502, upstreamRes.headers);
     upstreamRes.pipe(res);
@@ -71,6 +71,10 @@ function proxy(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  const password=process.env.APP_PASSWORD;
+  if(!password){sendJson(res,503,{ok:false,error:'Set APP_PASSWORD to enable private access'});return}
+  const expected=Buffer.from('ali:'+password).toString('base64');
+  if(req.headers.authorization!=='Basic '+expected){res.writeHead(401,{'www-authenticate':'Basic realm="ALI Flow Radar"'});res.end('Authentication required');return}
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
 
   if (req.method === "GET" && url.pathname === "/api/astra-advisor") {
@@ -79,7 +83,7 @@ const server = http.createServer(async (req, res) => {
       const result = await analyzeTelemetry(snapshot);
       sendJson(res, 200, {
         ok: true,
-        version: "5.14.0",
+        version: "5.15.0",
         advisorModel: ASTRA_MODEL,
         mode: "PASSIVE_RESEARCH",
         generatedAt: new Date().toISOString(),
@@ -88,7 +92,7 @@ const server = http.createServer(async (req, res) => {
     } catch (error) {
       sendJson(res, 502, {
         ok: false,
-        version: "5.14.0",
+        version: "5.15.0",
         advisorModel: ASTRA_MODEL,
         astraConfigured: Boolean(process.env.OPENAI_API_KEY),
         error: String(error?.message || error)
@@ -102,7 +106,7 @@ const server = http.createServer(async (req, res) => {
       const core = await coreJson("/api/health");
       sendJson(res, 200, {
         ...core,
-        version: "5.14.0",
+        version: "5.15.0",
         coreVersion: core?.version || null,
         advisorModel: ASTRA_MODEL,
         advisorProvider: "OpenAI Responses API",
@@ -113,7 +117,7 @@ const server = http.createServer(async (req, res) => {
     } catch (error) {
       sendJson(res, 503, {
         ok: false,
-        version: "5.14.0",
+        version: "5.15.0",
         advisorModel: ASTRA_MODEL,
         astraConfigured: Boolean(process.env.OPENAI_API_KEY),
         error: String(error?.message || error)
@@ -128,7 +132,7 @@ const server = http.createServer(async (req, res) => {
 startCore();
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`ALI Flow Radar Astra gateway v5.14.0 listening on :${PORT}`);
+  console.log(`ALI Flow Radar Astra gateway v5.15.0 listening on :${PORT}`);
   console.log(`Advisor model: ${ASTRA_MODEL}; configured=${Boolean(process.env.OPENAI_API_KEY)}`);
 });
 

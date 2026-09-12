@@ -1,0 +1,15 @@
+services:
+  radar:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      PORT: "3000"
+      DATA_DIR: /app/data
+      APP_PASSWORD: ${APP_PASSWORD:?Set a private access password}
+      MARKET_DATA_PROVIDER: ${MARKET_DATA_PROVIDER:-coinbase}
+    volumes:
+      - radar-data:/app/data
+volumes:
+  radar-data:
