@@ -10,7 +10,7 @@ services:
     buildCommand: npm run build
     startCommand: npm start
     healthCheckPath: /healthz
-    autoDeployTrigger: off
+    autoDeployTrigger: "off"
     numInstances: 1
     maxShutdownDelaySeconds: 90
     disk:
