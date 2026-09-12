@@ -1,0 +1,26 @@
+# REVIEW ONLY: paid deployment is not authorized or provisioned yet.
+# Apply only after explicit cost approval. No production services are changed by this file.
+services:
+  - type: web
+    name: ali-paper-engine-v6
+    runtime: node
+    plan: 0.5c-512mb
+    region: frankfurt
+    rootDir: paper-engine-v6
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    numInstances: 1
+    maxShutdownDelaySeconds: 90
+    disk:
+      name: paper-history
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: DATA_DIR
+        value: /var/data
+      - key: PAPER_ENGINE_TOKEN
+        sync: false
