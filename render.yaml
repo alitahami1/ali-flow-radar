@@ -1,0 +1,23 @@
+# Review billing before applying. This describes always-on compute, not a Free service.
+services:
+  - type: web
+    name: ali-flow-radar
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: false
+    numInstances: 1
+    disk:
+      name: radar-data
+      mountPath: /var/data/ali-flow-radar
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATA_DIR
+        value: /var/data/ali-flow-radar
+      - key: MARKET_DATA_PROVIDER
+        value: coinbase
+      - key: APP_PASSWORD
+        generateValue: true

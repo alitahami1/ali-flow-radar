@@ -1,3 +1,7 @@
+# ALI Flow Radar 5.15.0
+
+See [server engine setup and validation](README-engine-fa.md) before deployment. This release requires APP_PASSWORD and a persistent DATA_DIR. The existing passive advisor gateway is preserved.
+
 # ALI Flow Radar v5.14.0
 
 این نسخه با Gateway جدید اجرا می‌شود و بخش مشاور تحقیقاتی آن روی **GPT-6 Astra** قرار گرفته است.

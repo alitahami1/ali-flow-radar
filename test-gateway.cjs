@@ -1,0 +1,7 @@
+const {spawn}=require('node:child_process'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'flow-gateway-'));const child=spawn(process.execPath,['astra-gateway.js'],{cwd:__dirname,env:{...process.env,PORT:'3018',DATA_DIR:tmp,APP_PASSWORD:'local-test-only'},stdio:['ignore','pipe','pipe']});
+(async()=>{await new Promise((resolve,reject)=>{child.stdout.on('data',d=>{if(d.toString().includes('SERVER ENGINE'))resolve()});child.once('error',reject)});const base='http://127.0.0.1:3018',headers={Authorization:'Basic '+Buffer.from('ali:local-test-only').toString('base64')};
+ assert.equal((await fetch(base)).status,401);const h=await(await fetch(base+'/api/health',{headers})).json();assert.equal(h.version,'5.15.0');assert.equal(h.coreVersion,'5.15.0');assert.equal(h.demoEntryFlowUsd,1000);
+ const r=await fetch(base+'/api/engine/action',{method:'POST',headers:{...headers,Origin:base,'Content-Type':'application/json'},body:JSON.stringify({type:'settings',leverage:3})});assert.equal(r.status,200);
+ console.log('PASS: private gateway, matching versions, $1000 threshold, same-origin action through proxy');
+})().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>{child.kill('SIGTERM');setTimeout(()=>{child.kill('SIGKILL');fs.rmSync(tmp,{recursive:true,force:true})},4500).unref()});
