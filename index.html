@@ -6562,6 +6562,56 @@ function atr(
 }
 
 
+function smaValues(values, period){
+  const out=[]; let sum=0;
+  for(let i=0;i<values.length;i++){
+    sum+=values[i];
+    if(i>=period) sum-=values[i-period];
+    out.push(i>=period-1 ? sum/period : null);
+  }
+  return out;
+}
+function emaValues(values, period){
+  const out=[]; if(!values.length) return out;
+  const k=2/(period+1); let e=values[0];
+  for(const v of values){ e=v*k+e*(1-k); out.push(e); }
+  return out;
+}
+function macdCalc(values){
+  if(values.length<26) return {macd:0,signal:0,histogram:0};
+  const e12=emaValues(values,12), e26=emaValues(values,26);
+  const line=values.map((_,i)=>e12[i]-e26[i]);
+  const sig=emaValues(line,9);
+  return {macd:line.at(-1)||0,signal:sig.at(-1)||0,histogram:(line.at(-1)||0)-(sig.at(-1)||0)};
+}
+function ichimokuCalc(rows){
+  const sliceHL=n=>{const a=rows.slice(-n); if(a.length<n)return null; return (Math.max(...a.map(x=>num(x.high)))+Math.min(...a.map(x=>num(x.low))))/2;};
+  const tenkan=sliceHL(9), kijun=sliceHL(26), spanB=sliceHL(52);
+  const spanA=tenkan!=null&&kijun!=null?(tenkan+kijun)/2:null;
+  return {tenkan,kijun,spanA,spanB,cloudTop:Math.max(num(spanA),num(spanB)),cloudBottom:Math.min(num(spanA),num(spanB))};
+}
+function supportResistanceCalc(rows,current,atrValue){
+  const a=rows.slice(-80); if(!a.length)return {support:null,resistance:null,srSafety:.5};
+  const lows=a.map(x=>num(x.low)).filter(x=>x>0&&x<=current);
+  const highs=a.map(x=>num(x.high)).filter(x=>x>=current);
+  const support=lows.length?Math.max(...lows):Math.min(...a.map(x=>num(x.low)).filter(x=>x>0));
+  const resistance=highs.length?Math.min(...highs):Math.max(...a.map(x=>num(x.high)));
+  const d=Math.max(num(atrValue),current*.001);
+  const ds=support?Math.abs(current-support)/d:5, dr=resistance?Math.abs(resistance-current)/d:5;
+  return {support,resistance,srSafety:clamp(Math.min(ds,dr)/2,0,1)};
+}
+function fibonacciCalc(rows,current){
+  const a=rows.slice(-80); if(!a.length)return {};
+  const hi=Math.max(...a.map(x=>num(x.high))), lo=Math.min(...a.map(x=>num(x.low))), range=hi-lo;
+  return {high:hi,low:lo,fib382:hi-range*.382,fib50:hi-range*.5,fib618:hi-range*.618,nearestFibDistancePct:range?Math.min(...[.382,.5,.618].map(r=>Math.abs(current-(hi-range*r))/current*100)):null};
+}
+function vwapCalc(rows){
+  let pv=0,v=0;
+  for(const x of rows.slice(-80)){const vol=num(x.volume);const typical=(num(x.high)+num(x.low)+num(x.close))/3;pv+=typical*vol;v+=vol;}
+  return v?pv/v:null;
+}
+
+
 function technicalData(s){
 
   const u =
@@ -6756,7 +6806,29 @@ function technicalData(s){
       num(
         u.volumeRatio,
         1
-      )
+      ),
+
+    macd:
+      macdCalc(c),
+
+    ichimoku:
+      ichimokuCalc(r),
+
+    supportResistance:
+      supportResistanceCalc(r, cur, a),
+
+    fibonacci:
+      fibonacciCalc(r, cur),
+
+    vwap:
+      vwapCalc(r),
+
+    volumeProfileProxy:
+      {
+        // Lightweight price/volume context until full bucketed VP is learned.
+        relativeVolume: num(u.volumeRatio, 1),
+        priceVsVwapPct: vwapCalc(r) ? ((cur - vwapCalc(r)) / vwapCalc(r)) * 100 : null
+      }
   };
 }
 
@@ -6943,9 +7015,19 @@ function buildTradePlan(s){
   const rsiAligned = moneySide === "LONG" ? tech.rsi >= 45 && tech.rsi <= 75 : moneySide === "SHORT" ? tech.rsi <= 55 && tech.rsi >= 25 : false;
   const stateAligned = moneySide === "LONG" ? tech.state !== "BEARISH" : moneySide === "SHORT" ? tech.state !== "BULLISH" : false;
   const scoreAligned = moneySide === "LONG" ? tech.score >= 52 : moneySide === "SHORT" ? tech.score <= 48 : false;
+  const macdAligned = moneySide === "LONG" ? tech.macd.histogram > 0 : moneySide === "SHORT" ? tech.macd.histogram < 0 : false;
+  const ichiAligned = moneySide === "LONG"
+    ? current > tech.ichimoku.cloudTop && tech.ichimoku.tenkan >= tech.ichimoku.kijun
+    : moneySide === "SHORT"
+    ? current < tech.ichimoku.cloudBottom && tech.ichimoku.tenkan <= tech.ichimoku.kijun
+    : false;
+  const vwapAligned = moneySide === "LONG" ? current >= num(tech.vwap,current) : moneySide === "SHORT" ? current <= num(tech.vwap,current) : false;
+  const srAligned = tech.supportResistance.srSafety >= .25;
+  const fibContext = tech.fibonacci.nearestFibDistancePct == null || tech.fibonacci.nearestFibDistancePct <= 1.5;
 
-  const technicalConfirmations = [emaAligned,rsiAligned,stateAligned,scoreAligned].filter(Boolean).length;
-  const technicalConfirmationPct = technicalConfirmations / 4;
+  const technicalChecks = [emaAligned,rsiAligned,stateAligned,scoreAligned,macdAligned,ichiAligned,vwapAligned,srAligned,fibContext];
+  const technicalConfirmations = technicalChecks.filter(Boolean).length;
+  const technicalConfirmationPct = technicalConfirmations / technicalChecks.length;
 
   // Experimental combined confidence: Money Flow remains dominant (70%).
   const magnitudeConfidence = clamp((Math.log10(Math.max(flowMagnitudeUsd,1000))-3)/3,0,1);
@@ -6957,7 +7039,7 @@ function buildTradePlan(s){
   else if(flowEligible && combinedConfidence >= .55) grade="A";
   else if(flowEligible) grade="WATCH";
 
-  const actionable = flowEligible && technicalConfirmations >= 2;
+  const actionable = flowEligible && technicalConfirmations >= 5;
   const side = actionable ? moneySide : (moneySide==="LONG" ? "WATCH LONG" : moneySide==="SHORT" ? "WATCH SHORT" : "NO TRADE");
 
   const a = Math.max(tech.atr,current*.0025);
@@ -6982,7 +7064,12 @@ function buildTradePlan(s){
     reasons:[
       `Money Flow ${moneySide} $${money(flowMagnitudeUsd)} (${anchor?.window||"-"})`,
       `Flow agreement ${(flowAgreement*100).toFixed(0)}%`,
-      `Technical confirmation ${technicalConfirmations}/4`,
+      `Technical confirmation ${technicalConfirmations}/9`,
+      `MACD ${macdAligned ? "aligned" : "conflict"}`,
+      `Ichimoku ${ichiAligned ? "aligned" : "conflict"}`,
+      `VWAP ${vwapAligned ? "aligned" : "conflict"}`,
+      `S/R ${srAligned ? "safe" : "near zone"}`,
+      `Fib ${fibContext ? "context" : "far"}`,
       `Tech ${tech.score.toFixed(0)} ${tech.state}`,
       `RSI ${tech.rsi.toFixed(0)}`,
       `EMA9/21 ${emaAligned ? "aligned" : "conflict"}`
