@@ -9293,6 +9293,20 @@ function renderDemoTrading(){
    DEMO GLOBALS
 ====================================================== */
 
+async function syncServerDemoState(){
+  try{
+    const r=await fetch("/api/server-demo",{cache:"no-store"}); if(!r.ok)return;
+    const s=await r.json(); if(!s||!s.ok)return;
+    demoState.open=(s.open||[]).map(t=>({...t,entryType:"SERVER",positionValue:num(t.qty)*num(t.entry),tp1:num(t.entry)+(t.side==="LONG"?1:-1)*Math.abs(num(t.tp3)-num(t.entry))/3,tp2:num(t.entry)+(t.side==="LONG"?1:-1)*2*Math.abs(num(t.tp3)-num(t.entry))/3,tp1Hit:false,tp2Hit:false,estimatedLiquidation:null}));
+    demoState.closed=(s.closed||[]).map(t=>({...t,entryType:"SERVER",reason:t.exitReason||t.reason||"--"}));
+    demoState.closedPnl=num(s.closedPnl); demoState.initialBalance=10000; demoState.maxOpenPositions=10;
+    for(const t of demoState.open){market[t.symbol]=market[t.symbol]||{};market[t.symbol].lastPrice=num(t.current,t.entry);}
+    renderDemoTrading();
+  }catch(e){console.warn("Server Demo sync retrying",e);}
+}
+syncServerDemoState();
+setInterval(syncServerDemoState,3000);
+
 window.armDemoTrade =
   armDemoTrade;
 
