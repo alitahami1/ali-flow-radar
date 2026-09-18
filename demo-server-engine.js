@@ -31,6 +31,8 @@ const MAX_OPEN = 10;
 const SCAN_COUNT = 30;
 const SCAN_MS = 10000;
 const START_BALANCE = 10000;
+const REENTRY_COOLDOWN_MS = 120000;
+const WEAK_FLOW_USD = 10000;
 
 const state = {
   startedAt: Date.now(), lastScanAt: 0, lastError: null, provider: null,
@@ -80,6 +82,30 @@ function learnedGivebackCap(){
   const samples=source.map(t=>num(t.givebackPct));
   if(samples.length<12) return {cap:null,samples:samples.length,efficientSamples:efficient.length};
   return {cap:clamp(quantile(samples,0.5),20,40),samples:samples.length,efficientSamples:efficient.length};
+}
+function lastClosedFor(symbol){ return state.closed.find(t=>t.symbol===symbol)||null; }
+function entryMistakeTags(x){
+  const tags=[]; const prev=lastClosedFor(x.symbol); const now=Date.now();
+  if(prev && now-num(prev.closedAt)>0 && now-num(prev.closedAt)<REENTRY_COOLDOWN_MS) tags.push("REENTRY_TOO_SOON");
+  if(num(x.flowMagnitudeUsd)<WEAK_FLOW_USD) tags.push("WEAK_FLOW_ENTRY");
+  return tags;
+}
+function exitMistakeTags(t,{givebackPct,mfePct,opposite}){
+  const tags=[];
+  if(mfePct>=0.5 && givebackPct>=60) tags.push("LATE_EXIT");
+  if(opposite && num(t.oppositeFlowScans)>=2 && givebackPct>=35) tags.push("FLOW_REVERSAL_IGNORED");
+  if(num(t.mfePnl)>0 && num(t.pnl)<0) tags.push("WINNER_TURNED_LOSER");
+  return tags;
+}
+function mistakeSummary(){
+  const out={};
+  for(const t of state.closed){
+    for(const tag of (t.mistakeTags||[])){
+      if(!out[tag]) out[tag]={count:0,pnl:0,wins:0,losses:0};
+      out[tag].count++; out[tag].pnl+=num(t.pnl); if(num(t.pnl)>0)out[tag].wins++; else if(num(t.pnl)<0)out[tag].losses++;
+    }
+  }
+  return out;
 }
 function trailingGivebackLimit(mfePct){
   let base=50;
@@ -192,6 +218,7 @@ async function applyRows(rows, provider){
 
       if(reason){
         t.exit=p;t.pnl=pnl;t.exitReason=reason;t.closedAt=Date.now();
+        t.mistakeTags=[...(t.entryMistakeTags||[]),...exitMistakeTags(t,{givebackPct,mfePct,opposite})];
         t.givebackPct=givebackPct;t.mfePct=mfePct;t.capturePct=mfe>0?Math.max(0,(pnl/mfe)*100):0;
         t.exitLearning={trailLimitPct:trail.limit,baseTrailLimitPct:trail.base,learnedGivebackCapPct:trail.learnedCap,learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,flowGivebackLimitPct:flowGivebackLimit};
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
@@ -201,7 +228,7 @@ async function applyRows(rows, provider){
           symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason,
           mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),capturePct:+t.capturePct.toFixed(1),
           trailLimitPct:+trail.limit.toFixed(1),learnedGivebackCapPct:trail.learnedCap==null?null:+trail.learnedCap.toFixed(1),learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,
-          oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd))
+          oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd)),mistakeTags:t.mistakeTags
         }));
       }
     }
@@ -210,12 +237,15 @@ async function applyRows(rows, provider){
     for(const x of state.candidates){
       if(state.open.length>=MAX_OPEN) break;
       if(x.flowMagnitudeUsd<DEMO_ENTRY_FLOW_USD||openSyms.has(x.symbol)||!x.price) continue;
+      const entryTags=entryMistakeTags(x);
+      // Prevent the clearest recurring mistake: immediate churn back into the same symbol.
+      if(entryTags.includes("REENTRY_TOO_SOON")) continue;
       const risk=x.price*0.004;
       const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
       const margin=Math.max(10,state.balance/MAX_OPEN);
       const qty=margin*leverage/x.price;
       const t={id:x.symbol+"-"+Date.now(),symbol:x.symbol,side:x.side,entry:x.price,current:x.price,
-        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,
+        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
         stop:x.side==="LONG"?x.price-risk:x.price+risk,
         tp3:x.side==="LONG"?x.price+risk*3:x.price-risk*3};
       state.open.push(t);openSyms.add(x.symbol);
@@ -273,7 +303,7 @@ function snapshot(){
     report:{startingBalance:START_BALANCE,realizedPnl:state.closedPnl,unrealizedPnl:openPnl,netPnl,equity,
       returnPct:(netPnl/START_BALANCE)*100,grossProfit,grossLoss,
       openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,
-      winRate:state.closed.length?wins/state.closed.length*100:null,lastScanAt:state.lastScanAt,provider:state.provider},
+      winRate:state.closed.length?wins/state.closed.length*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary()},
     summary:{openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,winRate:state.closed.length?wins/state.closed.length*100:null}};
 }
 let timer=null;
