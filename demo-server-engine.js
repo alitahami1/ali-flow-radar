@@ -97,6 +97,24 @@ async function applyRows(rows, provider){
     state.candidates=rows.sort((a,b)=>b.flowMagnitudeUsd-a.flowMagnitudeUsd).slice(0,20);
     state.lastScanAt=Date.now(); state.lastError=null;
     console.log("[SERVER_DEMO_SCAN]", JSON.stringify({at:state.lastScanAt,provider,candidates:state.candidates.length,eligible:state.candidates.filter(x=>x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD).length,top:state.candidates.slice(0,3).map(x=>({s:x.symbol,f:Math.round(x.netFlow),side:x.side}))}));
+    {
+      const rep=snapshot().report;
+      console.log("[SERVER_DEMO_REPORT]", JSON.stringify({
+        at:state.lastScanAt,
+        provider:rep.provider,
+        startingBalance:+rep.startingBalance.toFixed(2),
+        realizedPnl:+rep.realizedPnl.toFixed(2),
+        unrealizedPnl:+rep.unrealizedPnl.toFixed(2),
+        netPnl:+rep.netPnl.toFixed(2),
+        equity:+rep.equity.toFixed(2),
+        returnPct:+rep.returnPct.toFixed(3),
+        openTrades:rep.openTrades,
+        closedTrades:rep.closedTrades,
+        wins:rep.wins,
+        losses:rep.losses,
+        winRate:rep.winRate==null?null:+rep.winRate.toFixed(2)
+      }));
+    }
 
     const prices=Object.fromEntries(rows.map(x=>[x.symbol,x.price]));
     for(const t of [...state.open]){
