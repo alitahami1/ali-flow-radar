@@ -15,9 +15,19 @@ const num = (v,d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
 const eligible = s => s && s.endsWith("USDT") && !/(USDC|FDUSD|TUSD|USDP|DAI|BUSD|PAXG)USDT$/.test(s);
 
 async function j(url){
-  const r=await fetch(url,{headers:{"user-agent":"ALI-Flow-Radar/5.16"}});
-  if(!r.ok) throw new Error("Binance "+r.status);
-  return r.json();
+  const u=new URL(url);
+  const suffix=u.pathname+u.search;
+  const bases=["https://api.binance.com","https://api1.binance.com","https://api2.binance.com","https://api3.binance.com","https://data-api.binance.vision"];
+  let last="unknown";
+  for(const base of bases){
+    try{
+      const r=await fetch(base+suffix,{headers:{"user-agent":"Mozilla/5.0 ALI-Flow-Radar"}});
+      if(r.ok) return r.json();
+      last=String(r.status);
+      if(r.status===418||r.status===429) continue;
+    }catch(e){last=String(e&&e.message||e);}
+  }
+  throw new Error("Binance all endpoints failed: "+last);
 }
 function flow(rows,n){
   const a=(rows||[]).slice(-n); let buy=0,sell=0;
@@ -28,7 +38,7 @@ function livePnl(t,p){ return (t.side==="LONG"?1:-1)*(p-t.entry)*t.qty; }
 
 async function scan(){
   try{
-    const tickers=await j("https://data-api.binance.vision/api/v3/ticker/24hr");
+    const tickers=await j("https://api.binance.com/api/v3/ticker/24hr");
     const tops=tickers.filter(x=>eligible(x.symbol)&&num(x.quoteVolume)>0)
       .sort((a,b)=>num(b.quoteVolume)-num(a.quoteVolume)).slice(0,SCAN_COUNT);
     const rows=[];
@@ -36,7 +46,7 @@ async function scan(){
       const batch=tops.slice(i,i+6);
       const got=await Promise.all(batch.map(async t=>{
         try{
-          const k=await j("https://data-api.binance.vision/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=1m&limit=20");
+          const k=await j("https://api.binance.com/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=1m&limit=20");
           const f1=flow(k,1),f5=flow(k,5),f15=flow(k,15);
           const best=[f1,f5,f15].sort((a,b)=>Math.abs(b)-Math.abs(a))[0]||0;
           return {symbol:t.symbol,price:num(t.lastPrice),netFlow:best,flowMagnitudeUsd:Math.abs(best),side:best>=0?"LONG":"SHORT"};
