@@ -3080,6 +3080,8 @@ function renderLivePrices(){
 
   renderAssetGrid();
 
+  autoArmMoneyFlowTrades();
+
   processArmedEntries();
 
   updateDemoPositions(
@@ -7305,6 +7307,33 @@ function cancelArm(symbol){
   startPriceSocket();
 
   renderDemoTrading();
+}
+
+
+function autoArmMoneyFlowTrades(){
+  // Keep Demo continuously sampling valid aggregate Money Flow opportunities.
+  // Technicals are recorded/scored but never block the sample.
+  const maxOpen = num(demoState.maxOpenPositions,10);
+  if (demoState.open.length + demoState.armed.length >= maxOpen) return;
+
+  const symbols = [...new Set([
+    ...Object.keys(universeData || {}),
+    ...Object.keys(flow || {}),
+    ...Object.keys(market || {})
+  ])].filter(s => /USDT$/.test(s));
+
+  const candidates = symbols
+    .map(s => buildTradePlan(s))
+    .filter(p => (p.side === "LONG" || p.side === "SHORT") && p.flowMagnitudeUsd >= 1000)
+    .filter(p => !demoState.open.some(x => x.symbol === p.symbol))
+    .filter(p => !demoState.armed.some(x => x.symbol === p.symbol))
+    .sort((a,b) => b.flowMagnitudeUsd - a.flowMagnitudeUsd);
+
+  const slots = Math.max(0,maxOpen-demoState.open.length-demoState.armed.length);
+  for (const p of candidates.slice(0,slots)) {
+    demoState.armed.push({symbol:p.symbol,side:p.side,leverage:demoState.leverage,armedAt:Date.now(),auto:true});
+  }
+  if (candidates.length) saveDemo();
 }
 
 
