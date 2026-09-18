@@ -7,7 +7,7 @@ const SCAN_MS = 10000;
 const START_BALANCE = 10000;
 
 const state = {
-  startedAt: Date.now(), lastScanAt: 0, lastError: null,
+  startedAt: Date.now(), lastScanAt: 0, lastError: null, provider: null,
   balance: START_BALANCE, closedPnl: 0, open: [], closed: [], candidates: []
 };
 
@@ -36,9 +36,8 @@ function flow(rows,n){
 }
 function livePnl(t,p){ return (t.side==="LONG"?1:-1)*(p-t.entry)*t.qty; }
 
-async function scan(){
-  try{
-    const tickers=await j("https://api.binance.com/api/v3/ticker/24hr");
+async function scanBinance(){
+  const tickers=await j("https://api.binance.com/api/v3/ticker/24hr");
     const tops=tickers.filter(x=>eligible(x.symbol)&&num(x.quoteVolume)>0)
       .sort((a,b)=>num(b.quoteVolume)-num(a.quoteVolume)).slice(0,SCAN_COUNT);
     const rows=[];
@@ -54,9 +53,45 @@ async function scan(){
       }));
       rows.push(...got.filter(Boolean));
     }
+    return rows;
+}
+
+async function scanOkx(){
+  const r=await fetch("https://www.okx.com/api/v5/market/tickers?instType=SPOT",{headers:{"user-agent":"Mozilla/5.0 ALI-Flow-Radar"}});
+  if(!r.ok) throw new Error("OKX "+r.status);
+  const payload=await r.json();
+  const tops=(payload.data||[])
+    .filter(x=>/^[A-Z0-9]+-USDT$/.test(x.instId)&&num(x.volCcy24h)>0&&num(x.last)>0)
+    .sort((a,b)=>num(b.volCcy24h)-num(a.volCcy24h))
+    .slice(0,20);
+  const rows=[];
+  for(let i=0;i<tops.length;i+=5){
+    const batch=tops.slice(i,i+5);
+    const got=await Promise.all(batch.map(async t=>{
+      try{
+        const tr=await fetch("https://www.okx.com/api/v5/market/trades?instId="+encodeURIComponent(t.instId)+"&limit=100",
+          {headers:{"user-agent":"Mozilla/5.0 ALI-Flow-Radar"}});
+        if(!tr.ok) return null;
+        const p=await tr.json();
+        let net=0;
+        for(const x of (p.data||[])){
+          const notional=num(x.px)*num(x.sz);
+          net += String(x.side).toLowerCase()==="buy" ? notional : -notional;
+        }
+        const symbol=t.instId.replace("-","");
+        return {symbol,price:num(t.last),netFlow:net,flowMagnitudeUsd:Math.abs(net),side:net>=0?"LONG":"SHORT"};
+      }catch{return null;}
+    }));
+    rows.push(...got.filter(Boolean));
+  }
+  return rows;
+}
+
+async function applyRows(rows, provider){
+    state.provider=provider;
     state.candidates=rows.sort((a,b)=>b.flowMagnitudeUsd-a.flowMagnitudeUsd).slice(0,20);
     state.lastScanAt=Date.now(); state.lastError=null;
-    console.log("[SERVER_DEMO_SCAN]", JSON.stringify({at:state.lastScanAt,candidates:state.candidates.length,eligible:state.candidates.filter(x=>x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD).length,top:state.candidates.slice(0,3).map(x=>({s:x.symbol,f:Math.round(x.netFlow),side:x.side}))}));
+    console.log("[SERVER_DEMO_SCAN]", JSON.stringify({at:state.lastScanAt,provider,candidates:state.candidates.length,eligible:state.candidates.filter(x=>x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD).length,top:state.candidates.slice(0,3).map(x=>({s:x.symbol,f:Math.round(x.netFlow),side:x.side}))}));
 
     const prices=Object.fromEntries(rows.map(x=>[x.symbol,x.price]));
     for(const t of [...state.open]){
@@ -72,6 +107,7 @@ async function scan(){
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
         state.closed.unshift(t); state.closed=state.closed.slice(0,500);
         state.open=state.open.filter(x=>x.id!==t.id);
+        console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason}));
       }
     }
 
@@ -79,18 +115,35 @@ async function scan(){
     for(const x of state.candidates){
       if(state.open.length>=MAX_OPEN) break;
       if(x.flowMagnitudeUsd<DEMO_ENTRY_FLOW_USD||openSyms.has(x.symbol)||!x.price) continue;
-      const risk=Math.max(x.price*0.0025,x.price*0.004);
+      const risk=x.price*0.004;
       const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
       const margin=Math.max(10,state.balance/MAX_OPEN);
       const qty=margin*leverage/x.price;
       const t={id:x.symbol+"-"+Date.now(),symbol:x.symbol,side:x.side,entry:x.price,current:x.price,
-        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,openedAt:Date.now(),mfePnl:0,maePnl:0,
+        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,
         stop:x.side==="LONG"?x.price-risk:x.price+risk,
         tp3:x.side==="LONG"?x.price+risk*3:x.price-risk*3};
       state.open.push(t);openSyms.add(x.symbol);
-      console.log("[SERVER_DEMO_OPEN]", JSON.stringify({symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),leverage:t.leverage}));
+      console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),leverage:t.leverage}));
     }
-  }catch(e){ state.lastError=String(e&&e.message||e); state.lastScanAt=Date.now(); console.error("[SERVER_DEMO_ERROR]",state.lastError); }
+}
+
+async function scan(){
+  try{
+    let rows=null;
+    try{
+      rows=await scanBinance();
+      await applyRows(rows,"BINANCE");
+      return;
+    }catch(e){
+      console.warn("[SERVER_DEMO_PROVIDER_FAIL] BINANCE",String(e&&e.message||e));
+    }
+    rows=await scanOkx();
+    await applyRows(rows,"OKX");
+  }catch(e){
+    state.lastError=String(e&&e.message||e); state.lastScanAt=Date.now();
+    console.error("[SERVER_DEMO_ERROR]",state.lastError);
+  }
 }
 function snapshot(){
   const openPnl=state.open.reduce((s,t)=>s+livePnl(t,num(t.current,t.entry)),0);
