@@ -46,6 +46,7 @@ async function scan(){
     }
     state.candidates=rows.sort((a,b)=>b.flowMagnitudeUsd-a.flowMagnitudeUsd).slice(0,20);
     state.lastScanAt=Date.now(); state.lastError=null;
+    console.log("[SERVER_DEMO_SCAN]", JSON.stringify({at:state.lastScanAt,candidates:state.candidates.length,eligible:state.candidates.filter(x=>x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD).length,top:state.candidates.slice(0,3).map(x=>({s:x.symbol,f:Math.round(x.netFlow),side:x.side}))}));
 
     const prices=Object.fromEntries(rows.map(x=>[x.symbol,x.price]));
     for(const t of [...state.open]){
@@ -77,8 +78,9 @@ async function scan(){
         stop:x.side==="LONG"?x.price-risk:x.price+risk,
         tp3:x.side==="LONG"?x.price+risk*3:x.price-risk*3};
       state.open.push(t);openSyms.add(x.symbol);
+      console.log("[SERVER_DEMO_OPEN]", JSON.stringify({symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),leverage:t.leverage}));
     }
-  }catch(e){ state.lastError=String(e&&e.message||e); state.lastScanAt=Date.now(); }
+  }catch(e){ state.lastError=String(e&&e.message||e); state.lastScanAt=Date.now(); console.error("[SERVER_DEMO_ERROR]",state.lastError); }
 }
 function snapshot(){
   const openPnl=state.open.reduce((s,t)=>s+livePnl(t,num(t.current,t.entry)),0);
