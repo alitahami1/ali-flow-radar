@@ -7804,15 +7804,49 @@ function openDemoTrade(
     );
 
 
-  const lev =
-    clamp(
-      num(
-        demoState.leverage,
-        5
-      ),
-      1,
-      10
-    );
+  // Evidence-based dynamic leverage for Demo.
+  // Money Flow remains the trade authority; technical context can only
+  // reduce/increase sizing confidence and never creates or blocks a trade.
+  const flowUsd = Math.max(
+    Math.abs(num(p.rawNetFlow1m ?? p.netFlow1m)),
+    Math.abs(num(p.rawNetFlow5m ?? p.netFlow5m)),
+    Math.abs(num(p.rawNetFlow15m ?? p.netFlow15m))
+  );
+  const flowStrength = clamp(
+    Math.log10(Math.max(flowUsd, 1000)) / 6,
+    0,
+    1
+  );
+  const flowAgreement = [
+    num(p.rawNetFlow1m ?? p.netFlow1m),
+    num(p.rawNetFlow5m ?? p.netFlow5m),
+    num(p.rawNetFlow15m ?? p.netFlow15m)
+  ].filter(x => p.side === "LONG" ? x > 0 : x < 0).length / 3;
+  const atrRisk = clamp(
+    num(p.atrPct ?? p.atrPercent ?? p.volatilityPct, 1.5) / 5,
+    0,
+    1
+  );
+  const evidenceConfidence = clamp(
+    flowStrength * .55 +
+    flowAgreement * .30 +
+    clamp(num(p.directionScore, 50) / 100, 0, 1) * .15 -
+    atrRisk * .20,
+    0,
+    1
+  );
+
+  let lev = 2;
+  if (evidenceConfidence >= .80 && flowAgreement >= .66) lev = 10;
+  else if (evidenceConfidence >= .68 && flowAgreement >= .66) lev = 7;
+  else if (evidenceConfidence >= .55) lev = 5;
+  else if (evidenceConfidence >= .40) lev = 3;
+
+  // User setting is now a safety ceiling, not a forced fixed leverage.
+  lev = Math.min(
+    lev,
+    clamp(num(demoState.leverage, 10), 2, 10)
+  );
 
 
   const riskPct =
