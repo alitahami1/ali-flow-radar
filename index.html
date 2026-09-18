@@ -7039,7 +7039,8 @@ function buildTradePlan(s){
   else if(flowEligible && combinedConfidence >= .55) grade="A";
   else if(flowEligible) grade="WATCH";
 
-  const actionable = flowEligible && technicalConfirmations >= 5;
+  // Demo must keep trading so we can learn. Technicals are observers/scorers, not an entry gate.
+  const actionable = flowEligible;
   const side = actionable ? moneySide : (moneySide==="LONG" ? "WATCH LONG" : moneySide==="SHORT" ? "WATCH SHORT" : "NO TRADE");
 
   const a = Math.max(tech.atr,current*.0025);
@@ -7060,7 +7061,7 @@ function buildTradePlan(s){
     shortScore: moneySide==="SHORT" ? combinedConfidence*100 : (1-combinedConfidence)*100,
     directionScore: combinedConfidence*100,
     entryLow,entryHigh,stop,tp1,tp2,tp3,riskDistance,
-    ready: actionable && current>=entryLow && current<=entryHigh,
+    ready: actionable,
     reasons:[
       `Money Flow ${moneySide} $${money(flowMagnitudeUsd)} (${anchor?.window||"-"})`,
       `Flow agreement ${(flowAgreement*100).toFixed(0)}%`,
@@ -7208,7 +7209,7 @@ function armDemoTrade(symbol){
   ) {
 
     return alert(
-      "فقط سیگنال A یا A+ قابل ARM است."
+      "برای ورود Demo باید Money Flow حداقل $1,000 باشد."
     );
   }
 
@@ -7403,7 +7404,7 @@ function openDemoTrade(
     ) {
 
       alert(
-        "سیگنال A/A+ وجود ندارد."
+        "Money Flow کافی برای معامله وجود ندارد."
       );
     }
 
