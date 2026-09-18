@@ -151,10 +151,25 @@ async function scan(){
   }
 }
 function snapshot(){
-  const openPnl=state.open.reduce((s,t)=>s+livePnl(t,num(t.current,t.entry)),0);
+  const openPositions=state.open.map(t=>{
+    const current=num(t.current,t.entry);
+    const pnlUsd=livePnl(t,current);
+    const pnlPct=t.marginUsed ? (pnlUsd/t.marginUsed)*100 : 0;
+    return {...t,pnlUsd,pnlPct,
+      mfePct:t.marginUsed?(num(t.mfePnl)/t.marginUsed)*100:0,
+      maePct:t.marginUsed?(num(t.maePnl)/t.marginUsed)*100:0};
+  });
+  const openPnl=openPositions.reduce((s,t)=>s+num(t.pnlUsd),0);
   const wins=state.closed.filter(t=>num(t.pnl)>0).length, losses=state.closed.filter(t=>num(t.pnl)<0).length;
-  return {...state,openPnl,equity:state.balance+openPnl,netPnl:state.closedPnl+openPnl,
-    summary:{openTrades:state.open.length,closedTrades:state.closed.length,wins,losses,winRate:state.closed.length?wins/state.closed.length*100:null}};
+  const grossProfit=state.closed.filter(t=>num(t.pnl)>0).reduce((s,t)=>s+num(t.pnl),0);
+  const grossLoss=state.closed.filter(t=>num(t.pnl)<0).reduce((s,t)=>s+num(t.pnl),0);
+  const equity=state.balance+openPnl, netPnl=state.closedPnl+openPnl;
+  return {...state,open:openPositions,openPnl,equity,netPnl,
+    report:{startingBalance:START_BALANCE,realizedPnl:state.closedPnl,unrealizedPnl:openPnl,netPnl,equity,
+      returnPct:(netPnl/START_BALANCE)*100,grossProfit,grossLoss,
+      openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,
+      winRate:state.closed.length?wins/state.closed.length*100:null,lastScanAt:state.lastScanAt,provider:state.provider},
+    summary:{openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,winRate:state.closed.length?wins/state.closed.length*100:null}};
 }
 let timer=null;
 function start(){ if(timer)return; scan(); timer=setInterval(scan,SCAN_MS); }
