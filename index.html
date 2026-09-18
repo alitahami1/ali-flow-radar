@@ -3388,10 +3388,13 @@ async function pollFallbackPrices(){
       renderDemoTrading();
     }
   } catch (e) {
-    $("status").textContent = "RECONNECTING";
-    $("socketState").textContent = "RETRY";
-    $("socketSystem").textContent = "RETRY";
-    $("socketSystem").className = "metric medium warn";
+    // Keep the UI in server mode during a transient REST poll failure.
+    // The next 2-second poll retries automatically; do not show the obsolete
+    // WebSocket-style RECONNECTING state.
+    $("status").textContent = "LIVE SERVER";
+    $("socketState").textContent = "SERVER";
+    $("socketSystem").textContent = "SERVER";
+    $("socketSystem").className = "metric medium good";
   } finally {
     fallbackPriceBusy = false;
   }
