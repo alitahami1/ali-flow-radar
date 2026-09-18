@@ -11,7 +11,9 @@ async function initPersistence(){
     const r=await pool.query("SELECT payload FROM demo_state WHERE id=1");
     if(r.rows[0]&&r.rows[0].payload){
       const s=r.rows[0].payload;
-      for(const k of ["startedAt","lastScanAt","lastError","provider","balance","closedPnl","open","closed","candidates"]) if(s[k]!==undefined) state[k]=s[k];
+      for(const k of ["startedAt","lastScanAt","lastError","provider","balance","closedPnl","totalClosed","totalWins","totalLosses","open","closed","candidates"]) if(s[k]!==undefined) state[k]=s[k];
+      // Backward-compatible migration: old persisted state had only the rolling closed[] window.
+      if(s.totalClosed===undefined){ state.totalClosed=state.closed.length; state.totalWins=state.closed.filter(t=>num(t.pnl)>0).length; state.totalLosses=state.closed.filter(t=>num(t.pnl)<0).length; }
       console.log("[SERVER_DEMO_STATE_RESTORED]",JSON.stringify({open:state.open.length,closed:state.closed.length,balance:state.balance,closedPnl:state.closedPnl}));
     }
     persistenceReady=true; return true;
@@ -36,7 +38,7 @@ const WEAK_FLOW_USD = 10000;
 
 const state = {
   startedAt: Date.now(), lastScanAt: 0, lastError: null, provider: null,
-  balance: START_BALANCE, closedPnl: 0, open: [], closed: [], candidates: []
+  balance: START_BALANCE, closedPnl: 0, totalClosed: 0, totalWins: 0, totalLosses: 0, open: [], closed: [], candidates: []
 };
 
 const num = (v,d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
@@ -222,6 +224,8 @@ async function applyRows(rows, provider){
         t.givebackPct=givebackPct;t.mfePct=mfePct;t.capturePct=mfe>0?Math.max(0,(pnl/mfe)*100):0;
         t.exitLearning={trailLimitPct:trail.limit,baseTrailLimitPct:trail.base,learnedGivebackCapPct:trail.learnedCap,learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,flowGivebackLimitPct:flowGivebackLimit};
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
+        state.totalClosed=num(state.totalClosed)+1;
+        if(pnl>0) state.totalWins=num(state.totalWins)+1; else if(pnl<0) state.totalLosses=num(state.totalLosses)+1;
         state.closed.unshift(t); state.closed=state.closed.slice(0,500);
         state.open=state.open.filter(x=>x.id!==t.id);
         console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({
@@ -302,9 +306,9 @@ function snapshot(){
   return {...state,open:openPositions,openPnl,equity,netPnl,
     report:{startingBalance:START_BALANCE,realizedPnl:state.closedPnl,unrealizedPnl:openPnl,netPnl,equity,
       returnPct:(netPnl/START_BALANCE)*100,grossProfit,grossLoss,
-      openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,
-      winRate:state.closed.length?wins/state.closed.length*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary()},
-    summary:{openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,winRate:state.closed.length?wins/state.closed.length*100:null}};
+      openTrades:openPositions.length,closedTrades:num(state.totalClosed),wins:num(state.totalWins),losses:num(state.totalLosses),
+      winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary()},
+    summary:{openTrades:openPositions.length,closedTrades:num(state.totalClosed),wins:num(state.totalWins),losses:num(state.totalLosses),winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null}};
 }
 let timer=null;
 async function start(){ if(timer)return; await initPersistence(); await scan(); timer=setInterval(scan,SCAN_MS); }
