@@ -1,11 +1,11 @@
 {
   "name": "ali-flow-radar",
-  "version": "5.14.0",
+  "version": "5.15.0",
   "private": true,
   "description": "ALI Flow Radar - crypto flow, Hyperliquid smart wallets, macro monitor and GPT-6 Astra passive research advisor",
   "main": "astra-gateway.js",
   "scripts": {
-    "start": "node astra-gateway.js",
+    "start": "node server.js",
     "start:core": "node server.js"
   },
   "engines": {
