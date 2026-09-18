@@ -3835,7 +3835,16 @@ async function refreshDemoScan(){
     autoArmMoneyFlowTrades();
     processArmedEntries();
     renderDemoTrading();
-  } catch (e) {}
+  } catch (e) {
+    // Demo scanner fallback: keep the engine trading from the latest aggregate
+    // flow already available in memory instead of silently stopping.
+    try {
+      await refreshFlow();
+      autoArmMoneyFlowTrades();
+      processArmedEntries();
+      renderDemoTrading();
+    } catch (_) {}
+  }
 }
 
 
@@ -7543,6 +7552,16 @@ function syncDemoStateToServer(){
 }
 
 setInterval(syncDemoStateToServer, 5000);
+
+// Independent Demo heartbeat: trading must not depend on a chart render or tab state.
+setInterval(() => {
+  try {
+    autoArmMoneyFlowTrades();
+    processArmedEntries();
+    updateDemoPositions(false);
+    syncDemoStateToServer();
+  } catch (_) {}
+}, 2000);
 
 function learningTechnicalSnapshot(symbol){
   try {
