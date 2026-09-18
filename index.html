@@ -7383,6 +7383,7 @@ function armDemoTrade(symbol){
 
 
   saveDemo();
+  syncDemoStateToServer();
 
   startPriceSocket();
 
@@ -7404,6 +7405,7 @@ function cancelArm(symbol){
 
 
   saveDemo();
+  syncDemoStateToServer();
 
   startPriceSocket();
 
@@ -7503,6 +7505,41 @@ function processArmedEntries(){
   }
 }
 
+
+let demoStateSyncBusy = false;
+
+function syncDemoStateToServer(){
+  if (demoStateSyncBusy) return;
+  demoStateSyncBusy = true;
+  const open = (demoState.open || []).map(t => {
+    const current = num(market[t.symbol]?.lastPrice, t.entry);
+    const pnl = (t.side === "LONG" ? 1 : -1) * (current - t.entry) * t.qty;
+    return {
+      id:t.id,symbol:t.symbol,side:t.side,entry:t.entry,current,
+      leverage:t.leverage,qty:t.qty,marginUsed:t.marginUsed,pnl,
+      mfePnl:num(t.mfePnl),maePnl:num(t.maePnl),openedAt:t.openedAt
+    };
+  });
+  fetch("/api/demo-state", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      initialBalance:num(demoState.initialBalance,10000),
+      closedPnl:num(demoState.closedPnl),
+      balance:demoBalance(),
+      equity:demoEquity(),
+      openPnl:demoOpenPnl(),
+      usedMargin:demoUsedMargin(),
+      freeMargin:demoFreeMargin(),
+      open,
+      closed:(demoState.closed || []).slice(0,300),
+      armed:(demoState.armed || []).slice(0,50),
+      updatedAt:Date.now()
+    })
+  }).catch(()=>{}).finally(()=>{demoStateSyncBusy=false;});
+}
+
+setInterval(syncDemoStateToServer, 5000);
 
 function learningTechnicalSnapshot(symbol){
   try {
@@ -7962,6 +7999,7 @@ function openDemoTrade(
   );
 
   saveDemo();
+  syncDemoStateToServer();
 
   startPriceSocket();
 
@@ -8119,6 +8157,7 @@ function closeDemoTrade(
 
 
   saveDemo();
+  syncDemoStateToServer();
 
   startPriceSocket();
 
