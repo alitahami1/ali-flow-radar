@@ -66,6 +66,27 @@ function flow(rows,n){
   return buy-sell;
 }
 function livePnl(t,p){ return (t.side==="LONG"?1:-1)*(p-t.entry)*t.qty; }
+function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+function quantile(arr,q){
+  if(!arr.length) return null;
+  const a=[...arr].sort((x,y)=>x-y), pos=(a.length-1)*q, lo=Math.floor(pos), hi=Math.ceil(pos);
+  return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(pos-lo);
+}
+function learnedGivebackCap(){
+  const samples=state.closed.filter(t=>num(t.pnl)>0 && num(t.mfePnl)>0 && Number.isFinite(num(t.givebackPct,NaN)))
+    .slice(0,60).map(t=>num(t.givebackPct));
+  if(samples.length<12) return {cap:null,samples:samples.length};
+  return {cap:clamp(quantile(samples,0.5),20,45),samples:samples.length};
+}
+function trailingGivebackLimit(mfePct){
+  let base=50;
+  if(mfePct>=3) base=20;
+  else if(mfePct>=2) base=25;
+  else if(mfePct>=1) base=35;
+  else if(mfePct>=0.5) base=45;
+  const learned=learnedGivebackCap();
+  return {limit:learned.cap==null?base:Math.min(base,learned.cap),base,learnedCap:learned.cap,samples:learned.samples};
+}
 
 async function scanBinance(){
   const tickers=await j("https://api.binance.com/api/v3/ticker/24hr");
@@ -147,6 +168,8 @@ async function applyRows(rows, provider){
       const mfe=Math.max(0,num(t.mfePnl));
       const mfePct=t.marginUsed ? (mfe/t.marginUsed)*100 : 0;
       const givebackPct=mfe>0 ? Math.max(0,((mfe-pnl)/mfe)*100) : 0;
+      const trail=trailingGivebackLimit(mfePct);
+      const flowGivebackLimit=Math.max(20,trail.limit-10);
 
       let reason=null;
       // Absolute priority: catastrophic protection.
@@ -157,20 +180,22 @@ async function applyRows(rows, provider){
       else if(t.side==="SHORT" && p<=t.tp3) reason="TP3";
       // Never let a meaningful winner become a loser.
       else if(mfePct>=1.0 && pnl<=0) reason="BREAKEVEN_PROTECT";
-      // Lock profit when flow reverses persistently and the trade gives back >35% of MFE.
-      else if(pnl>0 && mfePct>=0.5 && givebackPct>=35 && t.oppositeFlowScans>=2) reason="PROFIT_PROTECT_FLOW";
-      // Independent trailing protection for large winners even without a fresh flow signal.
-      else if(pnl>0 && mfePct>=1.0 && givebackPct>=50) reason="TRAILING_PROFIT";
+      // Persistent opposite flow tightens the allowed MFE giveback by another 10 points.
+      else if(pnl>0 && mfePct>=0.5 && givebackPct>=flowGivebackLimit && t.oppositeFlowScans>=2) reason="PROFIT_PROTECT_FLOW";
+      // Adaptive MFE trailing: stronger winners are allowed progressively less profit giveback.
+      else if(pnl>0 && mfePct>=0.5 && givebackPct>=trail.limit) reason="TRAILING_PROFIT_ADAPTIVE";
 
       if(reason){
         t.exit=p;t.pnl=pnl;t.exitReason=reason;t.closedAt=Date.now();
-        t.givebackPct=givebackPct;t.mfePct=mfePct;
+        t.givebackPct=givebackPct;t.mfePct=mfePct;t.capturePct=mfe>0?Math.max(0,(pnl/mfe)*100):0;
+        t.exitLearning={trailLimitPct:trail.limit,baseTrailLimitPct:trail.base,learnedGivebackCapPct:trail.learnedCap,learningSamples:trail.samples,flowGivebackLimitPct:flowGivebackLimit};
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
         state.closed.unshift(t); state.closed=state.closed.slice(0,500);
         state.open=state.open.filter(x=>x.id!==t.id);
         console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({
           symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason,
-          mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),
+          mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),capturePct:+t.capturePct.toFixed(1),
+          trailLimitPct:+trail.limit.toFixed(1),learnedGivebackCapPct:trail.learnedCap==null?null:+trail.learnedCap.toFixed(1),learningSamples:trail.samples,
           oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd))
         }));
       }
