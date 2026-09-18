@@ -3450,35 +3450,13 @@ app.get(
   }
 );
 
-app.get(
-  "/",
-  (
-    req,
-    res
-  ) =>
-    res
-      .type(
-        "html"
-      )
-      .send(
-        INDEX_HTML
-      )
-);
+// Serve the live index.html from disk so Demo/learning updates in GitHub are actually deployed.
+// The old embedded Brotli snapshot is kept above only for backward compatibility.
+const sendLiveIndex = (req, res) =>
+  res.sendFile(path.join(__dirname, "index.html"));
 
-app.get(
-  "/index.html",
-  (
-    req,
-    res
-  ) =>
-    res
-      .type(
-        "html"
-      )
-      .send(
-        INDEX_HTML
-      )
-);
+app.get("/", sendLiveIndex);
+app.get("/index.html", sendLiveIndex);
 
 app.listen(
   PORT,
