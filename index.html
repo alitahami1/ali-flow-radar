@@ -3405,6 +3405,10 @@ function startFallbackPrices(){
 
 function startPriceSocket(){
 
+  // Server REST feed runs continuously as a redundant price source.
+  // Direct Binance WebSocket is an acceleration layer, never a single point of failure.
+  startFallbackPrices();
+
   const active =
     getActiveSymbols();
 
@@ -3480,8 +3484,6 @@ function startPriceSocket(){
 
   socket.onopen =
     () => {
-
-      stopFallbackPrices();
 
       socketRetry =
         1000;
@@ -3667,31 +3669,32 @@ function startPriceSocket(){
 
       startFallbackPrices();
 
+      // The trading engine remains live on the server feed while WebSocket retries.
       $("dot")
         .classList
-        .remove(
+        .add(
           "live"
         );
 
 
       $("status")
         .textContent =
-          "RECONNECTING";
+          "LIVE SERVER";
 
 
       $("socketState")
         .textContent =
-          "RETRY";
+          "SERVER";
 
 
       $("socketSystem")
         .textContent =
-          "RETRY";
+          "SERVER";
 
 
       $("socketSystem")
         .className =
-          "metric medium warn";
+          "metric medium good";
 
 
       setTimeout(
