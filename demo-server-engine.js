@@ -11,7 +11,7 @@ async function initPersistence(){
     const r=await pool.query("SELECT payload FROM demo_state WHERE id=1");
     if(r.rows[0]&&r.rows[0].payload){
       const s=r.rows[0].payload;
-      for(const k of ["startedAt","lastScanAt","lastError","provider","balance","closedPnl","totalClosed","totalWins","totalLosses","open","closed","candidates"]) if(s[k]!==undefined) state[k]=s[k];
+      for(const k of ["startedAt","lastScanAt","lastError","provider","balance","closedPnl","totalClosed","totalWins","totalLosses","open","closed","candidates","flowHistory"]) if(s[k]!==undefined) state[k]=s[k];
       // Backward-compatible migration: old persisted state had only the rolling closed[] window.
       if(s.totalClosed===undefined){ state.totalClosed=state.closed.length; state.totalWins=state.closed.filter(t=>num(t.pnl)>0).length; state.totalLosses=state.closed.filter(t=>num(t.pnl)<0).length; }
       console.log("[SERVER_DEMO_STATE_RESTORED]",JSON.stringify({open:state.open.length,closed:state.closed.length,balance:state.balance,closedPnl:state.closedPnl}));
@@ -35,10 +35,14 @@ const SCAN_MS = 10000;
 const START_BALANCE = 10000;
 const REENTRY_COOLDOWN_MS = 120000;
 const WEAK_FLOW_USD = 10000;
+const BINANCE_FAIL_COOLDOWN_MS = 5*60*1000;
+const FLOW_HISTORY_LIMIT = 90;
+let binanceCooldownUntil=0;
+let binanceConsecutiveFails=0;
 
 const state = {
   startedAt: Date.now(), lastScanAt: 0, lastError: null, provider: null,
-  balance: START_BALANCE, closedPnl: 0, totalClosed: 0, totalWins: 0, totalLosses: 0, open: [], closed: [], candidates: []
+  balance: START_BALANCE, closedPnl: 0, totalClosed: 0, totalWins: 0, totalLosses: 0, open: [], closed: [], candidates: [], flowHistory: {}
 };
 
 const num = (v,d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
@@ -180,6 +184,17 @@ async function scanOkx(){
 async function applyRows(rows, provider){
     state.provider=provider;
     const flowRows=rows.filter(x=>!x.priceOnly);
+    // Observation-only order-flow memory: rolling aggregate delta/CVD proxy. It does NOT gate Demo entries.
+    const now=Date.now();
+    if(!state.flowHistory || typeof state.flowHistory!=="object") state.flowHistory={};
+    for(const x of flowRows){
+      const h=Array.isArray(state.flowHistory[x.symbol])?state.flowHistory[x.symbol]:[];
+      h.push({at:now,netFlow:num(x.netFlow),price:num(x.price)});
+      state.flowHistory[x.symbol]=h.slice(-FLOW_HISTORY_LIMIT);
+      const recent=state.flowHistory[x.symbol];
+      x.cvdProxyUsd=recent.reduce((s,z)=>s+num(z.netFlow),0);
+      x.flowPersistence=recent.length?Math.abs(recent.reduce((s,z)=>s+(Math.sign(num(z.netFlow))===Math.sign(num(x.netFlow))?1:0),0)/recent.length):0;
+    }
     state.candidates=flowRows.sort((a,b)=>b.flowMagnitudeUsd-a.flowMagnitudeUsd).slice(0,20);
     state.lastScanAt=Date.now(); state.lastError=null;
     console.log("[SERVER_DEMO_SCAN]", JSON.stringify({at:state.lastScanAt,provider,candidates:state.candidates.length,eligible:state.candidates.filter(x=>x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD).length,top:state.candidates.slice(0,3).map(x=>({s:x.symbol,f:Math.round(x.netFlow),side:x.side}))}));
@@ -275,12 +290,21 @@ async function applyRows(rows, provider){
 async function scan(){
   try{
     let rows=null;
-    try{
-      rows=await scanBinance();
-      await applyRows(rows,"BINANCE");
-      return;
-    }catch(e){
-      console.warn("[SERVER_DEMO_PROVIDER_FAIL] BINANCE",String(e&&e.message||e));
+    if(Date.now()>=binanceCooldownUntil){
+      try{
+        rows=await scanBinance();
+        binanceConsecutiveFails=0;
+        await applyRows(rows,"BINANCE");
+        return;
+      }catch(e){
+        binanceConsecutiveFails++;
+        const msg=String(e&&e.message||e);
+        if(/418|429/.test(msg) && binanceConsecutiveFails>=2){
+          binanceCooldownUntil=Date.now()+BINANCE_FAIL_COOLDOWN_MS;
+          console.warn("[SERVER_DEMO_PROVIDER_COOLDOWN]",JSON.stringify({provider:"BINANCE",reason:msg,cooldownMs:BINANCE_FAIL_COOLDOWN_MS,until:binanceCooldownUntil}));
+        }
+        console.warn("[SERVER_DEMO_PROVIDER_FAIL] BINANCE",msg);
+      }
     }
     rows=await scanOkx();
     await applyRows(rows,"OKX");
