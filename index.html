@@ -3405,9 +3405,17 @@ function startFallbackPrices(){
 
 function startPriceSocket(){
 
-  // Server REST feed runs continuously as a redundant price source.
-  // Direct Binance WebSocket is an acceleration layer, never a single point of failure.
+  // Stable mode: Demo pricing is server-fed. Direct browser Binance WebSocket
+  // is intentionally disabled because repeated client-side disconnects caused
+  // RECONNECTING loops and froze Demo PnL on some networks/devices.
   startFallbackPrices();
+
+  $("dot").classList.add("live");
+  $("status").textContent = "LIVE SERVER";
+  $("socketState").textContent = "SERVER";
+  $("socketSystem").textContent = "SERVER";
+  $("socketSystem").className = "metric medium good";
+  return;
 
   const active =
     getActiveSymbols();
