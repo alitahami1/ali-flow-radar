@@ -12,7 +12,12 @@ const state = {
 };
 
 const num = (v,d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
-const eligible = s => s && s.endsWith("USDT") && !/(USDC|FDUSD|TUSD|USDP|DAI|BUSD|PAXG)USDT$/.test(s);
+const EXCLUDED_BASES = new Set(["USDC","USDG","FDUSD","TUSD","USDP","DAI","BUSD","USDE","USDS","PYUSD","PAX","PAXG","EURT","EURC"]);
+const eligible = s => {
+  if(!s || !s.endsWith("USDT")) return false;
+  const base=s.slice(0,-4);
+  return !EXCLUDED_BASES.has(base);
+};
 
 async function j(url){
   const u=new URL(url);
@@ -61,7 +66,7 @@ async function scanOkx(){
   if(!r.ok) throw new Error("OKX "+r.status);
   const payload=await r.json();
   const tops=(payload.data||[])
-    .filter(x=>/^[A-Z0-9]+-USDT$/.test(x.instId)&&num(x.volCcy24h)>0&&num(x.last)>0)
+    .filter(x=>/^[A-Z0-9]+-USDT$/.test(x.instId)&&eligible(x.instId.replace("-",""))&&num(x.volCcy24h)>0&&num(x.last)>0)
     .sort((a,b)=>num(b.volCcy24h)-num(a.volCcy24h))
     .slice(0,20);
   const rows=[];
