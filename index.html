@@ -6910,499 +6910,93 @@ function btcRegime(){
 
 function buildTradePlan(s){
 
-  const current =
-    num(
-      market[
-        s
-      ]?.lastPrice
-    );
-
-
-  if (
-    !current
-  ) {
-
-    return {
-
-      symbol:
-        s,
-
-      current:
-        0,
-
-      side:
-        "NO TRADE",
-
-      grade:
-        "-",
-
-      longScore:
-        50,
-
-      shortScore:
-        50,
-
-      directionScore:
-        50,
-
-      ready:
-        false,
-
-      reasons:[
-        "Waiting for live price"
-      ],
-
-      exitRule:
-        "Waiting",
-
-      flowScore:
-        50,
-
-      walletScore:
-        50,
-
-      rotationScore:
-        50,
-
-      riskDistance:
-        null,
-
-      entryLow:
-        null,
-
-      entryHigh:
-        null,
-
-      stop:
-        null,
-
-      tp1:
-        null,
-
-      tp2:
-        null,
-
-      tp3:
-        null
-    };
+  const current = num(market[s]?.lastPrice);
+  if (!current) {
+    return {symbol:s,current:0,side:"NO TRADE",grade:"-",longScore:50,shortScore:50,directionScore:50,ready:false,reasons:["Waiting for live price"],exitRule:"Waiting",flowScore:50,walletScore:50,rotationScore:50,riskDistance:null,entryLow:null,entryHigh:null,stop:null,tp1:null,tp2:null,tp3:null};
   }
 
+  const tech = technicalData(s);
+  const u = universeData[s] || {};
+  const f = flow[s] || {};
 
-  const tech =
-    technicalData(
-      s
-    );
+  // v5.13 unified Demo rule: aggregate market Money Flow >= $1,000.
+  // Technical analysis is now added as confirmation/scoring for this experiment.
+  // It never creates the direction against Money Flow.
+  const candidates = [
+    {window:"15m", net:num(u.rawNetFlow15m ?? u.netFlow15m)},
+    {window:"5m",  net:num(u.rawNetFlow5m ?? u.netFlow5m)},
+    {window:"1m",  net:num(u.rawNetFlow1m ?? u.netFlow1m)},
+    {window:"FAST",net:num(f.rawNetFlow ?? f.netFlow ?? u.rawNetFlow ?? u.netFlow)}
+  ];
+  const anchor = candidates.sort((a,b)=>Math.abs(b.net)-Math.abs(a.net))[0];
+  const netFlow = num(anchor?.net);
+  const flowMagnitudeUsd = Math.abs(netFlow);
+  const flowEligible = flowMagnitudeUsd >= 1000;
+  const moneySide = !flowEligible ? "NO TRADE" : (netFlow >= 0 ? "LONG" : "SHORT");
 
+  const flowAgreement = candidates.filter(x =>
+    moneySide === "LONG" ? x.net > 0 : moneySide === "SHORT" ? x.net < 0 : false
+  ).length / candidates.length;
 
-  const rot =
-    rotationDataFor(
-      s
-    );
+  const emaBull = tech.ema9 >= tech.ema21;
+  const emaAligned = moneySide === "LONG" ? emaBull : moneySide === "SHORT" ? !emaBull : false;
+  const rsiAligned = moneySide === "LONG" ? tech.rsi >= 45 && tech.rsi <= 75 : moneySide === "SHORT" ? tech.rsi <= 55 && tech.rsi >= 25 : false;
+  const stateAligned = moneySide === "LONG" ? tech.state !== "BEARISH" : moneySide === "SHORT" ? tech.state !== "BULLISH" : false;
+  const scoreAligned = moneySide === "LONG" ? tech.score >= 52 : moneySide === "SHORT" ? tech.score <= 48 : false;
 
+  const technicalConfirmations = [emaAligned,rsiAligned,stateAligned,scoreAligned].filter(Boolean).length;
+  const technicalConfirmationPct = technicalConfirmations / 4;
 
-  const wal =
-    walletComponent(
-      s
-    );
+  // Experimental combined confidence: Money Flow remains dominant (70%).
+  const magnitudeConfidence = clamp((Math.log10(Math.max(flowMagnitudeUsd,1000))-3)/3,0,1);
+  const flowConfidence = clamp(flowAgreement*.55 + magnitudeConfidence*.45,0,1);
+  const combinedConfidence = clamp(flowConfidence*.70 + technicalConfirmationPct*.30,0,1);
 
+  let grade="-";
+  if(flowEligible && combinedConfidence >= .75) grade="A+";
+  else if(flowEligible && combinedConfidence >= .55) grade="A";
+  else if(flowEligible) grade="WATCH";
 
-  const reg =
-    btcRegime();
+  const actionable = flowEligible && technicalConfirmations >= 2;
+  const side = actionable ? moneySide : (moneySide==="LONG" ? "WATCH LONG" : moneySide==="SHORT" ? "WATCH SHORT" : "NO TRADE");
 
-
-  const fs =
-    num(
-      flow[
-        s
-      ]?.flowScore,
-      universeData[
-        s
-      ]?.flowScore ||
-      50
-    );
-
-
-  const us =
-    num(
-      universeData[
-        s
-      ]?.selectionScore,
-      50
-    );
-
-
-  let long =
-    clamp(
-
-      rot.score *
-      .18 +
-
-      wal.score *
-      .16 +
-
-      fs *
-      .22 +
-
-      tech.score *
-      .26 +
-
-      us *
-      .13 +
-
-      reg *
-      .05,
-
-      0,
-      100
-    );
-
-
-  if (
-    tech.rsi >
-    78
-  ) {
-
-    long -=
-      8;
+  const a = Math.max(tech.atr,current*.0025);
+  const mid = current;
+  const entryLow = mid-a*.15;
+  const entryHigh = mid+a*.15;
+  const riskDistance = a*1.25;
+  let stop=null,tp1=null,tp2=null,tp3=null;
+  if(moneySide==="LONG"){
+    stop=mid-riskDistance; tp1=mid+riskDistance*1.2; tp2=mid+riskDistance*2; tp3=mid+riskDistance*3;
+  } else if(moneySide==="SHORT"){
+    stop=mid+riskDistance; tp1=mid-riskDistance*1.2; tp2=mid-riskDistance*2; tp3=mid-riskDistance*3;
   }
-
-
-  if (
-    tech.state ===
-    "BEARISH"
-  ) {
-
-    long -=
-      6;
-  }
-
-
-  long =
-    clamp(
-      long,
-      0,
-      100
-    );
-
-
-  const short =
-    100 -
-    long;
-
-
-  let side =
-    "NO TRADE";
-
-
-  let grade =
-    "-";
-
-
-  const longTechOK =
-    tech.score >=
-    56 &&
-    tech.rsi <
-    79 &&
-    tech.state !==
-    "BEARISH";
-
-
-  const shortTechOK =
-    tech.score <=
-    44 &&
-    tech.state !==
-    "BULLISH";
-
-
-  if (
-    long >=
-    80 &&
-    longTechOK
-  ) {
-
-    side =
-      "LONG";
-
-    grade =
-      "A+";
-
-  } else if (
-    long >=
-    71 &&
-    longTechOK
-  ) {
-
-    side =
-      "LONG";
-
-    grade =
-      "A";
-
-  } else if (
-    long <=
-    20 &&
-    shortTechOK
-  ) {
-
-    side =
-      "SHORT";
-
-    grade =
-      "A+";
-
-  } else if (
-    long <=
-    29 &&
-    shortTechOK
-  ) {
-
-    side =
-      "SHORT";
-
-    grade =
-      "A";
-
-  } else if (
-    long >=
-    60
-  ) {
-
-    side =
-      "WATCH LONG";
-
-    grade =
-      "WATCH";
-
-  } else if (
-    long <=
-    40
-  ) {
-
-    side =
-      "WATCH SHORT";
-
-    grade =
-      "WATCH";
-  }
-
-
-  const actionable =
-    side ===
-    "LONG" ||
-    side ===
-    "SHORT";
-
-
-  const a =
-    Math.max(
-      tech.atr,
-      current *
-      .0025
-    );
-
-
-  const mid =
-    side ===
-    "LONG"
-
-      ? Math.min(
-          current,
-          tech.ema9 ||
-          current
-        )
-
-      : side ===
-        "SHORT"
-
-      ? Math.max(
-          current,
-          tech.ema9 ||
-          current
-        )
-
-      : current;
-
-
-  const entryLow =
-    mid -
-    a *
-    .15;
-
-
-  const entryHigh =
-    mid +
-    a *
-    .15;
-
-
-  const riskDistance =
-    a *
-    1.25;
-
-
-  let stop =
-    null;
-
-  let tp1 =
-    null;
-
-  let tp2 =
-    null;
-
-  let tp3 =
-    null;
-
-
-  if (
-    side ===
-    "LONG"
-  ) {
-
-    stop =
-      mid -
-      riskDistance;
-
-    tp1 =
-      mid +
-      riskDistance *
-      1.2;
-
-    tp2 =
-      mid +
-      riskDistance *
-      2;
-
-    tp3 =
-      mid +
-      riskDistance *
-      3;
-
-  } else if (
-    side ===
-    "SHORT"
-  ) {
-
-    stop =
-      mid +
-      riskDistance;
-
-    tp1 =
-      mid -
-      riskDistance *
-      1.2;
-
-    tp2 =
-      mid -
-      riskDistance *
-      2;
-
-    tp3 =
-      mid -
-      riskDistance *
-      3;
-  }
-
 
   return {
-
-    symbol:
-      s,
-
-    current,
-
-    side,
-
-    grade,
-
-    longScore:
-      long,
-
-    shortScore:
-      short,
-
-    directionScore:
-      (
-        side ===
-        "SHORT" ||
-        side ===
-        "WATCH SHORT"
-      )
-        ? short
-        : long,
-
-    entryLow,
-
-    entryHigh,
-
-    stop,
-
-    tp1,
-
-    tp2,
-
-    tp3,
-
-    riskDistance,
-
-    ready:
-      actionable &&
-      current >=
-      entryLow &&
-      current <=
-      entryHigh,
-
+    symbol:s,current,side,grade,
+    longScore: moneySide==="LONG" ? combinedConfidence*100 : (1-combinedConfidence)*100,
+    shortScore: moneySide==="SHORT" ? combinedConfidence*100 : (1-combinedConfidence)*100,
+    directionScore: combinedConfidence*100,
+    entryLow,entryHigh,stop,tp1,tp2,tp3,riskDistance,
+    ready: actionable && current>=entryLow && current<=entryHigh,
     reasons:[
-
-      `Universe ${us.toFixed(0)}`,
-
-      `Flow ${fs.toFixed(0)} / Net $${money(
-        universeData[
-          s
-        ]?.netFlow
-      )}`,
-
+      `Money Flow ${moneySide} $${money(flowMagnitudeUsd)} (${anchor?.window||"-"})`,
+      `Flow agreement ${(flowAgreement*100).toFixed(0)}%`,
+      `Technical confirmation ${technicalConfirmations}/4`,
       `Tech ${tech.score.toFixed(0)} ${tech.state}`,
-
       `RSI ${tech.rsi.toFixed(0)}`,
-
-      `Wallet ${wal.score.toFixed(0)} (${wal.longCount}L/${wal.shortCount}S)`,
-
-      `Rotation ${rot.score.toFixed(0)}`
+      `EMA9/21 ${emaAligned ? "aligned" : "conflict"}`
     ],
-
-    exitRule:
-      side ===
-      "LONG"
-
-        ? "Exit: Stop / TP3 / flow reversal / technical break"
-
-        : side ===
-          "SHORT"
-
-        ? "Exit: Stop / TP3 / flow reversal / technical break"
-
-        : "Wait for A/A+ alignment",
-
-    flowScore:
-      fs,
-
-    walletScore:
-      wal.score,
-
-    rotationScore:
-      rot.score,
-
-    technicalScore:
-      tech.score,
-
-    rsi:
-      tech.rsi,
-
-    universeScore:
-      us
+    exitRule: moneySide==="LONG"||moneySide==="SHORT" ? "Exit: Hard Stop / TP3 / persistent opposite Money Flow / technical deterioration" : "Wait for $1K aggregate Money Flow",
+    flowScore:num(f.flowScore,u.flowScore||50),
+    walletScore:50,rotationScore:50,technicalScore:tech.score,rsi:tech.rsi,universeScore:num(u.selectionScore,50),
+    rawNetFlow1m:num(u.rawNetFlow1m ?? u.netFlow1m),
+    rawNetFlow5m:num(u.rawNetFlow5m ?? u.netFlow5m),
+    rawNetFlow15m:num(u.rawNetFlow15m ?? u.netFlow15m),
+    netMoneyFlowUsd:netFlow,flowMagnitudeUsd,moneyFlowAnchor:anchor?.window||"NONE",
+    technicalConfirmations,technicalConfirmationPct,flowAgreement,combinedConfidence
   };
 }
-
 
 function gradeClass(g){
 
