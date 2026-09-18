@@ -7,6 +7,7 @@ const fetchImpl = (...args) => {
 };
 const path = require("path");
 const zlib = require("zlib");
+const learningEngine = require("./learning-engine");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -515,6 +516,34 @@ app.get("/api/health", (req, res) => {
     advisorTradeAuthority: false,
     time: new Date().toISOString()
   });
+});
+
+
+app.post("/api/learning/entry", (req, res) => {
+  try {
+    const event = learningEngine.recordEntry(req.body?.trade || {}, req.body?.telemetry || {});
+    res.json({ ok: true, event, snapshot: learningEngine.snapshot() });
+  } catch (error) {
+    res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/learning/exit", (req, res) => {
+  try {
+    const event = learningEngine.recordExit(req.body?.trade || {}, req.body?.outcome || {}, req.body?.telemetry || {});
+    res.json({ ok: true, event, snapshot: learningEngine.snapshot() });
+  } catch (error) {
+    res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/learning", (req, res) => {
+  res.json({ ok: true, ...learningEngine.snapshot() });
+});
+
+app.get("/api/learning/recent", (req, res) => {
+  const limit = clamp(num(req.query.limit, 200), 1, 1000);
+  res.json({ ok: true, events: learningEngine.recent(limit) });
 });
 
 /* =========================================================
