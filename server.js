@@ -322,6 +322,39 @@ const INDEX_HTML = zlib.brotliDecompressSync(Buffer.from(INDEX_BROTLI_B64, "base
 
 app.use(express.json({ limit: "256kb" }));
 
+/* TradingView webhook bridge: receives chart price/alerts for Demo execution validation. */
+const tradingViewTicks = new Map();
+app.post("/api/tradingview/webhook", (req, res) => {
+  const b = req.body || {};
+  const symbol = String(b.symbol || b.ticker || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const price = num(b.price ?? b.close);
+  if (!symbol || !(price > 0)) {
+    return res.status(400).json({ ok:false, error:"symbol/ticker and price/close are required" });
+  }
+  const tick = {
+    symbol,
+    price,
+    time: b.time || new Date().toISOString(),
+    receivedAt: Date.now(),
+    source: "TRADINGVIEW",
+    interval: String(b.interval || ""),
+    exchange: String(b.exchange || "")
+  };
+  tradingViewTicks.set(symbol, tick);
+  res.json({ ok:true, tick });
+});
+
+app.get("/api/tradingview/prices", (req, res) => {
+  const symbols = String(req.query.symbols || "")
+    .split(",").map(x => x.trim().toUpperCase().replace(/[^A-Z0-9]/g, "")).filter(Boolean);
+  const now = Date.now();
+  const rows = (symbols.length ? symbols : [...tradingViewTicks.keys()])
+    .map(s => tradingViewTicks.get(s))
+    .filter(Boolean)
+    .map(x => ({ ...x, ageMs: now - x.receivedAt, fresh: now - x.receivedAt <= 120000 }));
+  res.json({ ok:true, source:"TRADINGVIEW", prices:rows });
+});
+
 const cache = new Map();
 const lastGood = new Map();
 const lastGoodWallet = new Map();
