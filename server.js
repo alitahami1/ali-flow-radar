@@ -546,6 +546,41 @@ app.get("/api/learning/recent", (req, res) => {
   res.json({ ok: true, events: learningEngine.recent(limit) });
 });
 
+let latestDemoState = null;
+
+app.post("/api/demo-state", (req, res) => {
+  const b = req.body || {};
+  latestDemoState = {
+    ...b,
+    serverReceivedAt: Date.now()
+  };
+  res.json({ ok:true, serverReceivedAt:latestDemoState.serverReceivedAt });
+});
+
+app.get("/api/demo-state", (req, res) => {
+  if (!latestDemoState) {
+    return res.json({ ok:true, available:false, message:"Waiting for browser Demo state sync" });
+  }
+  const closed = Array.isArray(latestDemoState.closed) ? latestDemoState.closed : [];
+  const open = Array.isArray(latestDemoState.open) ? latestDemoState.open : [];
+  const wins = closed.filter(x => num(x.pnl) > 0).length;
+  const losses = closed.filter(x => num(x.pnl) < 0).length;
+  res.json({
+    ok:true,available:true,
+    ...latestDemoState,
+    summary:{
+      closedTrades:closed.length,
+      openTrades:open.length,
+      wins,losses,
+      winRate:closed.length ? wins/closed.length*100 : null,
+      closedPnl:num(latestDemoState.closedPnl),
+      openPnl:num(latestDemoState.openPnl),
+      netPnl:num(latestDemoState.closedPnl)+num(latestDemoState.openPnl)
+    }
+  });
+});
+
+
 /* =========================================================
    BINANCE MARKET
 ========================================================= */
