@@ -89,48 +89,64 @@ async function scanOkx(){
     }));
     rows.push(...got.filter(Boolean));
   }
+  const have=new Set(rows.map(x=>x.symbol));
+  for(const t of state.open){
+    if(have.has(t.symbol)) continue;
+    const inst=t.symbol.replace(/USDT$/,"-USDT");
+    const q=(payload.data||[]).find(x=>x.instId===inst);
+    if(q&&num(q.last)>0) rows.push({symbol:t.symbol,price:num(q.last),netFlow:0,flowMagnitudeUsd:0,side:t.side,priceOnly:true});
+  }
   return rows;
 }
 
 async function applyRows(rows, provider){
     state.provider=provider;
-    state.candidates=rows.sort((a,b)=>b.flowMagnitudeUsd-a.flowMagnitudeUsd).slice(0,20);
+    const flowRows=rows.filter(x=>!x.priceOnly);
+    state.candidates=flowRows.sort((a,b)=>b.flowMagnitudeUsd-a.flowMagnitudeUsd).slice(0,20);
     state.lastScanAt=Date.now(); state.lastError=null;
     console.log("[SERVER_DEMO_SCAN]", JSON.stringify({at:state.lastScanAt,provider,candidates:state.candidates.length,eligible:state.candidates.filter(x=>x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD).length,top:state.candidates.slice(0,3).map(x=>({s:x.symbol,f:Math.round(x.netFlow),side:x.side}))}));
-    {
-      const rep=snapshot().report;
-      console.log("[SERVER_DEMO_REPORT]", JSON.stringify({
-        at:state.lastScanAt,
-        provider:rep.provider,
-        startingBalance:+rep.startingBalance.toFixed(2),
-        realizedPnl:+rep.realizedPnl.toFixed(2),
-        unrealizedPnl:+rep.unrealizedPnl.toFixed(2),
-        netPnl:+rep.netPnl.toFixed(2),
-        equity:+rep.equity.toFixed(2),
-        returnPct:+rep.returnPct.toFixed(3),
-        openTrades:rep.openTrades,
-        closedTrades:rep.closedTrades,
-        wins:rep.wins,
-        losses:rep.losses,
-        winRate:rep.winRate==null?null:+rep.winRate.toFixed(2)
-      }));
-    }
-
     const prices=Object.fromEntries(rows.map(x=>[x.symbol,x.price]));
+    const flowBySymbol=Object.fromEntries(flowRows.map(x=>[x.symbol,x]));
     for(const t of [...state.open]){
       const p=prices[t.symbol]||t.current||t.entry; t.current=p;
-      const pnl=livePnl(t,p); t.mfePnl=Math.max(num(t.mfePnl),pnl); t.maePnl=Math.min(num(t.maePnl),pnl);
+      const pnl=livePnl(t,p);
+      t.mfePnl=Math.max(num(t.mfePnl),pnl);
+      t.maePnl=Math.min(num(t.maePnl),pnl);
+
+      const f=flowBySymbol[t.symbol];
+      const opposite=!!(f && f.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD && f.side!==t.side);
+      t.oppositeFlowScans=opposite ? num(t.oppositeFlowScans)+1 : 0;
+      if(opposite) t.maxOppositeFlowUsd=Math.max(num(t.maxOppositeFlowUsd),num(f.flowMagnitudeUsd));
+
+      const mfe=Math.max(0,num(t.mfePnl));
+      const mfePct=t.marginUsed ? (mfe/t.marginUsed)*100 : 0;
+      const givebackPct=mfe>0 ? Math.max(0,((mfe-pnl)/mfe)*100) : 0;
+
       let reason=null;
+      // Absolute priority: catastrophic protection.
       if(t.side==="LONG" && p<=t.stop) reason="HARD_STOP";
-      if(t.side==="SHORT" && p>=t.stop) reason="HARD_STOP";
-      if(t.side==="LONG" && p>=t.tp3) reason="TP3";
-      if(t.side==="SHORT" && p<=t.tp3) reason="TP3";
+      else if(t.side==="SHORT" && p>=t.stop) reason="HARD_STOP";
+      // Full target remains valid.
+      else if(t.side==="LONG" && p>=t.tp3) reason="TP3";
+      else if(t.side==="SHORT" && p<=t.tp3) reason="TP3";
+      // Never let a meaningful winner become a loser.
+      else if(mfePct>=1.0 && pnl<=0) reason="BREAKEVEN_PROTECT";
+      // Lock profit when flow reverses persistently and the trade gives back >35% of MFE.
+      else if(pnl>0 && mfePct>=0.5 && givebackPct>=35 && t.oppositeFlowScans>=2) reason="PROFIT_PROTECT_FLOW";
+      // Independent trailing protection for large winners even without a fresh flow signal.
+      else if(pnl>0 && mfePct>=1.0 && givebackPct>=50) reason="TRAILING_PROFIT";
+
       if(reason){
         t.exit=p;t.pnl=pnl;t.exitReason=reason;t.closedAt=Date.now();
+        t.givebackPct=givebackPct;t.mfePct=mfePct;
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
         state.closed.unshift(t); state.closed=state.closed.slice(0,500);
         state.open=state.open.filter(x=>x.id!==t.id);
-        console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason}));
+        console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({
+          symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason,
+          mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),
+          oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd))
+        }));
       }
     }
 
@@ -143,12 +159,26 @@ async function applyRows(rows, provider){
       const margin=Math.max(10,state.balance/MAX_OPEN);
       const qty=margin*leverage/x.price;
       const t={id:x.symbol+"-"+Date.now(),symbol:x.symbol,side:x.side,entry:x.price,current:x.price,
-        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,
+        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,
         stop:x.side==="LONG"?x.price-risk:x.price+risk,
         tp3:x.side==="LONG"?x.price+risk*3:x.price-risk*3};
       state.open.push(t);openSyms.add(x.symbol);
       console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),leverage:t.leverage}));
     }
+
+    const rep=snapshot().report;
+    console.log("[SERVER_DEMO_REPORT]", JSON.stringify({
+      at:state.lastScanAt,provider:rep.provider,
+      startingBalance:+rep.startingBalance.toFixed(2),
+      realizedPnl:+rep.realizedPnl.toFixed(2),
+      unrealizedPnl:+rep.unrealizedPnl.toFixed(2),
+      netPnl:+rep.netPnl.toFixed(2),
+      equity:+rep.equity.toFixed(2),
+      returnPct:+rep.returnPct.toFixed(3),
+      openTrades:rep.openTrades,closedTrades:rep.closedTrades,
+      wins:rep.wins,losses:rep.losses,
+      winRate:rep.winRate==null?null:+rep.winRate.toFixed(2)
+    }));
 }
 
 async function scan(){
