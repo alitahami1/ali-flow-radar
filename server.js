@@ -3452,8 +3452,16 @@ app.get(
 
 // Serve the live index.html from disk so Demo/learning updates in GitHub are actually deployed.
 // The old embedded Brotli snapshot is kept above only for backward compatibility.
-const sendLiveIndex = (req, res) =>
+const sendLiveIndex = (req, res) => {
+  // Never let a browser/CDN keep an old trading engine after a deploy.
+  res.set({
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+    "Surrogate-Control": "no-store"
+  });
   res.sendFile(path.join(__dirname, "index.html"));
+};
 
 app.get("/", sendLiveIndex);
 app.get("/index.html", sendLiveIndex);
