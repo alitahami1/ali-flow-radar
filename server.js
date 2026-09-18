@@ -8,6 +8,7 @@ const fetchImpl = (...args) => {
 const path = require("path");
 const zlib = require("zlib");
 const learningEngine = require("./learning-engine");
+const demoServerEngine = require("./demo-server-engine");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -556,6 +557,9 @@ app.post("/api/demo-state", (req, res) => {
   };
   res.json({ ok:true, serverReceivedAt:latestDemoState.serverReceivedAt });
 });
+
+app.get("/api/server-demo", (req, res) => res.json({ ok:true, mode:"SERVER_24X7", ...demoServerEngine.snapshot() }));
+app.post("/api/server-demo/scan", async (req, res) => { await demoServerEngine.scan(); res.json({ ok:true, ...demoServerEngine.snapshot() }); });
 
 app.get("/api/demo-state", (req, res) => {
   if (!latestDemoState) {
@@ -3562,6 +3566,8 @@ const sendLiveIndex = (req, res) => {
 
 app.get("/", sendLiveIndex);
 app.get("/index.html", sendLiveIndex);
+
+demoServerEngine.start();
 
 app.listen(
   PORT,
