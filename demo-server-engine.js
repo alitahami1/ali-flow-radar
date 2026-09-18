@@ -73,10 +73,13 @@ function quantile(arr,q){
   return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(pos-lo);
 }
 function learnedGivebackCap(){
-  const samples=state.closed.filter(t=>num(t.pnl)>0 && num(t.mfePnl)>0 && Number.isFinite(num(t.givebackPct,NaN)))
-    .slice(0,60).map(t=>num(t.givebackPct));
-  if(samples.length<12) return {cap:null,samples:samples.length};
-  return {cap:clamp(quantile(samples,0.5),20,45),samples:samples.length};
+  // Learn from capture-efficient winners, not from historically poor exits.
+  const winners=state.closed.filter(t=>num(t.pnl)>0 && num(t.mfePnl)>0 && Number.isFinite(num(t.givebackPct,NaN))).slice(0,100);
+  const efficient=winners.filter(t=>num(t.capturePct,100-num(t.givebackPct))>=50);
+  const source=efficient.length>=12?efficient:winners;
+  const samples=source.map(t=>num(t.givebackPct));
+  if(samples.length<12) return {cap:null,samples:samples.length,efficientSamples:efficient.length};
+  return {cap:clamp(quantile(samples,0.5),20,40),samples:samples.length,efficientSamples:efficient.length};
 }
 function trailingGivebackLimit(mfePct){
   let base=50;
@@ -85,7 +88,7 @@ function trailingGivebackLimit(mfePct){
   else if(mfePct>=1) base=35;
   else if(mfePct>=0.5) base=45;
   const learned=learnedGivebackCap();
-  return {limit:learned.cap==null?base:Math.min(base,learned.cap),base,learnedCap:learned.cap,samples:learned.samples};
+  return {limit:learned.cap==null?base:Math.min(base,learned.cap),base,learnedCap:learned.cap,samples:learned.samples,efficientSamples:learned.efficientSamples||0};
 }
 
 async function scanBinance(){
@@ -169,7 +172,7 @@ async function applyRows(rows, provider){
       const mfePct=t.marginUsed ? (mfe/t.marginUsed)*100 : 0;
       const givebackPct=mfe>0 ? Math.max(0,((mfe-pnl)/mfe)*100) : 0;
       const trail=trailingGivebackLimit(mfePct);
-      const flowGivebackLimit=Math.max(20,trail.limit-10);
+      const flowGivebackLimit=Math.max(15,trail.limit-10);
 
       let reason=null;
       // Absolute priority: catastrophic protection.
@@ -182,20 +185,22 @@ async function applyRows(rows, provider){
       else if(mfePct>=1.0 && pnl<=0) reason="BREAKEVEN_PROTECT";
       // Persistent opposite flow tightens the allowed MFE giveback by another 10 points.
       else if(pnl>0 && mfePct>=0.5 && givebackPct>=flowGivebackLimit && t.oppositeFlowScans>=2) reason="PROFIT_PROTECT_FLOW";
+      // A strong reversal in aggregate flow gets one-scan authority once a trade has meaningful MFE.
+      else if(pnl>0 && mfePct>=0.75 && givebackPct>=20 && opposite && num(f.flowMagnitudeUsd)>=Math.max(50000,Math.abs(num(t.netMoneyFlowUsd))*1.5)) reason="PROFIT_PROTECT_FLOW_STRONG";
       // Adaptive MFE trailing: stronger winners are allowed progressively less profit giveback.
       else if(pnl>0 && mfePct>=0.5 && givebackPct>=trail.limit) reason="TRAILING_PROFIT_ADAPTIVE";
 
       if(reason){
         t.exit=p;t.pnl=pnl;t.exitReason=reason;t.closedAt=Date.now();
         t.givebackPct=givebackPct;t.mfePct=mfePct;t.capturePct=mfe>0?Math.max(0,(pnl/mfe)*100):0;
-        t.exitLearning={trailLimitPct:trail.limit,baseTrailLimitPct:trail.base,learnedGivebackCapPct:trail.learnedCap,learningSamples:trail.samples,flowGivebackLimitPct:flowGivebackLimit};
+        t.exitLearning={trailLimitPct:trail.limit,baseTrailLimitPct:trail.base,learnedGivebackCapPct:trail.learnedCap,learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,flowGivebackLimitPct:flowGivebackLimit};
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
         state.closed.unshift(t); state.closed=state.closed.slice(0,500);
         state.open=state.open.filter(x=>x.id!==t.id);
         console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({
           symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason,
           mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),capturePct:+t.capturePct.toFixed(1),
-          trailLimitPct:+trail.limit.toFixed(1),learnedGivebackCapPct:trail.learnedCap==null?null:+trail.learnedCap.toFixed(1),learningSamples:trail.samples,
+          trailLimitPct:+trail.limit.toFixed(1),learnedGivebackCapPct:trail.learnedCap==null?null:+trail.learnedCap.toFixed(1),learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,
           oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd))
         }));
       }
