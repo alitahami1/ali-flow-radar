@@ -2754,6 +2754,12 @@ let socket =
 let socketRetry =
   1000;
 
+let fallbackPriceTimer =
+  null;
+
+let fallbackPriceBusy =
+  false;
+
 let currentSocketKey =
   "";
 
@@ -3341,6 +3347,62 @@ async function refreshUniverse(){
    LIVE BINANCE SOCKET
 ====================================================== */
 
+function stopFallbackPrices(){
+  if (fallbackPriceTimer) {
+    clearInterval(fallbackPriceTimer);
+    fallbackPriceTimer = null;
+  }
+}
+
+async function pollFallbackPrices(){
+  if (fallbackPriceBusy) return;
+  fallbackPriceBusy = true;
+  try {
+    const active = getActiveSymbols();
+    if (!active.length) return;
+
+    const d = await getJson(
+      "/api/binance?symbols=" +
+      encodeURIComponent(active.join(","))
+    );
+
+    if (Array.isArray(d)) {
+      for (const x of d) {
+        if (!x || !x.symbol) continue;
+        market[x.symbol] = {
+          ...(market[x.symbol] || {}),
+          ...x,
+          liveAt: Date.now(),
+          priceSource: "SERVER_FALLBACK"
+        };
+      }
+
+      $("status").textContent = "LIVE FALLBACK";
+      $("socketState").textContent = "SERVER";
+      $("socketSystem").textContent = "SERVER";
+      $("socketSystem").className = "metric medium good";
+      $("dot").classList.add("live");
+
+      renderLivePrices();
+      updateDemoPositions(false);
+      renderDemoTrading();
+    }
+  } catch (e) {
+    $("status").textContent = "RECONNECTING";
+    $("socketState").textContent = "RETRY";
+    $("socketSystem").textContent = "RETRY";
+    $("socketSystem").className = "metric medium warn";
+  } finally {
+    fallbackPriceBusy = false;
+  }
+}
+
+function startFallbackPrices(){
+  if (fallbackPriceTimer) return;
+  pollFallbackPrices();
+  fallbackPriceTimer = setInterval(pollFallbackPrices, 2000);
+}
+
 function startPriceSocket(){
 
   const active =
@@ -3418,6 +3480,8 @@ function startPriceSocket(){
 
   socket.onopen =
     () => {
+
+      stopFallbackPrices();
 
       socketRetry =
         1000;
@@ -3588,6 +3652,8 @@ function startPriceSocket(){
   socket.onerror =
     () => {
 
+      startFallbackPrices();
+
       try {
 
         socket.close();
@@ -3598,6 +3664,8 @@ function startPriceSocket(){
 
   socket.onclose =
     () => {
+
+      startFallbackPrices();
 
       $("dot")
         .classList
