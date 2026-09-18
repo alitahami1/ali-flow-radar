@@ -1,5 +1,31 @@
 "use strict";
 
+const { Pool } = require("pg");
+const pool = process.env.DATABASE_URL ? new Pool({connectionString:process.env.DATABASE_URL,max:3,idleTimeoutMillis:30000}) : null;
+let persistenceReady=false;
+let persistenceBusy=false;
+async function initPersistence(){
+  if(!pool) return false;
+  try{
+    await pool.query(`CREATE TABLE IF NOT EXISTS demo_state (id integer PRIMARY KEY, payload jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`);
+    const r=await pool.query("SELECT payload FROM demo_state WHERE id=1");
+    if(r.rows[0]&&r.rows[0].payload){
+      const s=r.rows[0].payload;
+      for(const k of ["startedAt","lastScanAt","lastError","provider","balance","closedPnl","open","closed","candidates"]) if(s[k]!==undefined) state[k]=s[k];
+      console.log("[SERVER_DEMO_STATE_RESTORED]",JSON.stringify({open:state.open.length,closed:state.closed.length,balance:state.balance,closedPnl:state.closedPnl}));
+    }
+    persistenceReady=true; return true;
+  }catch(e){ console.error("[SERVER_DEMO_PERSIST_ERROR]",String(e&&e.message||e)); return false; }
+}
+async function persistState(){
+  if(!pool||!persistenceReady||persistenceBusy) return;
+  persistenceBusy=true;
+  try{
+    await pool.query("INSERT INTO demo_state(id,payload,updated_at) VALUES(1,$1::jsonb,now()) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,updated_at=now()",[JSON.stringify(state)]);
+  }catch(e){ console.error("[SERVER_DEMO_PERSIST_ERROR]",String(e&&e.message||e)); }
+  finally{ persistenceBusy=false; }
+}
+
 const DEMO_ENTRY_FLOW_USD = 1000;
 const MAX_OPEN = 10;
 const SCAN_COUNT = 30;
@@ -166,6 +192,7 @@ async function applyRows(rows, provider){
       console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),leverage:t.leverage}));
     }
 
+    await persistState();
     const rep=snapshot().report;
     console.log("[SERVER_DEMO_REPORT]", JSON.stringify({
       at:state.lastScanAt,provider:rep.provider,
@@ -220,5 +247,5 @@ function snapshot(){
     summary:{openTrades:openPositions.length,closedTrades:state.closed.length,wins,losses,winRate:state.closed.length?wins/state.closed.length*100:null}};
 }
 let timer=null;
-function start(){ if(timer)return; scan(); timer=setInterval(scan,SCAN_MS); }
+async function start(){ if(timer)return; await initPersistence(); await scan(); timer=setInterval(scan,SCAN_MS); }
 module.exports={start,snapshot,scan};
