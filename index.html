@@ -3735,6 +3735,28 @@ async function refreshMarket(){
 }
 
 
+async function refreshDemoScan(){
+  try {
+    const d = await getJson("/api/demo-scan?limit=20&scan=40");
+    const assets = Array.isArray(d.assets) ? d.assets : [];
+    for (const x of assets) {
+      universeData[x.symbol] = {...(universeData[x.symbol]||{}), ...x};
+      flow[x.symbol] = {...(flow[x.symbol]||{}),
+        rawNetFlow:x.rawNetFlow1m,
+        netFlow:x.rawNetFlow1m,
+        rawNetFlow1m:x.rawNetFlow1m,
+        rawNetFlow5m:x.rawNetFlow5m,
+        rawNetFlow15m:x.rawNetFlow15m
+      };
+      market[x.symbol] = {...(market[x.symbol]||{}),symbol:x.symbol,lastPrice:num(x.lastPrice,market[x.symbol]?.lastPrice),quoteVolume:num(x.quoteVolume24h),priceChangePercent:num(x.priceChangePercent24h)};
+    }
+    autoArmMoneyFlowTrades();
+    processArmedEntries();
+    renderDemoTrading();
+  } catch (e) {}
+}
+
+
 async function refreshFlow(){
 
   try {
@@ -9737,6 +9759,8 @@ async function boot(){
 
   refreshFlow();
 
+  refreshDemoScan();
+
   refreshKlines();
 
   startPriceSocket();
@@ -9773,6 +9797,11 @@ setInterval(
 setInterval(
   refreshFlow,
   20000
+);
+
+setInterval(
+  refreshDemoScan,
+  10000
 );
 
 
