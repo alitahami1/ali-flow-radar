@@ -132,6 +132,29 @@ function priceActionSignal(candles){
   if(prev.c>hi && last.l<=hi+zone && last.c>hi) add("LONG","RETEST_BROKEN_RESISTANCE",{level:hi});
   if(prev.c<lo && last.h>=lo-zone && last.c<lo) add("SHORT","RETEST_BROKEN_SUPPORT",{level:lo});
 
+  // Advanced structure: BOS/CHoCH, liquidity sweeps, order blocks and fair-value gaps.
+  const prev5=prior.slice(-5), prevHi=Math.max(...prev5.map(x=>x.h)), prevLo=Math.min(...prev5.map(x=>x.l));
+  const priorTrend=e5>e10?"UP":e5<e10?"DOWN":"RANGE";
+  if(last.c>prevHi) add("LONG",priorTrend==="DOWN"?"CHOCH_BULL":"BOS_BULL",{level:prevHi});
+  if(last.c<prevLo) add("SHORT",priorTrend==="UP"?"CHOCH_BEAR":"BOS_BEAR",{level:prevLo});
+  if(last.l<prevLo && last.c>prevLo) add("LONG","LIQUIDITY_SWEEP_LOW",{level:prevLo,sweepDepthPct:(prevLo-last.l)/Math.max(last.c,1e-12)*100});
+  if(last.h>prevHi && last.c<prevHi) add("SHORT","LIQUIDITY_SWEEP_HIGH",{level:prevHi,sweepDepthPct:(last.h-prevHi)/Math.max(last.c,1e-12)*100});
+
+  // Simple displacement-origin order block proxy: last opposite candle before a strong expansion.
+  const displacement=body/range>=0.65 && range>=Math.max(...prior.slice(-5).map(x=>Math.max(1e-12,x.h-x.l)))*1.15;
+  if(displacement && last.c>last.o){
+    const ob=[...prior.slice(-6)].reverse().find(x=>x.c<x.o);
+    if(ob) { features.BULLISH_ORDER_BLOCK={side:"LONG",low:ob.l,high:ob.h}; if(last.l<=ob.h+zone && last.c>ob.h) add("LONG","ORDER_BLOCK_REACTION_BULL",{low:ob.l,high:ob.h}); }
+  }
+  if(displacement && last.c<last.o){
+    const ob=[...prior.slice(-6)].reverse().find(x=>x.c>x.o);
+    if(ob) { features.BEARISH_ORDER_BLOCK={side:"SHORT",low:ob.l,high:ob.h}; if(last.h>=ob.l-zone && last.c<ob.l) add("SHORT","ORDER_BLOCK_REACTION_BEAR",{low:ob.l,high:ob.h}); }
+  }
+
+  // Three-candle fair-value-gap / imbalance proxy.
+  if(last.l>p2.h){ features.FVG_BULL={side:"LONG",low:p2.h,high:last.l}; if(last.c>last.o) add("LONG","FVG_IMBALANCE_BULL",{low:p2.h,high:last.l}); }
+  if(last.h<p2.l){ features.FVG_BEAR={side:"SHORT",low:last.h,high:p2.l}; if(last.c<last.o) add("SHORT","FVG_IMBALANCE_BEAR",{low:last.h,high:p2.l}); }
+
   // Fibonacci retracement context from the recent 10-candle range. It is confirmation, never a standalone direction.
   const fib382=hi-span*0.382, fib50=hi-span*0.5, fib618=hi-span*0.618;
   const fibTol=Math.max(span*0.025,last.c*0.001);
@@ -146,6 +169,28 @@ function priceActionSignal(candles){
   const side=bull.length>=PA_MIN_SCORE && bull.length>bear.length?"LONG":bear.length>=PA_MIN_SCORE && bear.length>bull.length?"SHORT":null;
   return {side,bull:bull.length,bear:bear.length,conditions:side==="LONG"?bull:side==="SHORT"?bear:[],allBull:bull,allBear:bear,features,
     context:{support:lo,resistance:hi,supportTouches,resistanceTouches,fib382,fib50,fib618,ema5:e5,ema10:e10}};
+}
+function higherTimeframeContext(candles){
+  if(!Array.isArray(candles)||candles.length<12) return {side:null,score:0};
+  const a=candles.map(k=>({h:num(k.h),l:num(k.l),c:num(k.c)}));
+  const closes=a.map(x=>x.c), e5=ema(closes,5), e10=ema(closes,10), last=a[a.length-1], prev=a[a.length-2];
+  let bull=0,bear=0;
+  if(e5>e10) bull+=2; else if(e5<e10) bear+=2;
+  if(last.h>prev.h&&last.l>prev.l) bull++; if(last.h<prev.h&&last.l<prev.l) bear++;
+  return {side:bull>bear?"LONG":bear>bull?"SHORT":null,score:Math.abs(bull-bear),ema5:e5,ema10:e10};
+}
+function applyMultiTimeframe(pa,contexts){
+  pa.multiTimeframe=contexts;
+  const aligned=contexts.filter(x=>x&&x.side===pa.side).length;
+  const opposed=contexts.filter(x=>x&&x.side&&pa.side&&x.side!==pa.side).length;
+  pa.mtfAligned=aligned; pa.mtfOpposed=opposed;
+  if(pa.side && aligned>=2){
+    const name=pa.side==="LONG"?"MTF_ALIGNMENT_BULL":"MTF_ALIGNMENT_BEAR";
+    pa.features[name]={side:pa.side,aligned,opposed};
+    pa.conditions.push(name);
+    if(pa.side==="LONG") pa.bull++; else pa.bear++;
+  }
+  return pa;
 }
 function indicatorSignal(candles){
   if(!Array.isArray(candles)||candles.length<20) return {side:null,bull:0,bear:0,conditions:[]};
@@ -262,9 +307,13 @@ function priceActionConfidence(x,side){
     "BULLISH_ENGULFING","BEARISH_ENGULFING","SUPPORT_REACTION","RESISTANCE_REACTION",
     "BREAKOUT_HIGH","BREAKOUT_LOW","FALSE_BREAKOUT_HIGH","FALSE_BREAKOUT_LOW",
     "RETEST_BROKEN_RESISTANCE","RETEST_BROKEN_SUPPORT","MULTI_CANDLE_UP_3","MULTI_CANDLE_DOWN_3",
-    "FIB_TREND_REACTION"
+    "FIB_TREND_REACTION","BOS_BULL","BOS_BEAR","CHOCH_BULL","CHOCH_BEAR",
+    "LIQUIDITY_SWEEP_LOW","LIQUIDITY_SWEEP_HIGH","ORDER_BLOCK_REACTION_BULL","ORDER_BLOCK_REACTION_BEAR",
+    "FVG_IMBALANCE_BULL","FVG_IMBALANCE_BEAR","MTF_ALIGNMENT_BULL","MTF_ALIGNMENT_BEAR"
   ];
   for(const name of strong) if(features[name]&&features[name].side===side) score+=5;
+  if(num(pa.mtfAligned)>=2) score+=8;
+  if(num(pa.mtfOpposed)>=1) score-=8;
   const touches=side==="LONG"?num(ctx.supportTouches):num(ctx.resistanceTouches);
   if(touches>=2) score+=5;
   score=clamp(score,0,100);
@@ -290,11 +339,18 @@ async function scanBinance(){
       const batch=tops.slice(i,i+6);
       const got=await Promise.all(batch.map(async t=>{
         try{
-          const k=await j("https://api.binance.com/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=1m&limit=20");
+          const [k,k5,k15]=await Promise.all([
+            j("https://api.binance.com/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=1m&limit=20"),
+            j("https://api.binance.com/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=5m&limit=20"),
+            j("https://api.binance.com/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=15m&limit=20")
+          ]);
           const f1=flow(k,1),f5=flow(k,5),f15=flow(k,15);
           const best=[f1,f5,f15].sort((a,b)=>Math.abs(b)-Math.abs(a))[0]||0;
           const candles=k.map(z=>({o:z[1],h:z[2],l:z[3],c:z[4]}));
-          const pa=priceActionSignal(candles), indicators=indicatorSignal(candles);
+          const mapK=z=>({o:z[1],h:z[2],l:z[3],c:z[4]});
+          let pa=priceActionSignal(candles);
+          pa=applyMultiTimeframe(pa,[higherTimeframeContext(k5.map(mapK)),higherTimeframeContext(k15.map(mapK))]);
+          const indicators=indicatorSignal(candles);
           return {symbol:t.symbol,price:num(t.lastPrice),netFlow:best,flowMagnitudeUsd:Math.abs(best),side:best>=0?"LONG":"SHORT",pa,indicators};
         }catch{return null;}
       }));
