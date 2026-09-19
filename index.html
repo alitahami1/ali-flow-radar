@@ -648,7 +648,7 @@ v5.3 FLOW SCAN
 </h1>
 
 <div class="small">
-Dynamic Top 20 Inflow • Technical Scan • Smart Money • Multi Futures Demo
+Fixed 20 Major Coins • Money Flow • Advanced Price Action • Demo Trading
 </div>
 
 </div>
@@ -753,7 +753,7 @@ Market Intelligence
 </h2>
 
 <small>
-DYNAMIC UNIVERSE
+FIXED 20 MAJOR COINS
 </small>
 
 </div>
@@ -917,7 +917,7 @@ NO SIGNAL
 <div class="card-title">
 
 <h2>
-Dynamic Top 20 Inflow + Technical Watch
+20 Major Coins + Money Flow + Technical Watch
 </h2>
 
 <small>
@@ -927,7 +927,7 @@ FLOW SCANNER + LIVE WEBSOCKET
 </div>
 
 <div class="small">
-این ۲۰ ارز ثابت نیستند؛ هر دقیقه از بین جفت‌های نقدشونده USDT دوباره انتخاب می‌شوند.
+فقط ۲۰ ارز معتبر و نقدشونده ثابت برای مانیتورینگ و دمو استفاده می‌شوند.
 </div>
 
 <div
@@ -2017,7 +2017,7 @@ Version
 <div class="card s12">
 
 <div class="signal">
-Dynamic top-20 universe is rebuilt every 60 seconds from liquid USDT pairs using recent taker inflow + technical analysis + volume acceleration + liquidity.
+The trading universe is fixed to 20 approved major USDT pairs for consistent demo trading and comparison.
 </div>
 
 <div class="signal">
@@ -2050,7 +2050,15 @@ ALI Flow Radar — Demo / research tool. Flow, technical scores and inferred wal
 <script>
 
 const UNIVERSE_CACHE_KEY =
-  "ALI_FLOW_RADAR_DYNAMIC_UNIVERSE_V1";
+  "ALI_FLOW_RADAR_FIXED_UNIVERSE_V2";
+
+const APPROVED_SYMBOLS = [
+  "BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT",
+  "ADAUSDT","DOGEUSDT","AVAXUSDT","LINKUSDT","LTCUSDT",
+  "BCHUSDT","DOTUSDT","UNIUSDT","AAVEUSDT","NEARUSDT",
+  "SUIUSDT","TRXUSDT","XLMUSDT","ATOMUSDT","ETCUSDT"
+];
+const APPROVED_SYMBOL_SET = new Set(APPROVED_SYMBOLS);
 
 const WALLET_STORAGE_KEY =
   "ALI_FLOW_RADAR_WALLETS_V1";
@@ -2661,33 +2669,11 @@ function loadDemo(){
 }
 
 
-let symbols =
-  (() => {
+let symbols = [...APPROVED_SYMBOLS];
 
-    try {
-
-      const x =
-        JSON.parse(
-
-          localStorage.getItem(
-            UNIVERSE_CACHE_KEY
-          ) ||
-
-          "[]"
-        );
-
-      return Array.isArray(x)
-        ? x.slice(
-            0,
-            20
-          )
-        : [];
-
-    } catch {
-
-      return [];
-    }
-  })();
+try {
+  localStorage.setItem(UNIVERSE_CACHE_KEY, JSON.stringify(symbols));
+} catch {}
 
 
 let wallets =
@@ -3012,34 +2998,7 @@ function renderProfiles(){
 ====================================================== */
 
 function getActiveSymbols(){
-
-  return [
-
-    ...new Set([
-
-      ...symbols,
-
-      "BTCUSDT",
-
-      "ETHUSDT",
-
-      ...demoState.open
-        .map(
-          x =>
-            x.symbol
-        ),
-
-      ...demoState.armed
-        .map(
-          x =>
-            x.symbol
-        )
-    ])
-  ]
-    .slice(
-      0,
-      40
-    );
+  return [...APPROVED_SYMBOLS];
 }
 
 
@@ -3151,194 +3110,42 @@ function queueLiveRender(){
 ====================================================== */
 
 async function refreshUniverse(){
-
-  if (
-    universeBusy
-  ) {
-    return;
-  }
-
-
-  universeBusy =
-    true;
-
-
+  if (universeBusy) return;
+  universeBusy = true;
   try {
+    const d = await getJson("/api/universe?limit=40&scan=60");
+    const assets = Array.isArray(d.assets) ? d.assets.filter(x => APPROVED_SYMBOL_SET.has(x.symbol)) : [];
+    universeMeta = d;
 
-    const d =
-      await getJson(
-        "/api/universe?limit=20&scan=40"
-      );
-
-
-    const assets =
-      Array.isArray(
-        d.assets
-      )
-        ? d.assets
-        : [];
-
-
-    if (
-      !assets.length
-    ) {
-      return;
-    }
-
-
-    universeMeta =
-      d;
-
-
-    for (
-      const x
-      of assets
-    ) {
-
-      universeData[
-        x.symbol
-      ] =
-        x;
-
-
-      market[
-        x.symbol
-      ] = {
-
-        ...(
-          market[
-            x.symbol
-          ] ||
-          {}
-        ),
-
-        symbol:
-          x.symbol,
-
-        lastPrice:
-          num(
-            x.lastPrice,
-            market[
-              x.symbol
-            ]?.lastPrice
-          ),
-
-        quoteVolume:
-          num(
-            x.quoteVolume24h
-          ),
-
-        priceChangePercent:
-          num(
-            x.priceChangePercent24h
-          )
+    for (const x of assets) {
+      universeData[x.symbol] = x;
+      market[x.symbol] = {
+        ...(market[x.symbol] || {}),
+        symbol: x.symbol,
+        lastPrice: num(x.lastPrice, market[x.symbol]?.lastPrice),
+        quoteVolume: num(x.quoteVolume24h),
+        priceChangePercent: num(x.priceChangePercent24h)
       };
-
-
-      flow[
-        x.symbol
-      ] = {
-
-        symbol:
-          x.symbol,
-
-        takerBuy:
-          num(
-            x.takerBuy
-          ),
-
-        takerSell:
-          num(
-            x.takerSell
-          ),
-
-        netFlow:
-          num(
-            x.netFlow
-          ),
-
-        buyRatio:
-          num(
-            x.buyRatio,
-            50
-          ),
-
-        flowScore:
-          num(
-            x.flowScore,
-            50
-          ),
-
-        flowIntensityPct:
-          num(
-            x.flowIntensityPct
-          )
+      flow[x.symbol] = {
+        symbol: x.symbol,
+        takerBuy: num(x.takerBuy),
+        takerSell: num(x.takerSell),
+        netFlow: num(x.netFlow),
+        buyRatio: num(x.buyRatio,50),
+        flowScore: num(x.flowScore,50),
+        flowIntensityPct: num(x.flowIntensityPct)
       };
     }
 
-
-    const next =
-      assets
-        .map(
-          x =>
-            x.symbol
-        )
-        .slice(
-          0,
-          20
-        );
-
-
-    const changed =
-      next.join(",") !==
-      symbols.join(",");
-
-
-    symbols =
-      next;
-
-
-    localStorage.setItem(
-
-      UNIVERSE_CACHE_KEY,
-
-      JSON.stringify(
-        symbols
-      )
-    );
-
-
-    if (
-      changed
-    ) {
-
-      currentSocketKey =
-        "";
-
-      startPriceSocket();
-
-      refreshKlines();
-    }
-
-
+    symbols = [...APPROVED_SYMBOLS];
+    try { localStorage.setItem(UNIVERSE_CACHE_KEY, JSON.stringify(symbols)); } catch {}
     renderAssetGrid();
-
     renderTerminal();
-
     renderDemoTrading();
-
-
   } catch (e) {
-
-    console.warn(
-      "Universe scan failed",
-      e
-    );
-
+    console.warn("Universe refresh failed",e);
   } finally {
-
-    universeBusy =
-      false;
+    universeBusy=false;
   }
 }
 
@@ -3820,7 +3627,7 @@ async function refreshMarket(){
 async function refreshDemoScan(){
   try {
     const d = await getJson("/api/demo-scan?limit=20&scan=40");
-    const assets = Array.isArray(d.assets) ? d.assets : [];
+    const assets = Array.isArray(d.assets) ? d.assets.filter(x => APPROVED_SYMBOL_SET.has(x.symbol)) : [];
     for (const x of assets) {
       universeData[x.symbol] = {...(universeData[x.symbol]||{}), ...x};
       flow[x.symbol] = {...(flow[x.symbol]||{}),
@@ -3902,7 +3709,7 @@ function renderAssetGrid(){
       .innerHTML =
         `
         <div class="small">
-        در حال اسکن بازار برای پیدا کردن ۲۰ ارز دارای ورود پول...
+        در حال دریافت داده زنده برای ۲۰ ارز معتبر...
         </div>
         `;
 
@@ -7435,7 +7242,7 @@ function autoArmMoneyFlowTrades(){
     ...Object.keys(universeData || {}),
     ...Object.keys(flow || {}),
     ...Object.keys(market || {})
-  ])].filter(s => /USDT$/.test(s));
+  ])].filter(s => APPROVED_SYMBOL_SET.has(s));
 
   const candidates = symbols
     .map(s => buildTradePlan(s))
