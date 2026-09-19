@@ -475,27 +475,34 @@ async function applyRows(rows, provider){
       }
     }
 
-    // Four deliberately separate strategy cohorts for clean comparison.
-    // If both fire on the same symbol, each opens its own independently tagged virtual trade.
+    // Four deliberately separate strategy cohorts for clean comparison:
+    // FLOW, FLOW+advanced PA, PA+indicators, indicators+FLOW.
+    // Legacy PRICE_ACTION trades may still close after a deploy, but no new PRICE_ACTION-only entries are created.
     const openKeys=new Set(state.open.map(x=>x.symbol+"|"+(x.strategy||"FLOW")));
     const strategyOpenCount=strategy=>state.open.filter(t=>(t.strategy||"FLOW")===strategy).length;
     for(const x of state.candidates){
       const signals=[];
-      if(x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD) signals.push({strategy:"FLOW",side:x.side,signalDetail:{netFlowUsd:x.netFlow}});
-      if(x.pa&&x.pa.side) signals.push({strategy:"PRICE_ACTION",side:x.pa.side,signalDetail:{score:x.pa.side==="LONG"?x.pa.bull:x.pa.bear,conditions:x.pa.conditions,features:x.pa.features,context:x.pa.context}});
-      if(x.pa&&x.pa.side && x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD && x.side===x.pa.side) signals.push({strategy:"FLOW_PRICE_ACTION",side:x.side,signalDetail:{netFlowUsd:x.netFlow,priceAction:x.pa}});
-      if(x.pa&&x.pa.side && x.indicators&&x.indicators.side===x.pa.side) signals.push({strategy:"PRICE_ACTION_INDICATORS",side:x.pa.side,signalDetail:{priceAction:x.pa,indicators:x.indicators}});
+      if(x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD)
+        signals.push({strategy:"FLOW",side:x.side,signalDetail:{netFlowUsd:x.netFlow}});
+      if(x.pa&&x.pa.side && x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD && x.side===x.pa.side)
+        signals.push({strategy:"FLOW_PRICE_ACTION",side:x.side,signalDetail:{netFlowUsd:x.netFlow,priceAction:x.pa}});
+      if(x.pa&&x.pa.side && x.indicators&&x.indicators.side===x.pa.side)
+        signals.push({strategy:"PRICE_ACTION_INDICATORS",side:x.pa.side,signalDetail:{priceAction:x.pa,indicators:x.indicators}});
+      if(x.indicators&&x.indicators.side && x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD && x.side===x.indicators.side)
+        signals.push({strategy:"INDICATORS_FLOW",side:x.side,signalDetail:{netFlowUsd:x.netFlow,indicators:x.indicators}});
       for(const sig of signals){
         if(strategyOpenCount(sig.strategy)>=MAX_OPEN_PER_STRATEGY) continue;
         const key=x.symbol+"|"+sig.strategy;
         if(openKeys.has(key)||!x.price) continue;
         const entryTags=entryMistakeTags(x,sig.strategy);
         if(entryTags.includes("REENTRY_TOO_SOON")) continue;
-        const paTrade=sig.strategy==="PRICE_ACTION";
-        const rr=paTrade?priceActionRiskReward(x,sig.side):null;
+        const paBased=sig.strategy==="FLOW_PRICE_ACTION"||sig.strategy==="PRICE_ACTION_INDICATORS";
+        const rr=paBased?priceActionRiskReward(x,sig.side):null;
         const risk=rr?rr.riskPerUnit:x.price*0.004;
-        const paConfidence=paTrade?priceActionConfidence(x,sig.side):null;
-        const leverage=paConfidence?paConfidence.leverage:Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
+        const paConfidence=paBased?priceActionConfidence(x,sig.side):null;
+        const flowLeverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
+        // PA+Indicators uses PA confidence; flow-containing strategies keep flow-based leverage for a cleaner comparison.
+        const leverage=sig.strategy==="PRICE_ACTION_INDICATORS"&&paConfidence?paConfidence.leverage:flowLeverage;
         const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*4));
         const qty=margin*leverage/x.price;
         const t={id:x.symbol+"-"+sig.strategy+"-"+Date.now(),symbol:x.symbol,strategy:sig.strategy,side:sig.side,entry:x.price,current:x.price,
@@ -552,7 +559,7 @@ async function scan(){
 }
 function snapshot(){
   const strategyStats={};
-  for(const strategy of ["FLOW","PRICE_ACTION","FLOW_PRICE_ACTION","PRICE_ACTION_INDICATORS"]){
+  for(const strategy of ["FLOW","FLOW_PRICE_ACTION","PRICE_ACTION_INDICATORS","INDICATORS_FLOW"]){
     const trades=state.closed.filter(t=>(t.strategy||"FLOW")===strategy);
     const wins=trades.filter(t=>num(t.pnl)>0), losses=trades.filter(t=>num(t.pnl)<0);
     const pnl=trades.reduce((s,t)=>s+num(t.pnl),0);
