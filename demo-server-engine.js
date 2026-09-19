@@ -33,7 +33,7 @@ const MAX_OPEN = 10;
 const MAX_OPEN_PER_STRATEGY = 10;
 const PA_MIN_SCORE = 3;
 const INDICATOR_MIN_SCORE = 2;
-const SCAN_COUNT = 30;
+const SCAN_COUNT = 20;
 const SCAN_MS = 10000;
 const START_BALANCE = 10000;
 const REENTRY_COOLDOWN_MS = 120000;
@@ -49,12 +49,13 @@ const state = {
 };
 
 const num = (v,d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
-const EXCLUDED_BASES = new Set(["USDC","USDG","FDUSD","TUSD","USDP","DAI","BUSD","USDE","USDS","PYUSD","PAX","PAXG","EURT","EURC"]);
-const eligible = s => {
-  if(!s || !s.endsWith("USDT")) return false;
-  const base=s.slice(0,-4);
-  return !EXCLUDED_BASES.has(base);
-};
+const APPROVED_SYMBOLS = new Set([
+  "BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT",
+  "ADAUSDT","DOGEUSDT","AVAXUSDT","LINKUSDT","LTCUSDT",
+  "BCHUSDT","DOTUSDT","UNIUSDT","AAVEUSDT","NEARUSDT",
+  "SUIUSDT","TRXUSDT","XLMUSDT","ATOMUSDT","ETCUSDT"
+]);
+const eligible = s => APPROVED_SYMBOLS.has(String(s||"").toUpperCase());
 
 async function j(url){
   const u=new URL(url);
