@@ -253,6 +253,24 @@ function realizedRMultiple(t,pnl){
   const riskUsd=num(t.initialRiskUsd);
   return riskUsd>0?pnl/riskUsd:null;
 }
+function priceActionConfidence(x,side){
+  const pa=x&&x.pa||{}, features=pa.features||{}, ctx=pa.context||{};
+  const aligned=side==="LONG"?num(pa.bull):num(pa.bear);
+  const opposite=side==="LONG"?num(pa.bear):num(pa.bull);
+  let score=clamp(35+aligned*7-opposite*4,0,100);
+  const strong=[
+    "BULLISH_ENGULFING","BEARISH_ENGULFING","SUPPORT_REACTION","RESISTANCE_REACTION",
+    "BREAKOUT_HIGH","BREAKOUT_LOW","FALSE_BREAKOUT_HIGH","FALSE_BREAKOUT_LOW",
+    "RETEST_BROKEN_RESISTANCE","RETEST_BROKEN_SUPPORT","MULTI_CANDLE_UP_3","MULTI_CANDLE_DOWN_3",
+    "FIB_TREND_REACTION"
+  ];
+  for(const name of strong) if(features[name]&&features[name].side===side) score+=5;
+  const touches=side==="LONG"?num(ctx.supportTouches):num(ctx.resistanceTouches);
+  if(touches>=2) score+=5;
+  score=clamp(score,0,100);
+  const leverage=score>=85?10:score>=75?7:score>=65?5:score>=55?3:2;
+  return {score:+score.toFixed(1),leverage,alignedConditions:aligned,oppositeConditions:opposite};
+}
 function trailingGivebackLimit(mfePct){
   let base=50;
   if(mfePct>=3) base=20;
@@ -420,16 +438,17 @@ async function applyRows(rows, provider){
         const paTrade=sig.strategy==="PRICE_ACTION";
         const rr=paTrade?priceActionRiskReward(x,sig.side):null;
         const risk=rr?rr.riskPerUnit:x.price*0.004;
-        const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
+        const paConfidence=paTrade?priceActionConfidence(x,sig.side):null;
+        const leverage=paConfidence?paConfidence.leverage:Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
         const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*4));
         const qty=margin*leverage/x.price;
         const t={id:x.symbol+"-"+sig.strategy+"-"+Date.now(),symbol:x.symbol,strategy:sig.strategy,side:sig.side,entry:x.price,current:x.price,
           leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,signalDetail:sig.signalDetail,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
           stop:rr?rr.stop:(sig.side==="LONG"?x.price-risk:x.price+risk),
           tp3:rr?rr.target:(sig.side==="LONG"?x.price+risk*3:x.price-risk*3),
-          rrPlan:rr,initialRiskUsd:risk*qty};
+          rrPlan:rr,paConfidence,initialRiskUsd:risk*qty};
         state.open.push(t);openKeys.add(key);
-        console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,strategy:sig.strategy,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),priceAction:sig.strategy.includes("PRICE_ACTION")?sig.signalDetail:null,leverage:t.leverage}));
+        console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,strategy:sig.strategy,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),priceAction:sig.strategy.includes("PRICE_ACTION")?sig.signalDetail:null,paConfidence:t.paConfidence||null,leverage:t.leverage}));
       }
     }
 
