@@ -30,6 +30,8 @@ async function persistState(){
 
 const DEMO_ENTRY_FLOW_USD = 1000;
 const MAX_OPEN = 10;
+const MAX_OPEN_PER_STRATEGY = 10;
+const PA_MIN_SCORE = 3;
 const SCAN_COUNT = 30;
 const SCAN_MS = 10000;
 const START_BALANCE = 10000;
@@ -74,6 +76,34 @@ function flow(rows,n){
   return buy-sell;
 }
 function livePnl(t,p){ return (t.side==="LONG"?1:-1)*(p-t.entry)*t.qty; }
+function ema(values,period){
+  if(!values.length) return 0;
+  const k=2/(period+1); let e=values[0];
+  for(let i=1;i<values.length;i++) e=values[i]*k+e*(1-k);
+  return e;
+}
+function priceActionSignal(candles){
+  if(!Array.isArray(candles)||candles.length<12) return {side:null,bull:0,bear:0,conditions:[]};
+  const a=candles.slice(-20).map(k=>({o:num(k.o),h:num(k.h),l:num(k.l),c:num(k.c)}));
+  const last=a[a.length-1], prev=a[a.length-2], prior=a.slice(-7,-1);
+  const closes=a.map(x=>x.c), e5=ema(closes.slice(-10),5), e10=ema(closes.slice(-15),10);
+  const range=Math.max(1e-12,last.h-last.l), body=Math.abs(last.c-last.o);
+  const hi=Math.max(...prior.map(x=>x.h)), lo=Math.min(...prior.map(x=>x.l));
+  const bull=[],bear=[];
+  // Five independent price-action conditions: structure, breakout, momentum candle, rejection, short trend.
+  if(last.h>prev.h && last.l>prev.l) bull.push("STRUCTURE_HH_HL");
+  if(last.h<prev.h && last.l<prev.l) bear.push("STRUCTURE_LH_LL");
+  if(last.c>hi) bull.push("BREAKOUT_HIGH");
+  if(last.c<lo) bear.push("BREAKOUT_LOW");
+  if(last.c>last.o && body/range>=0.6) bull.push("MOMENTUM_BULL");
+  if(last.c<last.o && body/range>=0.6) bear.push("MOMENTUM_BEAR");
+  if((Math.min(last.o,last.c)-last.l)/range>=0.45 && last.c>last.o) bull.push("LOWER_WICK_REJECTION");
+  if((last.h-Math.max(last.o,last.c))/range>=0.45 && last.c<last.o) bear.push("UPPER_WICK_REJECTION");
+  if(e5>e10 && last.c>e5) bull.push("TREND_UP");
+  if(e5<e10 && last.c<e5) bear.push("TREND_DOWN");
+  const side=bull.length>=PA_MIN_SCORE && bull.length>bear.length?"LONG":bear.length>=PA_MIN_SCORE && bear.length>bull.length?"SHORT":null;
+  return {side,bull:bull.length,bear:bear.length,conditions:side==="LONG"?bull:side==="SHORT"?bear:[]};
+}
 function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
 function quantile(arr,q){
   if(!arr.length) return null;
@@ -89,9 +119,9 @@ function learnedGivebackCap(){
   if(samples.length<12) return {cap:null,samples:samples.length,efficientSamples:efficient.length};
   return {cap:clamp(quantile(samples,0.5),20,40),samples:samples.length,efficientSamples:efficient.length};
 }
-function lastClosedFor(symbol){ return state.closed.find(t=>t.symbol===symbol)||null; }
-function entryMistakeTags(x){
-  const tags=[]; const prev=lastClosedFor(x.symbol); const now=Date.now();
+function lastClosedFor(symbol,strategy){ return state.closed.find(t=>t.symbol===symbol && (!strategy||t.strategy===strategy))||null; }
+function entryMistakeTags(x,strategy){
+  const tags=[]; const prev=lastClosedFor(x.symbol,strategy); const now=Date.now();
   if(prev && now-num(prev.closedAt)>0 && now-num(prev.closedAt)<REENTRY_COOLDOWN_MS) tags.push("REENTRY_TOO_SOON");
   if(num(x.flowMagnitudeUsd)<WEAK_FLOW_USD) tags.push("WEAK_FLOW_ENTRY");
   return tags;
@@ -135,7 +165,8 @@ async function scanBinance(){
           const k=await j("https://api.binance.com/api/v3/klines?symbol="+encodeURIComponent(t.symbol)+"&interval=1m&limit=20");
           const f1=flow(k,1),f5=flow(k,5),f15=flow(k,15);
           const best=[f1,f5,f15].sort((a,b)=>Math.abs(b)-Math.abs(a))[0]||0;
-          return {symbol:t.symbol,price:num(t.lastPrice),netFlow:best,flowMagnitudeUsd:Math.abs(best),side:best>=0?"LONG":"SHORT"};
+          const candles=k.map(z=>({o:z[1],h:z[2],l:z[3],c:z[4]}));
+          return {symbol:t.symbol,price:num(t.lastPrice),netFlow:best,flowMagnitudeUsd:Math.abs(best),side:best>=0?"LONG":"SHORT",pa:priceActionSignal(candles)};
         }catch{return null;}
       }));
       rows.push(...got.filter(Boolean));
@@ -166,7 +197,12 @@ async function scanOkx(){
           net += String(x.side).toLowerCase()==="buy" ? notional : -notional;
         }
         const symbol=t.instId.replace("-","");
-        return {symbol,price:num(t.last),netFlow:net,flowMagnitudeUsd:Math.abs(net),side:net>=0?"LONG":"SHORT"};
+        let pa={side:null,bull:0,bear:0,conditions:[]};
+        try{
+          const cr=await fetch("https://www.okx.com/api/v5/market/candles?instId="+encodeURIComponent(t.instId)+"&bar=1m&limit=20",{headers:{"user-agent":"Mozilla/5.0 ALI-Flow-Radar"}});
+          if(cr.ok){ const cp=await cr.json(); pa=priceActionSignal((cp.data||[]).slice().reverse().map(z=>({o:z[1],h:z[2],l:z[3],c:z[4]}))); }
+        }catch{}
+        return {symbol,price:num(t.last),netFlow:net,flowMagnitudeUsd:Math.abs(net),side:net>=0?"LONG":"SHORT",pa};
       }catch{return null;}
     }));
     rows.push(...got.filter(Boolean));
@@ -244,7 +280,7 @@ async function applyRows(rows, provider){
         state.closed.unshift(t); state.closed=state.closed.slice(0,500);
         state.open=state.open.filter(x=>x.id!==t.id);
         console.log("[SERVER_DEMO_CLOSE]", JSON.stringify({
-          symbol:t.symbol,side:t.side,pnl:+pnl.toFixed(2),reason,
+          symbol:t.symbol,strategy:t.strategy||"FLOW",side:t.side,pnl:+pnl.toFixed(2),reason,
           mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),capturePct:+t.capturePct.toFixed(1),
           trailLimitPct:+trail.limit.toFixed(1),learnedGivebackCapPct:trail.learnedCap==null?null:+trail.learnedCap.toFixed(1),learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,
           oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd)),mistakeTags:t.mistakeTags
@@ -252,23 +288,31 @@ async function applyRows(rows, provider){
       }
     }
 
-    const openSyms=new Set(state.open.map(x=>x.symbol));
+    // FLOW and PRICE_ACTION are deliberately separate A/B strategies.
+    // If both fire on the same symbol, each opens its own independently tagged virtual trade.
+    const openKeys=new Set(state.open.map(x=>x.symbol+"|"+(x.strategy||"FLOW")));
+    const strategyOpenCount=strategy=>state.open.filter(t=>(t.strategy||"FLOW")===strategy).length;
     for(const x of state.candidates){
-      if(state.open.length>=MAX_OPEN) break;
-      if(x.flowMagnitudeUsd<DEMO_ENTRY_FLOW_USD||openSyms.has(x.symbol)||!x.price) continue;
-      const entryTags=entryMistakeTags(x);
-      // Prevent the clearest recurring mistake: immediate churn back into the same symbol.
-      if(entryTags.includes("REENTRY_TOO_SOON")) continue;
-      const risk=x.price*0.004;
-      const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
-      const margin=Math.max(10,state.balance/MAX_OPEN);
-      const qty=margin*leverage/x.price;
-      const t={id:x.symbol+"-"+Date.now(),symbol:x.symbol,side:x.side,entry:x.price,current:x.price,
-        leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
-        stop:x.side==="LONG"?x.price-risk:x.price+risk,
-        tp3:x.side==="LONG"?x.price+risk*3:x.price-risk*3};
-      state.open.push(t);openSyms.add(x.symbol);
-      console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),leverage:t.leverage}));
+      const signals=[];
+      if(x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD) signals.push({strategy:"FLOW",side:x.side,signalDetail:{netFlowUsd:x.netFlow}});
+      if(x.pa&&x.pa.side) signals.push({strategy:"PRICE_ACTION",side:x.pa.side,signalDetail:{score:x.pa.side==="LONG"?x.pa.bull:x.pa.bear,conditions:x.pa.conditions}});
+      for(const sig of signals){
+        if(strategyOpenCount(sig.strategy)>=MAX_OPEN_PER_STRATEGY) continue;
+        const key=x.symbol+"|"+sig.strategy;
+        if(openKeys.has(key)||!x.price) continue;
+        const entryTags=entryMistakeTags(x,sig.strategy);
+        if(entryTags.includes("REENTRY_TOO_SOON")) continue;
+        const risk=x.price*0.004;
+        const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
+        const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*2));
+        const qty=margin*leverage/x.price;
+        const t={id:x.symbol+"-"+sig.strategy+"-"+Date.now(),symbol:x.symbol,strategy:sig.strategy,side:sig.side,entry:x.price,current:x.price,
+          leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,signalDetail:sig.signalDetail,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
+          stop:sig.side==="LONG"?x.price-risk:x.price+risk,
+          tp3:sig.side==="LONG"?x.price+risk*3:x.price-risk*3};
+        state.open.push(t);openKeys.add(key);
+        console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,strategy:sig.strategy,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),priceAction:sig.strategy==="PRICE_ACTION"?sig.signalDetail:null,leverage:t.leverage}));
+      }
     }
 
     await persistState();
@@ -314,6 +358,15 @@ async function scan(){
   }
 }
 function snapshot(){
+  const strategyStats={};
+  for(const strategy of ["FLOW","PRICE_ACTION"]){
+    const trades=state.closed.filter(t=>(t.strategy||"FLOW")===strategy);
+    const wins=trades.filter(t=>num(t.pnl)>0), losses=trades.filter(t=>num(t.pnl)<0);
+    const pnl=trades.reduce((s,t)=>s+num(t.pnl),0);
+    strategyStats[strategy]={closed:trades.length,wins:wins.length,losses:losses.length,winRate:trades.length?wins.length/trades.length*100:null,pnl,
+      avgWin:wins.length?wins.reduce((s,t)=>s+num(t.pnl),0)/wins.length:null,
+      avgLoss:losses.length?losses.reduce((s,t)=>s+num(t.pnl),0)/losses.length:null};
+  }
   const openPositions=state.open.map(t=>{
     const current=num(t.current,t.entry);
     const pnlUsd=livePnl(t,current);
@@ -331,7 +384,7 @@ function snapshot(){
     report:{startingBalance:START_BALANCE,realizedPnl:state.closedPnl,unrealizedPnl:openPnl,netPnl,equity,
       returnPct:(netPnl/START_BALANCE)*100,grossProfit,grossLoss,
       openTrades:openPositions.length,closedTrades:num(state.totalClosed),wins:num(state.totalWins),losses:num(state.totalLosses),
-      winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary()},
+      winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary(),strategyStats},
     summary:{openTrades:openPositions.length,closedTrades:num(state.totalClosed),wins:num(state.totalWins),losses:num(state.totalLosses),winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null}};
 }
 let timer=null;
