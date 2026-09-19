@@ -32,6 +32,7 @@ const DEMO_ENTRY_FLOW_USD = 1000;
 const MAX_OPEN = 10;
 const MAX_OPEN_PER_STRATEGY = 10;
 const PA_MIN_SCORE = 3;
+const INDICATOR_MIN_SCORE = 2;
 const SCAN_COUNT = 30;
 const SCAN_MS = 10000;
 const START_BALANCE = 10000;
@@ -104,6 +105,26 @@ function priceActionSignal(candles){
   const side=bull.length>=PA_MIN_SCORE && bull.length>bear.length?"LONG":bear.length>=PA_MIN_SCORE && bear.length>bull.length?"SHORT":null;
   return {side,bull:bull.length,bear:bear.length,conditions:side==="LONG"?bull:side==="SHORT"?bear:[]};
 }
+function indicatorSignal(candles){
+  if(!Array.isArray(candles)||candles.length<20) return {side:null,bull:0,bear:0,conditions:[]};
+  const a=candles.slice(-20).map(k=>({o:num(k.o),h:num(k.h),l:num(k.l),c:num(k.c)}));
+  const closes=a.map(x=>x.c), last=closes[closes.length-1];
+  const e5=ema(closes,5), e10=ema(closes,10);
+  const gains=[],losses=[];
+  for(let i=1;i<closes.length;i++){const d=closes[i]-closes[i-1];gains.push(Math.max(0,d));losses.push(Math.max(0,-d));}
+  const ag=gains.slice(-14).reduce((s,x)=>s+x,0)/14, al=losses.slice(-14).reduce((s,x)=>s+x,0)/14;
+  const rsi=al===0?100:100-(100/(1+ag/al));
+  const macd=ema(closes,12)-ema(closes,20);
+  const bull=[],bear=[];
+  if(e5>e10 && last>e5) bull.push("EMA_TREND_UP");
+  if(e5<e10 && last<e5) bear.push("EMA_TREND_DOWN");
+  if(rsi>=52 && rsi<75) bull.push("RSI_BULL");
+  if(rsi<=48 && rsi>25) bear.push("RSI_BEAR");
+  if(macd>0) bull.push("MACD_POSITIVE");
+  if(macd<0) bear.push("MACD_NEGATIVE");
+  const side=bull.length>=INDICATOR_MIN_SCORE&&bull.length>bear.length?"LONG":bear.length>=INDICATOR_MIN_SCORE&&bear.length>bull.length?"SHORT":null;
+  return {side,bull:bull.length,bear:bear.length,conditions:side==="LONG"?bull:side==="SHORT"?bear:[],rsi:+rsi.toFixed(2),macd};
+}
 function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
 function quantile(arr,q){
   if(!arr.length) return null;
@@ -166,7 +187,8 @@ async function scanBinance(){
           const f1=flow(k,1),f5=flow(k,5),f15=flow(k,15);
           const best=[f1,f5,f15].sort((a,b)=>Math.abs(b)-Math.abs(a))[0]||0;
           const candles=k.map(z=>({o:z[1],h:z[2],l:z[3],c:z[4]}));
-          return {symbol:t.symbol,price:num(t.lastPrice),netFlow:best,flowMagnitudeUsd:Math.abs(best),side:best>=0?"LONG":"SHORT",pa:priceActionSignal(candles)};
+          const pa=priceActionSignal(candles), indicators=indicatorSignal(candles);
+          return {symbol:t.symbol,price:num(t.lastPrice),netFlow:best,flowMagnitudeUsd:Math.abs(best),side:best>=0?"LONG":"SHORT",pa,indicators};
         }catch{return null;}
       }));
       rows.push(...got.filter(Boolean));
@@ -197,12 +219,12 @@ async function scanOkx(){
           net += String(x.side).toLowerCase()==="buy" ? notional : -notional;
         }
         const symbol=t.instId.replace("-","");
-        let pa={side:null,bull:0,bear:0,conditions:[]};
+        let pa={side:null,bull:0,bear:0,conditions:[]}, indicators={side:null,bull:0,bear:0,conditions:[]};
         try{
           const cr=await fetch("https://www.okx.com/api/v5/market/candles?instId="+encodeURIComponent(t.instId)+"&bar=1m&limit=20",{headers:{"user-agent":"Mozilla/5.0 ALI-Flow-Radar"}});
-          if(cr.ok){ const cp=await cr.json(); pa=priceActionSignal((cp.data||[]).slice().reverse().map(z=>({o:z[1],h:z[2],l:z[3],c:z[4]}))); }
+          if(cr.ok){ const cp=await cr.json(); const candles=(cp.data||[]).slice().reverse().map(z=>({o:z[1],h:z[2],l:z[3],c:z[4]})); pa=priceActionSignal(candles); indicators=indicatorSignal(candles); }
         }catch{}
-        return {symbol,price:num(t.last),netFlow:net,flowMagnitudeUsd:Math.abs(net),side:net>=0?"LONG":"SHORT",pa};
+        return {symbol,price:num(t.last),netFlow:net,flowMagnitudeUsd:Math.abs(net),side:net>=0?"LONG":"SHORT",pa,indicators};
       }catch{return null;}
     }));
     rows.push(...got.filter(Boolean));
@@ -288,7 +310,7 @@ async function applyRows(rows, provider){
       }
     }
 
-    // FLOW and PRICE_ACTION are deliberately separate A/B strategies.
+    // Four deliberately separate strategy cohorts for clean comparison.
     // If both fire on the same symbol, each opens its own independently tagged virtual trade.
     const openKeys=new Set(state.open.map(x=>x.symbol+"|"+(x.strategy||"FLOW")));
     const strategyOpenCount=strategy=>state.open.filter(t=>(t.strategy||"FLOW")===strategy).length;
@@ -296,6 +318,8 @@ async function applyRows(rows, provider){
       const signals=[];
       if(x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD) signals.push({strategy:"FLOW",side:x.side,signalDetail:{netFlowUsd:x.netFlow}});
       if(x.pa&&x.pa.side) signals.push({strategy:"PRICE_ACTION",side:x.pa.side,signalDetail:{score:x.pa.side==="LONG"?x.pa.bull:x.pa.bear,conditions:x.pa.conditions}});
+      if(x.pa&&x.pa.side && x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD && x.side===x.pa.side) signals.push({strategy:"FLOW_PRICE_ACTION",side:x.side,signalDetail:{netFlowUsd:x.netFlow,priceAction:x.pa}});
+      if(x.pa&&x.pa.side && x.indicators&&x.indicators.side===x.pa.side) signals.push({strategy:"PRICE_ACTION_INDICATORS",side:x.pa.side,signalDetail:{priceAction:x.pa,indicators:x.indicators}});
       for(const sig of signals){
         if(strategyOpenCount(sig.strategy)>=MAX_OPEN_PER_STRATEGY) continue;
         const key=x.symbol+"|"+sig.strategy;
@@ -304,14 +328,14 @@ async function applyRows(rows, provider){
         if(entryTags.includes("REENTRY_TOO_SOON")) continue;
         const risk=x.price*0.004;
         const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
-        const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*2));
+        const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*4));
         const qty=margin*leverage/x.price;
         const t={id:x.symbol+"-"+sig.strategy+"-"+Date.now(),symbol:x.symbol,strategy:sig.strategy,side:sig.side,entry:x.price,current:x.price,
           leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,signalDetail:sig.signalDetail,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
           stop:sig.side==="LONG"?x.price-risk:x.price+risk,
           tp3:sig.side==="LONG"?x.price+risk*3:x.price-risk*3};
         state.open.push(t);openKeys.add(key);
-        console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,strategy:sig.strategy,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),priceAction:sig.strategy==="PRICE_ACTION"?sig.signalDetail:null,leverage:t.leverage}));
+        console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,strategy:sig.strategy,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),priceAction:sig.strategy.includes("PRICE_ACTION")?sig.signalDetail:null,leverage:t.leverage}));
       }
     }
 
@@ -359,7 +383,7 @@ async function scan(){
 }
 function snapshot(){
   const strategyStats={};
-  for(const strategy of ["FLOW","PRICE_ACTION"]){
+  for(const strategy of ["FLOW","PRICE_ACTION","FLOW_PRICE_ACTION","PRICE_ACTION_INDICATORS"]){
     const trades=state.closed.filter(t=>(t.strategy||"FLOW")===strategy);
     const wins=trades.filter(t=>num(t.pnl)>0), losses=trades.filter(t=>num(t.pnl)<0);
     const pnl=trades.reduce((s,t)=>s+num(t.pnl),0);
