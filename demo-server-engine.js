@@ -227,6 +227,32 @@ function priceActionFeatureStats(){
   }
   return out;
 }
+function priceActionRiskReward(x,side){
+  const pa=x&&x.pa||{}, ctx=pa.context||{}, entry=num(x.price);
+  if(!entry) return null;
+  const baseRisk=entry*0.004;
+  // Structure-aware stop: put the stop beyond the measured support/resistance when useful,
+  // but clamp distance to avoid pathological sizing from stale/wide zones.
+  let stop=side==="LONG"?entry-baseRisk:entry+baseRisk;
+  if(side==="LONG" && num(ctx.support)>0 && num(ctx.support)<entry) stop=Math.min(stop,num(ctx.support)-entry*0.0005);
+  if(side==="SHORT" && num(ctx.resistance)>entry) stop=Math.max(stop,num(ctx.resistance)+entry*0.0005);
+  let risk=Math.abs(entry-stop);
+  risk=clamp(risk,entry*0.0025,entry*0.012);
+  stop=side==="LONG"?entry-risk:entry+risk;
+
+  // Measure several R:R hypotheses rather than assuming one ratio is universally best.
+  // 2R is the initial executable target; 1.5R/2R/3R are persisted for later validation.
+  const targets={
+    rr15:side==="LONG"?entry+risk*1.5:entry-risk*1.5,
+    rr20:side==="LONG"?entry+risk*2.0:entry-risk*2.0,
+    rr30:side==="LONG"?entry+risk*3.0:entry-risk*3.0
+  };
+  return {stop,riskPerUnit:risk,riskPct:risk/entry*100,target:targets.rr20,targets,plannedRR:2};
+}
+function realizedRMultiple(t,pnl){
+  const riskUsd=num(t.initialRiskUsd);
+  return riskUsd>0?pnl/riskUsd:null;
+}
 function trailingGivebackLimit(mfePct){
   let base=50;
   if(mfePct>=3) base=20;
@@ -358,6 +384,7 @@ async function applyRows(rows, provider){
         t.exit=p;t.pnl=pnl;t.exitReason=reason;t.closedAt=Date.now();
         t.mistakeTags=[...(t.entryMistakeTags||[]),...exitMistakeTags(t,{givebackPct,mfePct,opposite})];
         t.givebackPct=givebackPct;t.mfePct=mfePct;t.capturePct=mfe>0?Math.max(0,(pnl/mfe)*100):0;
+        t.realizedR=realizedRMultiple(t,pnl);
         t.exitLearning={trailLimitPct:trail.limit,baseTrailLimitPct:trail.base,learnedGivebackCapPct:trail.learnedCap,learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,flowGivebackLimitPct:flowGivebackLimit};
         state.closedPnl+=pnl; state.balance=START_BALANCE+state.closedPnl;
         state.totalClosed=num(state.totalClosed)+1;
@@ -368,7 +395,8 @@ async function applyRows(rows, provider){
           symbol:t.symbol,strategy:t.strategy||"FLOW",side:t.side,pnl:+pnl.toFixed(2),reason,
           mfePct:+mfePct.toFixed(2),givebackPct:+givebackPct.toFixed(1),capturePct:+t.capturePct.toFixed(1),
           trailLimitPct:+trail.limit.toFixed(1),learnedGivebackCapPct:trail.learnedCap==null?null:+trail.learnedCap.toFixed(1),learningSamples:trail.samples,efficientLearningSamples:trail.efficientSamples,
-          oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd)),mistakeTags:t.mistakeTags
+          oppositeFlowScans:t.oppositeFlowScans,maxOppositeFlowUsd:Math.round(num(t.maxOppositeFlowUsd)),mistakeTags:t.mistakeTags,
+          plannedRR:t.rrPlan?t.rrPlan.plannedRR:null,realizedR:t.realizedR==null?null:+t.realizedR.toFixed(3)
         }));
       }
     }
@@ -389,14 +417,17 @@ async function applyRows(rows, provider){
         if(openKeys.has(key)||!x.price) continue;
         const entryTags=entryMistakeTags(x,sig.strategy);
         if(entryTags.includes("REENTRY_TOO_SOON")) continue;
-        const risk=x.price*0.004;
+        const paTrade=sig.strategy==="PRICE_ACTION";
+        const rr=paTrade?priceActionRiskReward(x,sig.side):null;
+        const risk=rr?rr.riskPerUnit:x.price*0.004;
         const leverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
         const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*4));
         const qty=margin*leverage/x.price;
         const t={id:x.symbol+"-"+sig.strategy+"-"+Date.now(),symbol:x.symbol,strategy:sig.strategy,side:sig.side,entry:x.price,current:x.price,
           leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,signalDetail:sig.signalDetail,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
-          stop:sig.side==="LONG"?x.price-risk:x.price+risk,
-          tp3:sig.side==="LONG"?x.price+risk*3:x.price-risk*3};
+          stop:rr?rr.stop:(sig.side==="LONG"?x.price-risk:x.price+risk),
+          tp3:rr?rr.target:(sig.side==="LONG"?x.price+risk*3:x.price-risk*3),
+          rrPlan:rr,initialRiskUsd:risk*qty};
         state.open.push(t);openKeys.add(key);
         console.log("[SERVER_DEMO_OPEN]", JSON.stringify({provider,strategy:sig.strategy,symbol:t.symbol,side:t.side,entry:t.entry,flow:Math.round(t.netMoneyFlowUsd),priceAction:sig.strategy.includes("PRICE_ACTION")?sig.signalDetail:null,leverage:t.leverage}));
       }
