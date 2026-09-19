@@ -1,0 +1,1 @@
+{"name":"ali-paper-engine-v6","version":"6.1.1","private":true,"type":"module","engines":{"node":">=22.13.0"},"scripts":{"start":"node server.mjs","test":"node tests/core.mjs && node --test tests/service.mjs","build":"node --check server.mjs && node --check store.mjs && node --check engine/core.mjs && node --check engine/feed.mjs"}}
