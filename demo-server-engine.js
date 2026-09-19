@@ -84,26 +84,68 @@ function ema(values,period){
   return e;
 }
 function priceActionSignal(candles){
-  if(!Array.isArray(candles)||candles.length<12) return {side:null,bull:0,bear:0,conditions:[]};
+  if(!Array.isArray(candles)||candles.length<20) return {side:null,bull:0,bear:0,conditions:[],features:{}};
   const a=candles.slice(-20).map(k=>({o:num(k.o),h:num(k.h),l:num(k.l),c:num(k.c)}));
-  const last=a[a.length-1], prev=a[a.length-2], prior=a.slice(-7,-1);
-  const closes=a.map(x=>x.c), e5=ema(closes.slice(-10),5), e10=ema(closes.slice(-15),10);
+  const last=a[a.length-1], prev=a[a.length-2], p2=a[a.length-3], prior=a.slice(0,-1);
+  const closes=a.map(x=>x.c), e5=ema(closes,5), e10=ema(closes,10);
   const range=Math.max(1e-12,last.h-last.l), body=Math.abs(last.c-last.o);
-  const hi=Math.max(...prior.map(x=>x.h)), lo=Math.min(...prior.map(x=>x.l));
-  const bull=[],bear=[];
-  // Five independent price-action conditions: structure, breakout, momentum candle, rejection, short trend.
-  if(last.h>prev.h && last.l>prev.l) bull.push("STRUCTURE_HH_HL");
-  if(last.h<prev.h && last.l<prev.l) bear.push("STRUCTURE_LH_LL");
-  if(last.c>hi) bull.push("BREAKOUT_HIGH");
-  if(last.c<lo) bear.push("BREAKOUT_LOW");
-  if(last.c>last.o && body/range>=0.6) bull.push("MOMENTUM_BULL");
-  if(last.c<last.o && body/range>=0.6) bear.push("MOMENTUM_BEAR");
-  if((Math.min(last.o,last.c)-last.l)/range>=0.45 && last.c>last.o) bull.push("LOWER_WICK_REJECTION");
-  if((last.h-Math.max(last.o,last.c))/range>=0.45 && last.c<last.o) bear.push("UPPER_WICK_REJECTION");
-  if(e5>e10 && last.c>e5) bull.push("TREND_UP");
-  if(e5<e10 && last.c<e5) bear.push("TREND_DOWN");
+  const upperWick=last.h-Math.max(last.o,last.c), lowerWick=Math.min(last.o,last.c)-last.l;
+  const lookback=prior.slice(-10), hi=Math.max(...lookback.map(x=>x.h)), lo=Math.min(...lookback.map(x=>x.l));
+  const span=Math.max(1e-12,hi-lo), zone=Math.max(span*0.035,last.c*0.0015);
+  const nearSupport=Math.abs(last.l-lo)<=zone || Math.abs(last.c-lo)<=zone;
+  const nearResistance=Math.abs(last.h-hi)<=zone || Math.abs(last.c-hi)<=zone;
+  const supportTouches=lookback.filter(x=>Math.abs(x.l-lo)<=zone).length;
+  const resistanceTouches=lookback.filter(x=>Math.abs(x.h-hi)<=zone).length;
+  const bull=[],bear=[],features={};
+
+  const add=(side,name,detail={})=>{ (side==="LONG"?bull:bear).push(name); features[name]={side,...detail}; };
+
+  // Candle anatomy and classic single/multi-candle patterns.
+  if(last.c>last.o && body/range>=0.6) add("LONG","MOMENTUM_BULL",{bodyRatio:body/range});
+  if(last.c<last.o && body/range>=0.6) add("SHORT","MOMENTUM_BEAR",{bodyRatio:body/range});
+  if(lowerWick/range>=0.45 && last.c>last.o) add("LONG","LOWER_WICK_REJECTION",{wickRatio:lowerWick/range});
+  if(upperWick/range>=0.45 && last.c<last.o) add("SHORT","UPPER_WICK_REJECTION",{wickRatio:upperWick/range});
+  if(last.c>last.o && prev.c<prev.o && last.o<=prev.c && last.c>=prev.o) add("LONG","BULLISH_ENGULFING");
+  if(last.c<last.o && prev.c>prev.o && last.o>=prev.c && last.c<=prev.o) add("SHORT","BEARISH_ENGULFING");
+  if(last.h<prev.h && last.l>prev.l) features.INSIDE_BAR={side:null};
+  if(last.h>prev.h && last.l<prev.l) features.OUTSIDE_BAR={side:null};
+
+  // Market structure and short trend.
+  if(last.h>prev.h && last.l>prev.l) add("LONG","STRUCTURE_HH_HL");
+  if(last.h<prev.h && last.l<prev.l) add("SHORT","STRUCTURE_LH_LL");
+  if(e5>e10 && last.c>e5) add("LONG","TREND_UP",{ema5:e5,ema10:e10});
+  if(e5<e10 && last.c<e5) add("SHORT","TREND_DOWN",{ema5:e5,ema10:e10});
+  if(last.h>prev.h && prev.h>p2.h && last.l>prev.l && prev.l>p2.l) add("LONG","MULTI_CANDLE_UP_3");
+  if(last.h<prev.h && prev.h<p2.h && last.l<prev.l && prev.l<p2.l) add("SHORT","MULTI_CANDLE_DOWN_3");
+
+  // Support/resistance zones, touches and reactions.
+  features.SUPPORT_ZONE={side:null,level:lo,touches:supportTouches,distancePct:Math.abs(last.c-lo)/Math.max(last.c,1e-12)*100};
+  features.RESISTANCE_ZONE={side:null,level:hi,touches:resistanceTouches,distancePct:Math.abs(last.c-hi)/Math.max(last.c,1e-12)*100};
+  if(nearSupport && lowerWick/range>=0.30 && last.c>last.o) add("LONG","SUPPORT_REACTION",{level:lo,touches:supportTouches});
+  if(nearResistance && upperWick/range>=0.30 && last.c<last.o) add("SHORT","RESISTANCE_REACTION",{level:hi,touches:resistanceTouches});
+
+  // Breakout, false breakout/liquidity sweep and immediate retest behavior.
+  if(last.c>hi) add("LONG","BREAKOUT_HIGH",{level:hi});
+  if(last.c<lo) add("SHORT","BREAKOUT_LOW",{level:lo});
+  if(last.h>hi && last.c<hi) add("SHORT","FALSE_BREAKOUT_HIGH",{level:hi});
+  if(last.l<lo && last.c>lo) add("LONG","FALSE_BREAKOUT_LOW",{level:lo});
+  if(prev.c>hi && last.l<=hi+zone && last.c>hi) add("LONG","RETEST_BROKEN_RESISTANCE",{level:hi});
+  if(prev.c<lo && last.h>=lo-zone && last.c<lo) add("SHORT","RETEST_BROKEN_SUPPORT",{level:lo});
+
+  // Fibonacci retracement context from the recent 10-candle range. It is confirmation, never a standalone direction.
+  const fib382=hi-span*0.382, fib50=hi-span*0.5, fib618=hi-span*0.618;
+  const fibTol=Math.max(span*0.025,last.c*0.001);
+  const fibLevels=[["FIB_382",fib382],["FIB_500",fib50],["FIB_618",fib618]];
+  for(const [name,level] of fibLevels){
+    if(Math.abs(last.c-level)<=fibTol) features[name]={side:null,level,distancePct:Math.abs(last.c-level)/Math.max(last.c,1e-12)*100};
+  }
+  const fibConfirm=Object.keys(features).filter(k=>k.startsWith("FIB_"));
+  if(fibConfirm.length && e5>e10 && last.c>last.o) add("LONG","FIB_TREND_REACTION",{levels:fibConfirm});
+  if(fibConfirm.length && e5<e10 && last.c<last.o) add("SHORT","FIB_TREND_REACTION",{levels:fibConfirm});
+
   const side=bull.length>=PA_MIN_SCORE && bull.length>bear.length?"LONG":bear.length>=PA_MIN_SCORE && bear.length>bull.length?"SHORT":null;
-  return {side,bull:bull.length,bear:bear.length,conditions:side==="LONG"?bull:side==="SHORT"?bear:[]};
+  return {side,bull:bull.length,bear:bear.length,conditions:side==="LONG"?bull:side==="SHORT"?bear:[],allBull:bull,allBear:bear,features,
+    context:{support:lo,resistance:hi,supportTouches,resistanceTouches,fib382,fib50,fib618,ema5:e5,ema10:e10}};
 }
 function indicatorSignal(candles){
   if(!Array.isArray(candles)||candles.length<20) return {side:null,bull:0,bear:0,conditions:[]};
@@ -161,6 +203,27 @@ function mistakeSummary(){
       if(!out[tag]) out[tag]={count:0,pnl:0,wins:0,losses:0};
       out[tag].count++; out[tag].pnl+=num(t.pnl); if(num(t.pnl)>0)out[tag].wins++; else if(num(t.pnl)<0)out[tag].losses++;
     }
+  }
+  return out;
+}
+function priceActionFeatureStats(){
+  const out={};
+  for(const t of state.closed){
+    if(!(t.strategy||"").includes("PRICE_ACTION")) continue;
+    const pa=t.signalDetail&&t.signalDetail.priceAction?t.signalDetail.priceAction:
+      (t.strategy==="PRICE_ACTION"&&t.signalDetail?{conditions:t.signalDetail.conditions,features:t.signalDetail.features}:null);
+    if(!pa) continue;
+    const names=new Set([...(pa.conditions||[]),...Object.keys(pa.features||{})]);
+    for(const name of names){
+      if(!out[name]) out[name]={trades:0,wins:0,losses:0,pnl:0,grossProfit:0,grossLoss:0};
+      const s=out[name], p=num(t.pnl); s.trades++; s.pnl+=p;
+      if(p>0){s.wins++;s.grossProfit+=p;} else if(p<0){s.losses++;s.grossLoss+=Math.abs(p);}
+    }
+  }
+  for(const s of Object.values(out)){
+    s.winRate=s.trades?s.wins/s.trades*100:null;
+    s.expectancy=s.trades?s.pnl/s.trades:null;
+    s.profitFactor=s.grossLoss?s.grossProfit/s.grossLoss:(s.grossProfit>0?null:0);
   }
   return out;
 }
@@ -317,7 +380,7 @@ async function applyRows(rows, provider){
     for(const x of state.candidates){
       const signals=[];
       if(x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD) signals.push({strategy:"FLOW",side:x.side,signalDetail:{netFlowUsd:x.netFlow}});
-      if(x.pa&&x.pa.side) signals.push({strategy:"PRICE_ACTION",side:x.pa.side,signalDetail:{score:x.pa.side==="LONG"?x.pa.bull:x.pa.bear,conditions:x.pa.conditions}});
+      if(x.pa&&x.pa.side) signals.push({strategy:"PRICE_ACTION",side:x.pa.side,signalDetail:{score:x.pa.side==="LONG"?x.pa.bull:x.pa.bear,conditions:x.pa.conditions,features:x.pa.features,context:x.pa.context}});
       if(x.pa&&x.pa.side && x.flowMagnitudeUsd>=DEMO_ENTRY_FLOW_USD && x.side===x.pa.side) signals.push({strategy:"FLOW_PRICE_ACTION",side:x.side,signalDetail:{netFlowUsd:x.netFlow,priceAction:x.pa}});
       if(x.pa&&x.pa.side && x.indicators&&x.indicators.side===x.pa.side) signals.push({strategy:"PRICE_ACTION_INDICATORS",side:x.pa.side,signalDetail:{priceAction:x.pa,indicators:x.indicators}});
       for(const sig of signals){
@@ -408,7 +471,7 @@ function snapshot(){
     report:{startingBalance:START_BALANCE,realizedPnl:state.closedPnl,unrealizedPnl:openPnl,netPnl,equity,
       returnPct:(netPnl/START_BALANCE)*100,grossProfit,grossLoss,
       openTrades:openPositions.length,closedTrades:num(state.totalClosed),wins:num(state.totalWins),losses:num(state.totalLosses),
-      winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary(),strategyStats},
+      winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null,lastScanAt:state.lastScanAt,provider:state.provider,mistakes:mistakeSummary(),strategyStats,priceActionFeatureStats:priceActionFeatureStats()},
     summary:{openTrades:openPositions.length,closedTrades:num(state.totalClosed),wins:num(state.totalWins),losses:num(state.totalLosses),winRate:num(state.totalClosed)?num(state.totalWins)/num(state.totalClosed)*100:null}};
 }
 let timer=null;
