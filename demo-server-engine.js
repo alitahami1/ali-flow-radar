@@ -38,6 +38,10 @@ const SCAN_MS = 10000;
 const START_BALANCE = 10000;
 const REENTRY_COOLDOWN_MS = 120000;
 const WEAK_FLOW_USD = 10000;
+const RISK_PER_TRADE_PCT = 0.0025; // 0.25% of current balance at the hard stop
+const MAX_MARGIN_PCT = 0.05;       // no position may reserve more than 5% of balance
+const MAX_LEVERAGE = 5;            // cap demo leverage while validating expectancy
+const LOSS_REENTRY_COOLDOWN_MS = 10*60*1000;
 const BINANCE_FAIL_COOLDOWN_MS = 5*60*1000;
 const FLOW_HISTORY_LIMIT = 90;
 let binanceCooldownUntil=0;
@@ -231,7 +235,11 @@ function learnedGivebackCap(){
 function lastClosedFor(symbol,strategy){ return state.closed.find(t=>t.symbol===symbol && (!strategy||t.strategy===strategy))||null; }
 function entryMistakeTags(x,strategy){
   const tags=[]; const prev=lastClosedFor(x.symbol,strategy); const now=Date.now();
-  if(prev && now-num(prev.closedAt)>0 && now-num(prev.closedAt)<REENTRY_COOLDOWN_MS) tags.push("REENTRY_TOO_SOON");
+  if(prev && now-num(prev.closedAt)>0){
+    const age=now-num(prev.closedAt);
+    const cooldown=num(prev.pnl)<0 ? LOSS_REENTRY_COOLDOWN_MS : REENTRY_COOLDOWN_MS;
+    if(age<cooldown) tags.push("REENTRY_TOO_SOON");
+  }
   if(num(x.flowMagnitudeUsd)<WEAK_FLOW_USD) tags.push("WEAK_FLOW_ENTRY");
   return tags;
 }
@@ -501,11 +509,17 @@ async function applyRows(rows, provider){
         const rr=paBased?priceActionRiskReward(x,sig.side):null;
         const risk=rr?rr.riskPerUnit:x.price*0.004;
         const paConfidence=paBased?priceActionConfidence(x,sig.side):null;
-        const flowLeverage=Math.min(10,Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3));
-        // PA+Indicators uses PA confidence; flow-containing strategies keep flow-based leverage for a cleaner comparison.
-        const leverage=sig.strategy==="PRICE_ACTION_INDICATORS"&&paConfidence?paConfidence.leverage:flowLeverage;
-        const margin=Math.max(10,state.balance/(MAX_OPEN_PER_STRATEGY*4));
-        const qty=margin*leverage/x.price;
+        const rawFlowLeverage=Math.max(2,x.flowMagnitudeUsd>=200000?10:x.flowMagnitudeUsd>=50000?7:x.flowMagnitudeUsd>=10000?5:3);
+        // Risk-first sizing: leverage may improve capital efficiency, but it must not increase dollars at risk.
+        const requestedLeverage=sig.strategy==="PRICE_ACTION_INDICATORS"&&paConfidence?paConfidence.leverage:rawFlowLeverage;
+        const leverage=Math.min(MAX_LEVERAGE,requestedLeverage);
+        const riskBudgetUsd=Math.max(1,state.balance*RISK_PER_TRADE_PCT);
+        const stopDistance=Math.max(x.price*0.0025,risk);
+        const riskSizedQty=riskBudgetUsd/stopDistance;
+        const maxMargin=Math.max(10,state.balance*MAX_MARGIN_PCT);
+        const maxQtyByMargin=(maxMargin*leverage)/x.price;
+        const qty=Math.max(0,Math.min(riskSizedQty,maxQtyByMargin));
+        const margin=(qty*x.price)/leverage;
         const t={id:x.symbol+"-"+sig.strategy+"-"+Date.now(),symbol:x.symbol,strategy:sig.strategy,side:sig.side,entry:x.price,current:x.price,
           leverage,marginUsed:margin,qty,netMoneyFlowUsd:x.netFlow,signalDetail:sig.signalDetail,provider,openedAt:Date.now(),mfePnl:0,maePnl:0,oppositeFlowScans:0,maxOppositeFlowUsd:0,entryMistakeTags:entryTags,
           stop:rr?rr.stop:(sig.side==="LONG"?x.price-risk:x.price+risk),
